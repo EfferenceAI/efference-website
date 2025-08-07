@@ -1,0 +1,112 @@
+@font-face {
+  font-family: 'Soehne Leicht';
+  src: url('./Söhne/Test Söhne/test-soehne-leicht.woff2') format('woff2');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Soehne Halb Fett';
+  src: url('./Söhne/Test Söhne/test-soehne-halbfett.woff2') format('woff2');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Soehne Kraftig';
+  src: url('./Söhne/Test Söhne/test-soehne-kraftig.woff2') format('woff2');
+  font-weight: bold;
+  font-style: normal;
+}
+
+body {
+  background-color: #faeec1;
+  margin: 0;
+  padding: 0;
+  font-family: 'Soehne Leicht', sans-serif;
+}
+
+header.logo-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem 1rem;
+}
+
+.logo-image {
+  width: 60px;
+  height: auto;
+}
+
+.logo-text {
+  font-size: 4rem;
+  margin: 0;
+  color: #111;
+}
+
+section {
+  padding: 2rem 1.5rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 1rem;
+  font-family: 'Soehne Kraftig', sans-serif;
+}
+
+
+p {
+  font-size: 1.2rem;
+  line-height: 1.6;
+}
+
+.team-section p {
+  text-align: center;
+  font-size: 1.2rem;
+}
+
+.team-section p a {
+  color: #111;
+  font-weight: bold;
+  text-decoration: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.team-section p a:hover {
+  border: 2px solid #111;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+
+.site-footer {
+  text-align: center;
+  padding: 2rem 1rem;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+
+/* Mobile tweaks */
+@media (max-width: 600px) {
+  .logo-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .logo-text {
+    font-size: 3rem;
+  }
+
+  .logo-image {
+    width: 50px;
+  }
+
+  section {
+    padding: 2rem 1rem;
+  }
+}
