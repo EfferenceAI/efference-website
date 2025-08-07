@@ -2,33 +2,86 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Efference Logo Header</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Efference</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
 
+<body>
+  <!-- ── Logo header ─────────────────────────────────────────── -->
   <header class="logo-header">
     <img src="logo.jpg" alt="Efference Logo" class="logo-image" />
     <h1 class="logo-text">Efference</h1>
   </header>
 
-  <section>
-    <p>Robotics.</p>
+  <section><p>Robotics.</p></section>
+
+  <!-- ── Products carousel ───────────────────────────────────── -->
+  <section class="products-section">
+    <h2>Products</h2>
+
+    <div class="carousel-container">
+      <button class="carousel-btn prev" id="prevBtn" aria-label="Previous product">‹</button>
+
+      <div class="carousel-wrapper" role="region" aria-label="Product carousel">
+        <ul class="carousel-track" id="track">
+          <!--  Six placeholder slides  -->
+          <li>
+            <img src="product1.png" alt="Product 1">
+            <div class="image-overlay">
+              <span class="overlay-top">Vision-Language Models</span>
+            </div>
+          </li>
+          <li>
+            <img src="product2.png" alt="Product 2">
+            <div class="image-overlay">
+              <span class="overlay-top">Furniture Assembly</span>
+            </div>
+          </li>
+          <li>
+            <img src="product3.png" alt="Product 3">
+            <div class="image-overlay">
+              <span class="overlay-top">Farming + Winemaking</span>
+            </div>
+          </li>
+          <li>
+            <img src="product4.png" alt="Product 4">
+            <div class="image-overlay">
+              <span class="overlay-top">Piano</span>
+            </div>
+          </li>
+          <li>
+            <img src="product5.png" alt="Product 5">
+            <div class="image-overlay">
+              <span class="overlay-top">Skydiving</span>
+            </div>
+          </li>
+          <li>
+            <img src="product6.png" alt="Product 6">
+            <div class="image-overlay">
+              <span class="overlay-top">Shooting</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <button class="carousel-btn next" id="nextBtn" aria-label="Next product">›</button>
+    </div>
   </section>
 
+  <!-- ── Team & Contact & Footer ──────────────────────────────── -->
   <section class="team-section">
     <h2>Team</h2>
-    <p>
-      <a href="https://x.com/gianlucabencomo" target="_blank" rel="noopener noreferrer">
-        Gianluca Bencomo
-      </a>
-    </p>
+    <p><a href="https://x.com/gianlucabencomo" target="_blank">Gianluca Bencomo</a></p>
   </section>
 
-  <footer class="site-footer">
-    © 2025 Remnant Robotics, Inc.
-  </footer>
+  <section class="contact-section">
+    <h2>Contact</h2>
+    <p><a href="mailto:sales@efference.ai">sales@efference.ai</a></p>
+  </section>
 
+  <footer class="site-footer">© 2025 Remnant Robotics, Inc.</footer>
+
+<script src="carousel.js"></script>
 </body>
 </html>

@@ -1,3 +1,4 @@
+/* ── Fonts (correct weights) ─────────────────────────────────── */
 @font-face {
   font-family: 'Soehne Leicht';
   src: url('./Söhne/Test Söhne/test-soehne-leicht.woff2') format('woff2');
@@ -19,94 +20,167 @@
   font-style: normal;
 }
 
-body {
-  background-color: #faeec1;
-  margin: 0;
-  padding: 0;
-  font-family: 'Soehne Leicht', sans-serif;
-}
-
-header.logo-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  padding: 2rem 1rem;
-}
-
-.logo-image {
-  width: 60px;
-  height: auto;
-}
-
-.logo-text {
-  font-size: 4rem;
-  margin: 0;
-  color: #111;
-}
-
+/* ── Base layout ─────────────────────────────────────────────── */
+body{background:#faeec1;margin:0;font-family:'Soehne Leicht',sans-serif;}
+.logo-header{display:flex;justify-content:center;align-items:center;gap:1rem;padding:2rem 1rem;}
+.logo-image{width:60px;}
+.logo-text{font-size:4rem;margin:0;color:#111;}
 section {
   padding: 2rem 1.5rem;
-  max-width: 800px;
+  max-width: min(70vw, 800px); /* 70% of viewport width, but never more than 800px */
   margin: 0 auto;
 }
 
-h2 {
-  text-align: center;
-  margin-bottom: 1rem;
+/* Products section needs to be wider to accommodate the carousel */
+.products-section {
+  max-width: 1400px;
+}
+h2{text-align:center;margin-bottom:1rem;font-family:'Soehne Kraftig',sans-serif;}
+p{font-size:1.2rem;line-height:1.6;}
+.team-section p, .contact-section p{text-align:center;}
+.team-section a, .contact-section a{
+  color:#111;
+  font-weight:bold;
+  text-decoration:none;
+  padding:.6rem 1.2rem;
+  border-radius:12px;
+  transition:all .3s ease;
+  position:relative;
+  display:inline-block;
+  box-shadow:inset 0 0 0 1px transparent;
+}
+.team-section a:hover, .contact-section a:hover{
+  opacity:0.7;
+  box-shadow:inset 0 0 0 1px rgba(17,17,17,.2);
+}
+.site-footer{text-align:center;padding:2rem 1rem;font-size:.9rem;color:#555;}
+
+/* ── Products carousel ───────────────────────────────── */
+.carousel-container{
+  display:flex;
+  align-items:center;
+  gap:1.5rem; /* Increased gap for a bit more breathing room */
+  max-width:1400px;
+  margin:0 auto;
+}
+
+.carousel-wrapper{
+  flex:1;
+  overflow:hidden;           /* Hide slides while we translate */
+  border-radius:12px;
+}
+
+.carousel-track{
+  display:flex;
+  gap:1.5rem;
+  list-style:none;
+  margin:0;
+  padding:1rem 0;
+  transition:transform .45s cubic-bezier(.4,.8,.6,1);
+}
+
+.carousel-track li{
+  flex:0 0 100%;
+  aspect-ratio: 16 / 9; /* Set a widescreen aspect ratio */
+  position: relative;
+}
+.carousel-track img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+/* Image overlay for hover text */
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 10px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.carousel-track li:hover .image-overlay {
+  opacity: 1;
+}
+
+.overlay-top {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
   font-family: 'Soehne Kraftig', sans-serif;
-}
-
-
-p {
-  font-size: 1.2rem;
-  line-height: 1.6;
-}
-
-.team-section p {
-  text-align: center;
-  font-size: 1.2rem;
-}
-
-.team-section p a {
-  color: #111;
+  font-size: 1rem;
   font-weight: bold;
-  text-decoration: none;
-  padding: 0.4rem 0.8rem;
-  border-radius: 8px;
-  transition: all 0.2s ease;
 }
 
-.team-section p a:hover {
-  border: 2px solid #111;
-  background-color: rgba(0, 0, 0, 0.05);
+/* Layout rules */
+@media(min-width: 1024px) {
+  .carousel-track li {
+    flex: 0 0 calc((100% - 1.5rem) / 2); /* 2-across with the new gap */
+  }
 }
 
-
-.site-footer {
-  text-align: center;
-  padding: 2rem 1rem;
-  font-size: 0.9rem;
-  color: #555;
+/* Arrows - positioned outside the carousel */
+.carousel-btn{
+  background:transparent;
+  border:none;
+  color:#111;
+  font-size:3rem;
+  cursor:pointer;
+  padding:1rem 0.5rem;
+  transition:all .2s ease;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+  user-select:none;
+  font-weight:300;
+  line-height:1;
+}
+.carousel-btn:hover{
+  color:#666;
+  transform:translateX(0);
+}
+.carousel-btn.prev:hover{
+  transform:translateX(-3px);
+}
+.carousel-btn.next:hover{
+  transform:translateX(3px);
+}
+.carousel-btn:active{
+  color:#333;
 }
 
-
-/* Mobile tweaks */
-@media (max-width: 600px) {
-  .logo-header {
-    flex-direction: column;
-    text-align: center;
+/* Responsive adjustments */
+@media(max-width:600px){
+  .carousel-container{
+    gap:0.5rem; /* Keep horizontal layout but reduce gap */
   }
-
-  .logo-text {
-    font-size: 3rem;
+  
+  .carousel-btn{
+    font-size:2rem;
+    padding:0.5rem 0.3rem;
+    min-width:2.5rem; /* Ensure buttons don't get too narrow */
   }
+}
 
-  .logo-image {
-    width: 50px;
+@media(max-width:400px){
+  .carousel-container{
+    gap:0.25rem;
   }
-
-  section {
-    padding: 2rem 1rem;
+  
+  .carousel-btn{
+    font-size:1.5rem;
+    padding:0.4rem 0.2rem;
+    min-width:2rem;
   }
 }
