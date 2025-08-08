@@ -1,75 +1,88 @@
-// Simple, infinite carousel that moves <li> nodes
 const track   = document.getElementById('track');
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
 
-let cardW;              // width incl. gap
-let isMoving = false;   // throttle clicks
+let cardWidth = 0;
+let isMoving  = false;
 
-function measure() {
+// Measure card width + gap
+function measureCard() {
   const firstCard = track.querySelector('li');
-  if (firstCard) {
-    const cardRect = firstCard.getBoundingClientRect();
-    const trackStyles = getComputedStyle(track);
-    const gap = parseFloat(trackStyles.gap) || 24; // 1.5rem = 24px
-    cardW = cardRect.width + gap;
-  }
+  if (!firstCard) return;
+  const cardRect = firstCard.getBoundingClientRect();
+  const gap = parseFloat(getComputedStyle(track).gap) || 0;
+  cardWidth = cardRect.width + gap;
 }
-measure();
 
-window.addEventListener('resize', measure);
-
-// Move n steps (+1 right, -1 left)
-function move(n) {
-  if (isMoving || !cardW) return;
+// Move one slide (dir: -1 = left, +1 = right)
+function move(dir) {
+  if (isMoving || !cardWidth) return;
   isMoving = true;
 
-  // direction +1 → append first node to end *after* animation
-  if (n > 0) {
-    track.style.transform = `translateX(-${cardW * n}px)`;
-    setTimeout(() => {
-      for (let i = 0; i < n; i++) track.appendChild(track.firstElementChild);
+  if (dir > 0) {
+    track.style.transition = 'transform 0.4s ease';
+    track.style.transform = `translateX(-${cardWidth}px)`;
+
+    // Wait for animation to finish
+    track.addEventListener('transitionend', () => {
+      track.appendChild(track.firstElementChild);
       track.style.transition = 'none';
-      track.style.transform  = 'translateX(0)';
-      requestAnimationFrame(() => {
-        track.style.transition = '';
-        isMoving = false;
-      });
-    }, 450);
-  }
-  // direction -1 → prepend last node(s) *before* animation
-  else if (n < 0) {
-    for (let i = 0; i < -n; i++)
-      track.prepend(track.lastElementChild);
-    track.style.transition = 'none';
-    track.style.transform  = `translateX(-${cardW * -n}px)`;
-    requestAnimationFrame(() => {
+      track.style.transform = 'none';
+
+      // Force reflow for Safari before re-enabling transitions
+      void track.offsetHeight;
+
       track.style.transition = '';
-      track.style.transform  = 'translateX(0)';
-      setTimeout(() => { isMoving = false; }, 450);
-    });
+      isMoving = false;
+    }, { once: true });
+
+  } else {
+    track.style.transition = 'none';
+    track.insertBefore(track.lastElementChild, track.firstElementChild);
+    track.style.transform = `translateX(-${cardWidth}px)`;
+
+    // Force reflow before animating
+    void track.offsetHeight;
+
+    track.style.transition = 'transform 0.4s ease';
+    track.style.transform = 'translateX(0)';
+
+    track.addEventListener('transitionend', () => {
+      isMoving = false;
+    }, { once: true });
   }
 }
 
+// Initialize and remeasure on resize
+function init() {
+  measureCard();
+  window.addEventListener('resize', () => {
+    setTimeout(measureCard, 100);
+  });
+}
+init();
+
+// Button events
 prevBtn.addEventListener('click', () => move(-1));
 nextBtn.addEventListener('click', () => move( 1));
 
-/* Drag / swipe support */
-let startX, isDown;
-track.addEventListener('pointerdown', e => {
+// Touch swipe support
+let touchX = null;
+track.addEventListener('touchstart', e => {
   if (isMoving) return;
-  isDown = true; 
-  startX = e.clientX;
-  track.setPointerCapture(e.pointerId);
-});
-track.addEventListener('pointermove', e => {
-  if (!isDown || isMoving) return;
-  const diff = e.clientX - startX;
-  const threshold = cardW ? cardW / 3 : 100;
-  if (Math.abs(diff) > threshold) {
-    move(diff < 0 ? 1 : -1);
-    isDown = false;
+  touchX = e.touches[0].clientX;
+}, { passive: true });
+
+track.addEventListener('touchmove', e => {
+  if (touchX === null) return;
+  const deltaX = e.touches[0].clientX - touchX;
+  if (Math.abs(deltaX) > 50) {
+    e.preventDefault();
+    move(deltaX < 0 ? 1 : -1);
+    touchX = null;
   }
-});
-track.addEventListener('pointerup', () => (isDown = false));
-track.addEventListener('pointercancel', () => (isDown = false));
+}, { passive: false });
+
+track.addEventListener('touchend', () => {
+  touchX = null;
+}, { passive: true });

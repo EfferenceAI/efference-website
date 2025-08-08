@@ -1,20 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Efference - Advanced robotics solutions and technology">
   <title>Efference</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css">
 </head>
 
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Y6X5PWYF1E"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-Y6X5PWYF1E');
+</script>
+
 <body>
-  <!-- ── Logo header ─────────────────────────────────────────── -->
   <header class="logo-header">
-    <img src="logo.jpg" alt="Efference Logo" class="logo-image" />
+    <img src="./images/logo.png" alt="Efference Logo" class="logo-image">
     <h1 class="logo-text">Efference</h1>
   </header>
 
-  <section><p>Robotics.</p></section>
+  <main>
+    <section class="hero-section">
+      <p>Efference is a robotics research company and data vendor for embodied vision models. We collect and curate datasets for training many different skillsets in robotics, enabling various form factors to do both the useful and the surreal.</p>
+      <!-- <p>Disembodied foundation models have advanced dramatically but embodied visual systems, like humans, solve a different problem. Our system is designed to extract sccene properties that are relevant to our embodied experience, supporting tasks like navigation, manipulation, and interaction, that far exceed the representations required for basic scene understanding. Disembodied systems, like chatGPT, struggle with embodied skills because of their data. Our mission is to create the data required to "see like a human" and effectively solve the same tasks we were designed for.</p>
+      <p>We are neuroscientists and machine learning researchers with backgrounds in both vision and robotics. </p> -->
+    </section>
 
   <!-- ── Products carousel ───────────────────────────────────── -->
   <section class="products-section">
@@ -27,37 +42,37 @@
         <ul class="carousel-track" id="track">
           <!--  Six placeholder slides  -->
           <li>
-            <img src="product1.png" alt="Product 1">
+            <img src="./images/product1.png" alt="Vision-Language Models robotics application">
             <div class="image-overlay">
-              <span class="overlay-top">Vision-Language Models</span>
+              <span class="overlay-top">Image-Text Pairs + Instruction-Tuning</span>
             </div>
           </li>
           <li>
-            <img src="product2.png" alt="Product 2">
+            <img src="./images/product2.png" alt="Furniture Assembly robotics application">
             <div class="image-overlay">
               <span class="overlay-top">Furniture Assembly</span>
             </div>
           </li>
           <li>
-            <img src="product3.png" alt="Product 3">
+            <img src="./images/product3.png" alt="Farming and Winemaking robotics application">
             <div class="image-overlay">
               <span class="overlay-top">Farming + Winemaking</span>
             </div>
           </li>
           <li>
-            <img src="product4.png" alt="Product 4">
+            <img src="./images/product4.png" alt="Piano robotics application">
             <div class="image-overlay">
               <span class="overlay-top">Piano</span>
             </div>
           </li>
           <li>
-            <img src="product5.png" alt="Product 5">
+            <img src="./images/product5.png" alt="Skydiving robotics application">
             <div class="image-overlay">
               <span class="overlay-top">Skydiving</span>
             </div>
           </li>
           <li>
-            <img src="product6.png" alt="Product 6">
+            <img src="./images/product6.png" alt="Shooting robotics application">
             <div class="image-overlay">
               <span class="overlay-top">Shooting</span>
             </div>
@@ -67,21 +82,21 @@
 
       <button class="carousel-btn next" id="nextBtn" aria-label="Next product">›</button>
     </div>
-  </section>
+    </section>
 
-  <!-- ── Team & Contact & Footer ──────────────────────────────── -->
-  <section class="team-section">
-    <h2>Team</h2>
-    <p><a href="https://x.com/gianlucabencomo" target="_blank">Gianluca Bencomo</a></p>
-  </section>
+    <section class="team-section">
+      <h2>Team</h2>
+      <p><a href="https://x.com/gianlucabencomo" target="_blank" rel="noopener noreferrer">Gianluca Bencomo</a></p>
+    </section>
 
-  <section class="contact-section">
-    <h2>Contact</h2>
-    <p><a href="mailto:sales@efference.ai">sales@efference.ai</a></p>
-  </section>
+    <section class="contact-section">
+      <h2>Contact</h2>
+      <p><a href="mailto:sales@efference.ai">sales@efference.ai</a></p>
+    </section>
+  </main>
 
   <footer class="site-footer">© 2025 Remnant Robotics, Inc.</footer>
 
-<script src="carousel.js"></script>
+  <script src="carousel.js"></script>
 </body>
 </html>
