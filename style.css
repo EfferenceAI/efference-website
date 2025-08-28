@@ -1,0 +1,196 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap');
+
+:root {
+    --base-color: #FAF9EE;
+    --text-color: #111111;
+    --primary-color: #A2AF9B;
+    --secondary-color: #DCCFC0;
+    --surface: #EEEEEE;
+    --container-max: 100em;
+    --pad: clamp(1rem, 3vw, 2rem);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+  font-family: "Space Grotesk", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: var(--text-color);
+}
+
+/* Layout containers */
+header, section {
+    margin: 0 auto;
+    width: min(var(--container-max), 100%);
+}
+section {
+    padding: 3em var(--pad);
+    background-color: var(--surface);
+}
+
+/* Nav */
+nav {
+    margin: 1em auto;
+    width: min(var(--container-max), 100%);
+    padding-inline: var(--pad);
+    font-size: 1.15rem;
+}
+nav ul {
+    display: flex;
+    align-items: center;
+    list-style-type: none;
+    gap: 2em;
+}
+nav li:first-child {
+    margin-right: auto;
+    font-weight: 700;
+}
+
+/* Links (kept global hover scale to match current behavior) */
+a {
+  text-decoration: none; /* Take off underline */
+  display: inline-block; /* Needed for transform */
+  color: var(--text-color);
+  transition: transform 0.25s ease; /* Needed for transform */
+}
+
+a:hover {
+    transform: scale(1.05);
+}
+
+/* Hero */
+.hero {
+  background: url("images/hero.jpg") center / cover no-repeat;
+  height: 420px;           /* constant height */
+  display: grid;           /* easy centering */
+  overflow: hidden;        /* prevents spillover if content is taller */
+}
+.hero-container {
+    justify-self: start;  /* right */
+    align-self: end;    /* bottom */
+    text-align: left;
+    max-inline-size: 60%;
+}
+
+/* Generic text sections */
+.words { 
+    text-align: left; 
+    background-color: transparent;
+}
+
+/* Typography */
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+.text-lg { font-size: 1.25rem; }
+
+
+body {
+    background-color: var(--base-color);
+}
+
+
+.flex-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 3em;
+}
+
+header img {
+    max-width: 100%;
+    object-fit: cover;
+    object-position: bottom;
+}
+
+.text-container {
+    flex: 0 1 34em;
+}
+
+.text-container p {
+    margin: .75em 0 1em 0;
+    font-size: 1.25rem;
+}
+
+.cta-button {
+    display: inline-block;
+    text-decoration: none;
+    color: white;
+    background-color: var(--primary-color);
+    padding: .75em 1.25em;
+    font-weight: bold;
+}
+
+.secondary {
+    background-color: var(--secondary-color);
+}
+
+section p {
+    margin-top: 1em;
+    font-size: 1.25rem;
+}
+
+/* Tasks section */
+.tasks {
+  text-align: left;                    /* override your section center */
+  background-color: var(--color-2);
+  padding: 3em min(2em, 15%);
+}
+
+#tasks > p {
+  margin-bottom: 1rem;            /* or margin-block-end: 1.25rem; */
+}
+
+.tasks-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+@media (max-width: 1200px) {
+  .tasks-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 800px) {
+  .tasks-grid { grid-template-columns: 1fr; }
+}
+
+.task { 
+  position: relative;            /* establishes positioning context */
+  overflow: hidden;              /* keeps caption inside the tile */
+}
+
+.task video {
+  display: block;
+  width: 100%;
+  object-fit: cover;
+}
+
+.task .label {
+  position: absolute;
+  left: .75rem;
+  bottom: .75rem;
+  color: #fff;
+  font-weight: 600;
+}
+
+footer {
+  background: var(--secondary-color);
+  color: var(--text-color);
+  text-align: center;
+  padding: 1.5em var(--pad);
+  font-size: 0.9rem;
+  margin-top: 2em;
+}
+
+footer a {
+  color: var(--text-color);
+  font-weight: 600;
+}
+
+footer a:hover {
+  color: var(--primary-color);
+  transform: none; /* disable scale hover for footer links */
+}

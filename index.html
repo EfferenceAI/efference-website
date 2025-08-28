@@ -3,100 +3,129 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Efference - Advanced robotics solutions and technology">
-  <title>Efference</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>Efference | Robotic Ability Broker</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-Y6X5PWYF1E"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-Y6X5PWYF1E');
-</script>
-
 <body>
-  <header class="logo-header">
-    <img src="./images/logo.png" alt="Efference Logo" class="logo-image">
-    <h1 class="logo-text">Efference</h1>
+  <header>
+    <nav>
+      <ul>
+        <li><a href="#hero">Efference</a></li>
+        <li><a href="#company">Company</a></li>
+        <li><a href="#gallery">Gallery</a></li>
+        <li><a href="#team">Team</a></li>
+        <li><a href="index.html">Contact</a></li>
+      </ul>
+    </nav>
   </header>
 
-  <main>
-    <section class="hero-section">
-      <p>Efference is a robotics research company and data vendor for embodied vision models. We collect and curate datasets for training many different skillsets in robotics, enabling various form factors to do both the useful and the surreal.</p>
-      <!-- <p>Disembodied foundation models have advanced dramatically but embodied visual systems, like humans, solve a different problem. Our system is designed to extract sccene properties that are relevant to our embodied experience, supporting tasks like navigation, manipulation, and interaction, that far exceed the representations required for basic scene understanding. Disembodied systems, like chatGPT, struggle with embodied skills because of their data. Our mission is to create the data required to "see like a human" and effectively solve the same tasks we were designed for.</p>
-      <p>We are neuroscientists and machine learning researchers with backgrounds in both vision and robotics. </p> -->
-    </section>
-
-  <!-- ── Products carousel ───────────────────────────────────── -->
-  <section class="products-section">
-    <h2>Products</h2>
-
-    <div class="carousel-container">
-      <button class="carousel-btn prev" id="prevBtn" aria-label="Previous product">‹</button>
-
-      <div class="carousel-wrapper" role="region" aria-label="Product carousel">
-        <ul class="carousel-track" id="track">
-          <!--  Six placeholder slides  -->
-          <li>
-            <img src="./images/product1.png" alt="Vision-Language Models robotics application">
-            <div class="image-overlay">
-              <span class="overlay-top">Image-Text Pairs + Instruction-Tuning</span>
-            </div>
-          </li>
-          <li>
-            <img src="./images/product2.png" alt="Furniture Assembly robotics application">
-            <div class="image-overlay">
-              <span class="overlay-top">Furniture Assembly</span>
-            </div>
-          </li>
-          <li>
-            <img src="./images/product3.png" alt="Farming and Winemaking robotics application">
-            <div class="image-overlay">
-              <span class="overlay-top">Farming + Winemaking</span>
-            </div>
-          </li>
-          <li>
-            <img src="./images/product4.png" alt="Piano robotics application">
-            <div class="image-overlay">
-              <span class="overlay-top">Piano</span>
-            </div>
-          </li>
-          <li>
-            <img src="./images/product5.png" alt="Skydiving robotics application">
-            <div class="image-overlay">
-              <span class="overlay-top">Skydiving</span>
-            </div>
-          </li>
-          <li>
-            <img src="./images/product6.png" alt="Shooting robotics application">
-            <div class="image-overlay">
-              <span class="overlay-top">Shooting</span>
-            </div>
-          </li>
-        </ul>
-      </div>
-
-      <button class="carousel-btn next" id="nextBtn" aria-label="Next product">›</button>
+  <section id="hero" class="hero">
+    <div class="hero-container">
+      <h1 style="color: white">Your robotic ability broker</h1>
     </div>
-    </section>
+  </section>
 
-    <section class="team-section">
-      <h2>Team</h2>
-      <p><a href="https://x.com/gianlucabencomo" target="_blank" rel="noopener noreferrer">Gianluca Bencomo</a></p>
-    </section>
+  <section id="company" class="words">
+    <div class="words-container">
+      <h5>Company</h5>
+      <p>Efference sells robotic skills. We curate high-quality, first-person video from human experts across diverse capture devices. This data powers world models, pre-training for vision-language-action models, and specialized diffusion policies.</p>
+      <p>Robotics goes beyond folding laundry or making beds. Our goal is to inspire, entertain, and automate dangerous physical work. We capture everyday household tasks, factory operations, and high-risk activities alike.</p>
+    </div>
+  </section>
 
-    <section class="contact-section">
-      <h2>Contact</h2>
-      <p><a href="mailto:sales@efference.ai">sales@efference.ai</a></p>
-    </section>
-  </main>
+  <section class="words" style="padding-top:0; text-align:center; margin-bottom: 0;">
+    <div class="words-container">
+      <h5 style="text-align:left;">Available Data</h5>
 
-  <footer class="site-footer">© 2025 Remnant Robotics, Inc.</footer>
+      <div style="
+        display:inline-grid;
+        grid-template-columns:auto min-content auto min-content auto;
+        column-gap:.5rem; row-gap:.25rem; align-items:end;
+        font-variant-numeric:tabular-nums;">
+        
+        <!-- numbers row -->
+        <div style="font-size:2rem; font-weight:700; letter-spacing:.05em;">101</div>
+        <div style="font-size:2rem; font-weight:700;">:</div>
+        <div style="font-size:2rem; font-weight:700; letter-spacing:.05em;">51</div>
+        <div style="font-size:2rem; font-weight:700;">:</div>
+        <div style="font-size:2rem; font-weight:700; letter-spacing:.05em;">32</div>
 
-  <script src="carousel.js"></script>
+        <!-- labels row (under the number columns) -->
+        <div style="font-size:.9rem; letter-spacing:.08em;">Hours</div>
+        <div></div>
+        <div style="font-size:.9rem; letter-spacing:.08em;">Minutes</div>
+        <div></div>
+        <div style="font-size:.9rem; letter-spacing:.08em;">Seconds</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="gallery" class="tasks">
+    <h5>Gallery</h5>
+    <!-- <p>Some stuff about how we collect for anything. We have a bunch of human experts ready for various tasks to collect.</p> -->
+    <div class="tasks-grid" style="margin-top:1.5em">
+      <figure class="task">
+        <video src="videos/laundry.mp4" muted autoplay loop playsinline preload="metadata" poster="media/task01.jpg"></video>
+        <figcaption class="label">Laundry</figcaption>
+      </figure>
+
+      <figure class="task">
+        <video src="videos/furniture.mp4" muted autoplay loop playsinline preload="metadata" poster="media/task02.jpg"></video>
+        <figcaption class="label">Furniture Assembly</figcaption>
+      </figure>
+
+      <figure class="task">
+        <video src="videos/cleaning.mp4" muted autoplay loop playsinline preload="metadata" poster="media/task03.jpg"></video>
+        <figcaption class="label">Cleaning</figcaption>
+      </figure>
+
+      <figure class="task">
+        <video src="videos/driving.mp4" muted autoplay loop playsinline preload="metadata" poster="media/task03.jpg"></video>
+        <figcaption class="label">Driving</figcaption>
+      </figure>
+
+      <figure class="task">
+        <video src="videos/guitar.mp4" muted autoplay loop playsinline preload="metadata" poster="media/task03.jpg"></video>
+        <figcaption class="label">Guitar</figcaption>
+      </figure>
+
+      <figure class="task">
+        <video src="videos/lego.mp4" muted autoplay loop playsinline preload="metadata" poster="media/task03.jpg"></video>
+        <figcaption class="label">Lego Assembly</figcaption>
+      </figure>
+    </div>
+    <!-- <p style="margin-bottom:0">And much more. The tasks we are currently interested in include: ...</p> -->
+  </section>
+
+  <section id="team" class="words">
+    <div class="words-container">
+      <h5>Team</h5>
+      <p style="text-align: center"><a href="https://x.com/gianlucabencomo">Gianluca Bencomo</a></p>
+    </div>
+  </section>
+
+  <section class="words" style="padding-top:0">
+    <div class="words-container">
+      <h5>Contact</h5>
+      <p style="text-align:center;">
+        Reach out to us at 
+        <a href="mailto:sales@efference.ai" style="color:var(--primary-color); font-weight:600;">
+          sales@efference.ai
+        </a>
+        to discuss our pilot program.
+      </p>
+    </div>
+  </section>
+
+  <footer>
+  <p>© 2025 Remnant Robotics, Inc. All rights reserved.</p>
+  <p>
+    <a href="#company">Company</a> ·
+    <a href="#gallery">Gallery</a> ·
+    <a href="#team">Team</a> ·
+    <a href="#contact">Contact</a>
+  </p>
+</footer>
+
 </body>
 </html>
