@@ -194,3 +194,15 @@ footer a:hover {
   color: var(--primary-color);
   transform: none; /* disable scale hover for footer links */
 }
+
+@media (max-width: 700px) {
+  nav ul {
+    justify-content: center;   /* center items */
+  }
+  nav ul li:not(:first-child) {
+    display: none;             /* hide all but first */
+  }
+  nav li:first-child {
+    margin-right: 0;           /* remove the auto push */
+  }
+}
