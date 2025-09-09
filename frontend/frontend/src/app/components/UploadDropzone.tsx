@@ -232,7 +232,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
             : 'border-[#DCCFC0] hover:border-[#A2AF9B] hover:bg-[#A2AF9B]/5'
         }`}
       >
-        <div className="text-6xl mb-4">📁</div>
+        <div className="text-6xl mb-4">[FOLDER]</div>
         <h5 className="text-lg font-semibold text-[#111111] mb-2">Drop videos here</h5>
         <p className="text-[#666] mb-4">or click to browse your computer</p>
         <input
@@ -266,7 +266,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
                 <div key={file.id} className="flex items-center justify-between p-4 border border-[#EEEEEE] rounded-lg">
                   <div className="flex items-center space-x-4">
                     <div className="w-12 h-12 bg-[#EEEEEE] rounded flex items-center justify-center">
-                      📹
+                      [VIDEO]
                     </div>
                     <div>
                       <h5 className="font-medium text-[#111111]">{file.name}</h5>
@@ -287,12 +287,12 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
                     )}
                     {file.status === 'completed' && (
                       <span className="px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                        ✅ Completed
+                        Completed
                       </span>
                     )}
                     {file.status === 'error' && (
                       <span className="px-3 py-1 bg-red-100 text-red-800 text-xs rounded-full">
-                        ❌ Error
+                        Error
                       </span>
                     )}
                     {file.status === 'pending' && (

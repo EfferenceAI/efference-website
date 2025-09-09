@@ -58,7 +58,7 @@ export default function DashboardPage() {
     {
       title: "Lego Videos",
       description: "Categorize and analyze LEGO assembly and construction videos",
-      icon: "🧱",
+      icon: "[LEGO]",
       id: "lego",
       videos: [
         { id: "lego_001", title: "Millennium Falcon Assembly - Part 1", duration: "14:32", status: "pending", quality: "1080p", fileSize: "2.1 GB", uploadDate: "2024-03-15", category: "Advanced Assembly" },
@@ -72,7 +72,7 @@ export default function DashboardPage() {
     {
       title: "Medical Videos", 
       description: "Process medical procedure and healthcare training videos",
-      icon: "🏥",
+      icon: "[MEDICAL]",
       id: "medical",
       videos: [
         { id: "med_001", title: "Surgical Hand Washing Protocol", duration: "05:42", status: "completed", quality: "4K", fileSize: "1.1 GB", uploadDate: "2024-03-14", category: "Hygiene Protocol" },
@@ -113,7 +113,7 @@ export default function DashboardPage() {
                 }`}
               >
                 <div className="flex items-center space-x-3">
-                  <span className="text-2xl">📤</span>
+                  <span className="text-2xl">[UPLOAD]</span>
                   <div>
                     <div className="font-medium text-[#111111]">Upload Videos</div>
                     <div className="text-xs text-[#666] mt-1">Add new videos to the library</div>
@@ -290,7 +290,7 @@ export default function DashboardPage() {
                         {/* Video Thumbnail */}
                         <div className="aspect-square bg-[#EEEEEE] rounded-lg overflow-hidden relative border border-[#DCCFC0] hover:border-[#A2AF9B] transition-colors">
                           <div className="w-full h-full flex items-center justify-center text-4xl">
-                            📹
+                            [VIDEO]
                           </div>
                           
                           {/* Duration Badge */}
@@ -316,9 +316,9 @@ export default function DashboardPage() {
                           </h5>
                           <div className="flex items-center justify-between mt-1">
                             <span className="text-xs text-[#666]">
-                              {video.status === 'completed' ? '✅ Done' :
-                               video.status === 'in_progress' ? '🔄 Processing' :
-                               '⏳ Pending'}
+                              {video.status === 'completed' ? 'Done' :
+                               video.status === 'in_progress' ? 'Processing' :
+                               'Pending'}
                             </span>
                           </div>
                         </div>
@@ -335,7 +335,7 @@ export default function DashboardPage() {
               {/* Upload Instructions */}
               <div className="bg-white rounded-lg border border-[#DCCFC0] p-6">
                 <div className="flex items-start space-x-4">
-                  <div className="text-3xl">📤</div>
+                  <div className="text-3xl">[UPLOAD]</div>
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold text-[#111111] mb-2">Video Upload Center</h3>
                     <p className="text-[#666] mb-4">

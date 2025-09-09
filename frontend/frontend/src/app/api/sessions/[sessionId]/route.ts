@@ -36,7 +36,7 @@ export async function PATCH(
     const { sessionId } = await params
     const updates = await request.json()
 
-    console.log('🔄 Updating video record:', sessionId, updates)
+    console.log('Updating video record:', sessionId, updates)
 
     // Update the video record
     const updateExpressions: string[] = []
@@ -60,11 +60,11 @@ export async function PATCH(
       ExpressionAttributeValues: expressionAttributeValues,
     }))
 
-    console.log('✅ Video record updated successfully')
+    console.log('Video record updated successfully')
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('❌ Error updating video:', error)
+    console.error('Error updating video:', error)
     return NextResponse.json(
       { error: 'Failed to update video', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
