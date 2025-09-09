@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 export async function POST() {
   try {
-    console.log('🔍 Testing DynamoDB connection...')
+    console.log('Testing DynamoDB connection...')
     
     const videoId = `test-${uuidv4()}`
     const testVideo: VideoRecord = {
@@ -21,11 +21,11 @@ export async function POST() {
       createdAt: new Date().toISOString()
     }
 
-    console.log('📝 Creating test video record:', testVideo)
+    console.log('Creating test video record:', testVideo)
     
     await createVideoRecord(testVideo)
     
-    console.log('✅ Test video record created successfully!')
+    console.log('Test video record created successfully!')
 
     return NextResponse.json({
       success: true,
@@ -35,7 +35,7 @@ export async function POST() {
     })
 
   } catch (error) {
-    console.error('❌ DynamoDB test failed:', error)
+    console.error('DynamoDB test failed:', error)
     
     return NextResponse.json({
       success: false,
