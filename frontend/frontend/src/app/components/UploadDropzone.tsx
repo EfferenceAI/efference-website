@@ -65,6 +65,16 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
   }, [addFiles]);
 
   const uploadFile = async (uploadFile: UploadFile, videoId: string) => {
+    const MULTIPART_THRESHOLD = 100 * 1024 * 1024; // 100MB
+
+    if (uploadFile.size >= MULTIPART_THRESHOLD) {
+      return await uploadMultipartFile(uploadFile, videoId);
+    } else {
+      return await uploadSingleFile(uploadFile, videoId);
+    }
+  };
+
+  const uploadSingleFile = async (uploadFile: UploadFile, videoId: string) => {
     try {
       // Get presigned URL
       const presignedResponse = await fetch('/api/upload/presigned-url', {
@@ -83,7 +93,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
         throw new Error('Failed to get presigned URL');
       }
 
-      const { presignedUrl, s3Key } = await presignedResponse.json();
+      const { presignedUrl, fileKey } = await presignedResponse.json();
 
       // Update status to uploading
       setFiles(prev => prev.map(f => 
@@ -106,7 +116,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
         xhr.addEventListener('load', async () => {
           if (xhr.status >= 200 && xhr.status < 300) {
             setFiles(prev => prev.map(f => 
-              f.id === uploadFile.id ? { ...f, status: 'completed', progress: 100, s3Key } : f
+              f.id === uploadFile.id ? { ...f, status: 'completed', progress: 100, s3Key: fileKey } : f
             ));
             
             // Update video record in DynamoDB
@@ -116,7 +126,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   uploadStatus: 'completed',
-                  s3Key: s3Key,
+                  s3Key: fileKey,
                   uploadedAt: new Date().toISOString()
                 }),
               });
@@ -141,6 +151,178 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
 
     } catch (error) {
       console.error('Upload failed for file:', uploadFile.name, error);
+      setFiles(prev => prev.map(f => 
+        f.id === uploadFile.id ? { ...f, status: 'error', progress: 0 } : f
+      ));
+      
+      // Update video record as failed
+      try {
+        await fetch(`/api/sessions/${videoId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            uploadStatus: 'failed'
+          }),
+        });
+      } catch (updateError) {
+        console.error('Failed to update video record as failed:', updateError);
+      }
+    }
+  };
+
+  const uploadMultipartFile = async (uploadFile: UploadFile, videoId: string) => {
+    try {
+      // Step 1: Initiate multipart upload
+      const initiateResponse = await fetch('/api/upload/multipart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'initiate',
+          fileName: uploadFile.name,
+          fileType: uploadFile.type,
+          fileSize: uploadFile.size,
+          userId: 'demo-user',
+          fileId: videoId
+        }),
+      });
+
+      if (!initiateResponse.ok) {
+        throw new Error('Failed to initiate multipart upload');
+      }
+
+      const { uploadId, fileKey, fileId, partSize, totalParts } = await initiateResponse.json();
+
+      // Update status to uploading
+      setFiles(prev => prev.map(f => 
+        f.id === uploadFile.id ? { ...f, status: 'uploading', progress: 0 } : f
+      ));
+
+      // Step 2: Get presigned URLs for all parts
+      const partUrlsResponse = await fetch('/api/upload/multipart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'getPartUrls',
+          uploadId,
+          fileName: uploadFile.name,
+          fileSize: uploadFile.size,
+          fileId,
+          userId: 'demo-user'
+        }),
+      });
+
+      if (!partUrlsResponse.ok) {
+        throw new Error('Failed to get part URLs');
+      }
+
+      const { partUrls } = await partUrlsResponse.json();
+
+      // Step 3: Upload parts in parallel with multithreading
+      const uploadedParts: Array<{PartNumber: number, ETag: string}> = [];
+      const maxConcurrentUploads = Math.min(10, totalParts); // Max 10 concurrent uploads
+      
+      const uploadPart = async (partInfo: {partNumber: number, presignedUrl: string}) => {
+        const startByte = (partInfo.partNumber - 1) * partSize;
+        const endByte = Math.min(startByte + partSize, uploadFile.size);
+        const partData = uploadFile.file.slice(startByte, endByte);
+
+        console.log(`Uploading part ${partInfo.partNumber}: ${startByte}-${endByte} (${partData.size} bytes)`);
+
+        const response = await fetch(partInfo.presignedUrl, {
+          method: 'PUT',
+          body: partData,
+          headers: {
+            'Content-Type': uploadFile.type,
+          },
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`Part ${partInfo.partNumber} upload failed:`, {
+            status: response.status,
+            statusText: response.statusText,
+            errorBody: errorText
+          });
+          throw new Error(`Failed to upload part ${partInfo.partNumber}: ${response.status} ${response.statusText}`);
+        }
+
+        const etag = response.headers.get('ETag');
+        if (!etag) {
+          console.error(`No ETag received for part ${partInfo.partNumber}`, response.headers);
+          throw new Error(`No ETag received for part ${partInfo.partNumber}`);
+        }
+
+        console.log(`Part ${partInfo.partNumber} uploaded successfully, ETag: ${etag}`);
+        
+        return {
+          PartNumber: partInfo.partNumber,
+          ETag: etag,
+        };
+      };
+
+      // Upload parts in parallel batches
+      const uploadPromises: Promise<any>[] = [];
+      let completedParts = 0;
+
+      for (let i = 0; i < partUrls.length; i += maxConcurrentUploads) {
+        const batch = partUrls.slice(i, i + maxConcurrentUploads);
+        const batchPromises = batch.map(async (partInfo: {partNumber: number, presignedUrl: string}) => {
+          const result = await uploadPart(partInfo);
+          completedParts++;
+          
+          // Update progress
+          const progress = Math.round((completedParts / totalParts) * 100);
+          setFiles(prev => prev.map(f => 
+            f.id === uploadFile.id ? { ...f, progress } : f
+          ));
+          
+          return result;
+        });
+
+        const batchResults = await Promise.all(batchPromises);
+        uploadedParts.push(...batchResults);
+      }
+
+      // Step 4: Complete multipart upload
+      const completeResponse = await fetch('/api/upload/multipart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'complete',
+          uploadId,
+          fileName: uploadFile.name,
+          parts: uploadedParts,
+          fileId,
+          userId: 'demo-user'
+        }),
+      });
+
+      if (!completeResponse.ok) {
+        throw new Error('Failed to complete multipart upload');
+      }
+
+      // Mark as completed
+      setFiles(prev => prev.map(f => 
+        f.id === uploadFile.id ? { ...f, status: 'completed', progress: 100, s3Key: fileKey } : f
+      ));
+
+      // Update video record in DynamoDB
+      try {
+        await fetch(`/api/sessions/${videoId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            uploadStatus: 'completed',
+            s3Key: fileKey,
+            uploadedAt: new Date().toISOString()
+          }),
+        });
+      } catch (error) {
+        console.error('Failed to update video record:', error);
+      }
+
+    } catch (error) {
+      console.error('Multipart upload failed for file:', uploadFile.name, error);
       setFiles(prev => prev.map(f => 
         f.id === uploadFile.id ? { ...f, status: 'error', progress: 0 } : f
       ));
@@ -249,7 +431,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
         >
           Select Files
         </label>
-        <p className="text-xs text-[#999] mt-3">Supports: MP4, WebM, MOV up to 5GB each</p>
+        <p className="text-xs text-[#999] mt-3">Supports: MP4, WebM, MOV up to 10GB each (files &gt;100MB use optimized multipart upload)</p>
       </div>
 
       {/* File List */}
