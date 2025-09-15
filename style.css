@@ -112,11 +112,12 @@ hr {
   background: gray; 
 }
 
-.company {
+.company, .team {
   display: grid;
   grid-template-columns: 1fr; /* always single column */
   row-gap: 1em;               /* spacing between h4 and text */
   margin: 1em;
+  margin-bottom: 2em;
 }
 
 .company h4,
@@ -127,6 +128,28 @@ hr {
 
 .company-description h2 {
   font-weight: 200;
+}
+
+.team h4, .team-description a {
+  color: white;
+}
+
+.team-description h2{
+  text-align: center;
+}
+
+.team-description a {
+  text-decoration: none;
+  font-weight: 200;
+  transition: all 0.2s ease;
+}
+
+.team-description a:hover {
+  color: gray;
+}
+
+.team-description a:active {
+  opacity: 0.7;
 }
 
 footer {
