@@ -3,130 +3,69 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Efference | Robotic Ability Broker</title>
+  <title>Efference</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="/images/logo.png">
 </head>
 <body>
   <header>
+    <a href="#" class="logo-link">
+      <img class="logo" src="images/logo.png" alt="">
+      <h1>Efference</h1>
+    </a>
     <nav>
-      <ul>
-        <li><a href="#hero">Efference</a></li>
-        <li><a href="#company">Company</a></li>
-        <li><a href="#gallery">Gallery</a></li>
-        <li><a href="#team">Team</a></li>
-        <li><a href="index.html">Contact</a></li>
+      <ul class="nav-links">
+        <!-- <li><a href="#" class="standard-button">LEGO-1000</a></li>
+        <li><a href="#" class="standard-button">IKEA-1000</a></li> -->
+        <li><a href="mailto:gianluca@efference.ai" class="contact-us-button">Contact Us &rarr;</a></li>
       </ul>
     </nav>
   </header>
 
-  <section id="hero" class="hero">
-    <div class="hero-container">
-      <h1 style="color: white">Your robotic ability broker</h1>
+  <div class="hero-container">
+  <video class="hero" autoplay loop muted playsinline>
+      <source src="videos/compressed.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  </div>
+
+  <!-- <hr> -->
+
+  <div id="company" class="company">
+    <h4>Company</h4>
+    <div class="company-description">
+      <h2>Efference turns expert demonstrations into robotic skills.
+        We find and train the best experts, equip them with our devices, 
+        and convert their data into high-quality, diverse robotic training
+        data at scale.</h2>
+      <!-- <br>
+      <h2>Pre-training foundation models requires quality, diversity, and scale.
+        We focus on sepcific tasks that would be good robotics as a service opportunities, 
+        like house cleaning and furniture assembly, train human experts to wear devices that match
+        the intrinsics of downstream robots, and collect in diverse environements. Training 
+        experts and capturing in many locations helps. We also capture physical labor tasks
+        that are hard to get data for but we would like robots to automate one day, like 
+        bloodwork and other simple medical operations. Finally, we focus on designing benchmark
+        tasks and are committed to open-sourcing a meaningful percentage of everyhting 
+        we collect to accelerate progress and furthur inform / refine our process.
+      </h2> -->
+        <!-- <hr class="internal-break"> -->
+        <!-- <p style="margin-bottom: 1em">Interested in working with us?</p>
+        <a href="#" class="contact-us-button">Contact Us &rarr;</a> -->
     </div>
-  </section>
+  </div>
 
-  <section id="company" class="words">
-    <div class="words-container">
-      <h5>Company</h5>
-      <p>Efference sells robotic skills. We transform videos of expert demonstrations into robotic training data for any task.</p>
-      <p>Our data powers world models, pre-training for generalist and specialized robotic policies, and video understanding. We source the best human experts, ensure the highest-quality transfer for any downstream task, and deliver at scale.</p>
-    </div>
-  </section>
-
-  <section class="words" style="padding-top:0; text-align:center; padding-bottom: 0;">
-    <div class="words-container">
-      <h4>Available Data</h4>
-
-      <div style="
-        display:inline-grid;
-        grid-template-columns:auto min-content auto min-content auto;
-        padding-top: 1em;
-        column-gap:.5rem; row-gap:.25rem; align-items:end;
-        font-variant-numeric:tabular-nums;">
-        
-        <!-- numbers row -->
-        <div style="font-size:2rem; font-weight:700; letter-spacing:.05em;">101</div>
-        <div style="font-size:2rem; font-weight:700;">:</div>
-        <div style="font-size:2rem; font-weight:700; letter-spacing:.05em;">51</div>
-        <div style="font-size:2rem; font-weight:700;">:</div>
-        <div style="font-size:2rem; font-weight:700; letter-spacing:.05em;">32</div>
-
-        <!-- labels row (under the number columns) -->
-        <div style="font-size:.9rem; letter-spacing:.08em;">Hours</div>
-        <div></div>
-        <div style="font-size:.9rem; letter-spacing:.08em;">Minutes</div>
-        <div></div>
-        <div style="font-size:.9rem; letter-spacing:.08em;">Seconds</div>
-      </div>
-    </div>
-  </section>
-
-  <section id="gallery" class="tasks">
-    <h5>Gallery</h5>
-    <!-- <p>Some stuff about how we collect for anything. We have a bunch of human experts ready for various tasks to collect.</p> -->
-    <div class="tasks-grid" style="margin-top:1.5em">
-      <figure class="task">
-        <video src="videos/laundry.mp4" muted autoplay loop playsinline preload="metadata" poster="media/task01.jpg"></video>
-        <figcaption class="label">Laundry</figcaption>
-      </figure>
-
-      <figure class="task">
-        <video src="videos/furniture.mp4" muted autoplay loop playsinline preload="metadata" poster="media/task02.jpg"></video>
-        <figcaption class="label">Furniture Assembly</figcaption>
-      </figure>
-
-      <figure class="task">
-        <video src="videos/cleaning.mp4" muted autoplay loop playsinline preload="metadata" poster="media/task03.jpg"></video>
-        <figcaption class="label">Cleaning</figcaption>
-      </figure>
-
-      <figure class="task">
-        <video src="videos/driving.mp4" muted autoplay loop playsinline preload="metadata" poster="media/task03.jpg"></video>
-        <figcaption class="label">Driving</figcaption>
-      </figure>
-
-      <figure class="task">
-        <video src="videos/guitar.mp4" muted autoplay loop playsinline preload="metadata" poster="media/task03.jpg"></video>
-        <figcaption class="label">Guitar</figcaption>
-      </figure>
-
-      <figure class="task">
-        <video src="videos/medical.mp4" muted autoplay loop playsinline preload="metadata" poster="media/task03.jpg"></video>
-        <figcaption class="label">Medical</figcaption>
-      </figure>
-    </div>
-    <!-- <p style="margin-bottom:0">And much more. The tasks we are currently interested in include: ...</p> -->
-  </section>
-
-  <section id="team" class="words">
-    <div class="words-container">
-      <h5>Team</h5>
-      <p style="text-align: center"><a href="https://x.com/gianlucabencomo">Gianluca Bencomo</a></p>
-    </div>
-  </section>
-
-  <section class="words" style="padding-top:0">
-    <div class="words-container">
-      <h5>Contact</h5>
-      <p style="text-align:center;">
-        Reach out to us at 
-        <a href="mailto:sales@efference.ai" style="color:var(--primary-color); font-weight:600;">
-          sales@efference.ai
-        </a>
-        to discuss our pilot program.
-      </p>
-    </div>
-  </section>
+  <hr style="background: gray">
 
   <footer>
-  <p>© 2025 Remnant Robotics, Inc. All rights reserved.</p>
-  <p>
-    <a href="#company">Company</a> ·
-    <a href="#gallery">Gallery</a> ·
-    <a href="#team">Team</a> ·
-    <a href="#contact">Contact</a>
-  </p>
-</footer>
-
+    <p>© 2025 Remnant Robotics, Inc. All rights reserved.</p>
+    <p class="footer-links">
+      <a href="https://x.com/efferenceAI">X</a> 
+      &middot; 
+      <a href="https://www.linkedin.com/company/efference">LinkedIn</a> 
+      &middot; 
+      <a href="mailto:gianluca@efference.ai">Contact</a>
+    </p>
+  </footer>
 </body>
 </html>
