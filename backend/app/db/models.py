@@ -45,6 +45,14 @@ class ProcessingJobStatus(enum.Enum):
     SUCCEEDED = "SUCCEEDED"
     FAILED = "FAILED"
 
+
+class InvitationStatus(enum.Enum):
+    PENDING = "PENDING"
+    SENT = "SENT"
+    USED = "USED"
+    EXPIRED = "EXPIRED"
+
+
 # --- Model Definitions ---
 
 class User(Base):
@@ -58,6 +66,10 @@ class User(Base):
     
     # --- Security ---
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
+    
+    # --- Invitation Status ---
+    is_invited: Mapped[bool] = mapped_column(default=False, nullable=False)
+    invitation_used_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
@@ -90,8 +102,37 @@ class User(Base):
     # A user (reviewer) can submit many reviews
     reviews_submitted: Mapped[list["Review"]] = relationship(back_populates="reviewer")
 
+    # A user (admin) can send many invitations
+    sent_invitations: Mapped[list["Invitation"]] = relationship(back_populates="invited_by")
+
     def __repr__(self):
         return f"<User(user_id={self.user_id}, name='{self.name}', role='{self.role.name}')>"
+
+
+class Invitation(Base):
+    """Represents an invitation code sent to a potential user."""
+    __tablename__ = "invitations"
+
+    invitation_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    invitation_code: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
+    email: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    role: Mapped[UserRole] = mapped_column(SQLAlchemyEnum(UserRole), nullable=False)
+    
+    # Invitation metadata
+    status: Mapped[InvitationStatus] = mapped_column(SQLAlchemyEnum(InvitationStatus), default=InvitationStatus.PENDING, nullable=False)
+    invited_by_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.user_id"))
+    expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    sent_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    used_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    
+    # Relationships
+    invited_by: Mapped["User"] = relationship(back_populates="sent_invitations")
+    
+    def __repr__(self):
+        return f"<Invitation(invitation_id={self.invitation_id}, email='{self.email}', status='{self.status.name}')>"
 
 
 class Task(Base):
