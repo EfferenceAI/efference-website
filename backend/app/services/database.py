@@ -6,7 +6,7 @@ from typing import Generator
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import StaticPool
-from .db.base import Base
+from db.base import Base
 
 # Database URL - can be overridden by environment variable
 DATABASE_URL = os.getenv(

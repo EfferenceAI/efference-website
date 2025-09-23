@@ -22,8 +22,8 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Import your Base and models
-from db.base import Base
-from db.models import *  # Import all models
+from ..app.db.base import Base
+from ..app.db.models import *  # Import all models
 
 # add your model's MetaData object here
 # for 'autogenerate' support

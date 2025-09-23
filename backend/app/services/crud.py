@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, or_, func
 from datetime import datetime
 
-from .db import models
+from db import models
 from . import schemas
 
 
@@ -100,6 +100,79 @@ def update_user_password(db: Session, user_id: uuid.UUID, password_update: schem
 def delete_user(db: Session, user_id: uuid.UUID) -> bool:
     """Delete a user"""
     return delete_by_id(db, models.User, user_id)
+
+
+# --- Invitation CRUD Operations ---
+
+def get_invitation(db: Session, invitation_id: uuid.UUID) -> Optional[models.Invitation]:
+    """Get an invitation by ID"""
+    return db.query(models.Invitation).options(joinedload(models.Invitation.invited_by)).filter(models.Invitation.invitation_id == invitation_id).first()
+
+
+def get_invitation_by_code(db: Session, invitation_code: str) -> Optional[models.Invitation]:
+    """Get an invitation by its unique code"""
+    return db.query(models.Invitation).filter(models.Invitation.invitation_code == invitation_code).first()
+
+
+def get_invitations(db: Session, skip: int = 0, limit: int = 100, status: Optional[models.InvitationStatus] = None, invited_by_id: Optional[uuid.UUID] = None) -> List[models.Invitation]:
+    """Get multiple invitations with optional filtering"""
+    query = db.query(models.Invitation).options(joinedload(models.Invitation.invited_by))
+    if status:
+        query = query.filter(models.Invitation.status == status)
+    if invited_by_id:
+        query = query.filter(models.Invitation.invited_by_id == invited_by_id)
+    return query.order_by(models.Invitation.created_at.desc()).offset(skip).limit(limit).all()
+
+
+def create_invitation(db: Session, invitation: schemas.InvitationCreate, invited_by_id: uuid.UUID, expires_at: datetime) -> models.Invitation:
+    """Create a new invitation"""
+    import secrets
+    invitation_code = secrets.token_urlsafe(32)
+    
+    db_invitation = models.Invitation(
+        email=invitation.email,
+        role=invitation.role,
+        invited_by_id=invited_by_id,
+        expires_at=expires_at,
+        invitation_code=invitation_code
+    )
+    db.add(db_invitation)
+    db.commit()
+    db.refresh(db_invitation)
+    return db_invitation
+
+
+def update_invitation_status(db: Session, invitation_id: uuid.UUID, status: models.InvitationStatus, used_at: Optional[datetime] = None) -> Optional[models.Invitation]:
+    """Update the status of an invitation"""
+    db_invitation = get_invitation(db, invitation_id)
+    if not db_invitation:
+        return None
+    
+    db_invitation.status = status
+    if used_at:
+        db_invitation.used_at = used_at
+        
+    db.commit()
+    db.refresh(db_invitation)
+    return db_invitation
+
+
+def mark_invitation_sent(db: Session, invitation_id: uuid.UUID) -> Optional[models.Invitation]:
+    """Mark an invitation as sent"""
+    db_invitation = get_invitation(db, invitation_id)
+    if not db_invitation:
+        return None
+    
+    db_invitation.status = models.InvitationStatus.SENT
+    db_invitation.sent_at = datetime.utcnow()
+    db.commit()
+    db.refresh(db_invitation)
+    return db_invitation
+
+
+def delete_invitation(db: Session, invitation_id: uuid.UUID) -> bool:
+    """Delete an invitation"""
+    return delete_by_id(db, models.Invitation, invitation_id)
 
 
 # --- Task CRUD Operations ---

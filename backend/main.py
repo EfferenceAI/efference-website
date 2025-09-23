@@ -5,8 +5,8 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
-from . import database
-from .routers import auth, users, tasks, sessions, reviews, dashboard
+from .app.services import database
+from .app.routers import auth, users, tasks, sessions, reviews, dashboard, invitations
 
 # Create FastAPI app
 app = FastAPI(
@@ -33,6 +33,7 @@ app.include_router(tasks.router)
 app.include_router(sessions.router)
 app.include_router(reviews.router)
 app.include_router(dashboard.router)
+app.include_router(invitations.router)
 
 
 @app.get("/")

@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session
 
-from .. import auth, crud, schemas, database
+from ..services import auth, crud, schemas, database
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
@@ -44,10 +44,12 @@ def get_current_user_info(
 
 @router.post("/register", response_model=schemas.User, status_code=status.HTTP_201_CREATED)
 def register(
-    user_data: schemas.UserCreate,
+    user_data: schemas.UserRegisterWithInvitation,
     db: Session = Depends(database.get_db)
 ):
-    """Register a new user"""
+    """Register a new user with an invitation code."""
+    from datetime import datetime
+
     # Check if user already exists
     existing_user = crud.get_user_by_email(db, email=user_data.email)
     if existing_user:
@@ -55,9 +57,57 @@ def register(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered"
         )
+
+    # Validate invitation code
+    invitation = crud.get_invitation_by_code(db, invitation_code=user_data.invitation_code)
+    if not invitation:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid invitation code"
+        )
+
+    if invitation.status != schemas.InvitationStatus.PENDING:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invitation code has already been used or expired"
+        )
+
+    if invitation.email.lower() != user_data.email.lower():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invitation code is not valid for this email address"
+        )
+
+    if datetime.utcnow() > invitation.expires_at:
+        # Auto-expire the invitation
+        crud.update_invitation_status(db, invitation.invitation_id, schemas.InvitationStatus.EXPIRED)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invitation code has expired"
+        )
+
+    # Create new user with the role from the invitation
+    user_create_data = schemas.UserCreate(
+        name=user_data.name,
+        email=user_data.email,
+        password=user_data.password,
+        role=invitation.role
+    )
+    new_user = crud.create_user(db=db, user=user_create_data)
     
-    # Create new user
-    new_user = crud.create_user(db=db, user=user_data)
+    # Mark user as invited and update invitation status
+    new_user.is_invited = True
+    new_user.invitation_used_at = datetime.utcnow()
+    crud.update_invitation_status(
+        db=db,
+        invitation_id=invitation.invitation_id,
+        status=schemas.InvitationStatus.USED,
+        used_at=new_user.invitation_used_at
+    )
+    
+    db.commit()
+    db.refresh(new_user)
+    
     return new_user
 
 

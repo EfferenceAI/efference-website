@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime
 from typing import Optional, List
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
-from .db.models import UserRole, VideoSessionStatus, ReviewStatus, ProcessingJobStatus
+from db.models import UserRole, VideoSessionStatus, ReviewStatus, ProcessingJobStatus, InvitationStatus
 
 
 # --- Base Schemas ---
@@ -30,6 +30,16 @@ class UserCreate(UserBase):
     password: str = Field(..., min_length=8, max_length=255)
 
 
+# Deprecate for now. Users can't sign up with an invitation. Use admin-created invitations instead.
+
+class UserRegisterWithInvitation(BaseSchema):
+    """Schema for registering a new user with invitation code"""
+    name: str = Field(..., min_length=1, max_length=255)
+    email: EmailStr
+    password: str = Field(..., min_length=8, max_length=255)
+    invitation_code: str = Field(..., min_length=1, max_length=255)
+
+
 class UserUpdate(BaseSchema):
     """Schema for updating user information"""
     name: Optional[str] = Field(None, min_length=1, max_length=255)
@@ -47,6 +57,8 @@ class User(UserBase):
     """Schema for reading user data (response)"""
     user_id: uuid.UUID
     created_at: datetime
+    is_invited: bool
+    invitation_used_at: Optional[datetime] = None
 
 
 class UserWithStats(User):
@@ -54,6 +66,41 @@ class UserWithStats(User):
     total_sessions_created: Optional[int] = 0
     total_reviews_submitted: Optional[int] = 0
     total_tasks_assigned: Optional[int] = 0
+
+
+# --- Invitation Schemas ---
+
+class InvitationBase(BaseSchema):
+    """Base invitation schema"""
+    email: EmailStr
+    role: UserRole
+
+
+class InvitationCreate(InvitationBase):
+    """Schema for creating a new invitation"""
+    pass
+
+
+class InvitationUpdate(BaseSchema):
+    """Schema for updating invitation status"""
+    status: Optional[InvitationStatus] = None
+
+
+class Invitation(InvitationBase):
+    """Schema for reading invitation data"""
+    invitation_id: uuid.UUID
+    invitation_code: str
+    status: InvitationStatus
+    invited_by_id: uuid.UUID
+    expires_at: datetime
+    created_at: datetime
+    sent_at: Optional[datetime] = None
+    used_at: Optional[datetime] = None
+
+
+class InvitationWithInviter(Invitation):
+    """Invitation with inviter details"""
+    invited_by: User
 
 
 # --- Task Schemas ---

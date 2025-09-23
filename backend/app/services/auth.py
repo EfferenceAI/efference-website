@@ -12,8 +12,10 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
-from . import crud, schemas, database
-from .db.models import User, UserRole
+from . import crud, database
+
+from . import schemas
+from db.models import User, UserRole
 
 # JWT Configuration
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-here-change-in-production")
@@ -108,6 +110,22 @@ async def get_current_active_user(
     # In the future, you might add an 'is_active' field to the User model
     # if not current_user.is_active:
     #     raise HTTPException(status_code=400, detail="Inactive user")
+    return current_user
+
+
+async def get_current_invited_user(
+    current_user: User = Depends(get_current_active_user)
+) -> User:
+    """
+    Get the current user and ensure they have been invited.
+    This is used to protect endpoints that require a user to have been
+    explicitly invited, such as file uploads.
+    """
+    if not current_user.is_invited:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access to this feature requires an invitation. Please contact an administrator."
+        )
     return current_user
 
 
