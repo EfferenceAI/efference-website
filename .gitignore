@@ -10,3 +10,4 @@ node_modules/
 .vscode/
 frontend/frontend/.next/
 frontend/frontend/.env
+backend/test.db
