@@ -43,8 +43,35 @@ def get_current_user_info(
     
 
 
-
 @router.post("/register", response_model=schemas.User, status_code=status.HTTP_201_CREATED)
+def register_no_invite(
+    user_data: schemas.UserRegister,
+    db: Session = Depends(database.get_db)
+):
+    """Register a new user without an invitation code. (Not recommended for production)"""
+    # Check if user already exists
+    existing_user = crud.get_user_by_email(db, email=user_data.email)
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
+        )
+
+    # Create new user with default role (e.g., USER)
+    user_create_data = schemas.UserCreate(
+        name=user_data.name,
+        email=user_data.email,
+        password=user_data.password,
+        role=schemas.UserRole.TRAINER  # Default role
+    )
+    new_user = crud.create_user(db=db, user=user_create_data)
+    
+    db.commit()
+    db.refresh(new_user)
+    
+    return new_user
+
+@router.post("/register_invite_code", response_model=schemas.User, status_code=status.HTTP_201_CREATED)
 def register(
     user_data: schemas.UserRegisterWithInvitation,
     db: Session = Depends(database.get_db)

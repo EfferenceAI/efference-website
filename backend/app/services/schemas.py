@@ -30,6 +30,12 @@ class UserCreate(UserBase):
     password: str = Field(..., min_length=8, max_length=255)
 
 
+class UserRegister(BaseSchema):
+    """Schema for user registration (without invitation)"""
+    name: str = Field(..., min_length=1, max_length=255)
+    email: EmailStr
+    password: str = Field(..., min_length=8, max_length=255)
+
 # Deprecate for now. Users can't sign up with an invitation. Use admin-created invitations instead.
 
 class UserRegisterWithInvitation(BaseSchema):
