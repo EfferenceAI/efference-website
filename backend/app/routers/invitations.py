@@ -8,9 +8,9 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from ..services import crud, schemas, database
-from .auth import get_current_user, RequireRole
-from ..db.models import UserRole, InvitationStatus
+from app.services import crud, schemas, database
+from app.db.models import UserRole, InvitationStatus
+from app.services.auth import get_current_user, RequireRole
 
 
 router = APIRouter(

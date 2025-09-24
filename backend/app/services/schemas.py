@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime
 from typing import Optional, List
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
-from db.models import UserRole, VideoSessionStatus, ReviewStatus, ProcessingJobStatus, InvitationStatus
+from ..db.models import UserRole, VideoSessionStatus, ReviewStatus, ProcessingJobStatus, InvitationStatus
 
 
 # --- Base Schemas ---

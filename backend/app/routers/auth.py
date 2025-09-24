@@ -40,6 +40,8 @@ def get_current_user_info(
 ):
     """Get current user information"""
     return current_user
+    
+
 
 
 @router.post("/register", response_model=schemas.User, status_code=status.HTTP_201_CREATED)
