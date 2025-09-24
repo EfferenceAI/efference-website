@@ -7,6 +7,10 @@ from typing import Optional, List, Type
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, or_, func
 from datetime import datetime
+"""
+Do not import get_password_hash, verify_password at the top level to avoid circular import.
+Import them inside functions where needed.
+"""
 
 from ..db import models
 from . import schemas
@@ -51,14 +55,14 @@ def get_users(db: Session, skip: int = 0, limit: int = 100, role: Optional[model
 
 def create_user(db: Session, user: schemas.UserCreate) -> models.User:
     """Create a new user"""
+    from .auth import get_password_hash
+    hashed_password = get_password_hash(user.password)
     db_user = models.User(
         name=user.name,
         email=user.email,
-        role=user.role
+        role=user.role,
+        hashed_password=hashed_password,
     )
-    # Use the property setter to hash the password
-    db_user.password = user.password
-    
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
@@ -87,11 +91,12 @@ def update_user_password(db: Session, user_id: uuid.UUID, password_update: schem
         return None
     
     # Verify current password
-    if not db_user.check_password(password_update.current_password):
-        return None
+        from .auth import verify_password, get_password_hash
+        if not verify_password(password_update.current_password, db_user.hashed_password):
+            return None
     
     # Set new password
-    db_user.password = password_update.new_password
+        db_user.hashed_password = get_password_hash(password_update.new_password)
     db.commit()
     db.refresh(db_user)
     return db_user
