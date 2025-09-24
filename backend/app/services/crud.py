@@ -133,6 +133,7 @@ def create_invitation(db: Session, invitation: schemas.InvitationCreate, invited
     """Create a new invitation"""
     import secrets
     invitation_code = secrets.token_urlsafe(32)
+    #print(f"Generated invitation code: {invitation_code}")
     
     db_invitation = models.Invitation(
         email=invitation.email,

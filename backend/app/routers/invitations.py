@@ -16,7 +16,7 @@ from app.services.auth import get_current_user, RequireRole
 router = APIRouter(
     prefix="/invitations",
     tags=["invitations"],
-    dependencies=[Depends(RequireRole([UserRole.ADMIN]))]  # Only admins can manage invitations
+    dependencies=[Depends(RequireRole(UserRole.ADMIN))]  # Only admins can manage invitations
 )
 
 
@@ -31,6 +31,7 @@ def create_invitation(
     Create a new invitation code for a user to join the platform.
     Only admins can create invitations.
     """
+    print("Create invitation endpoint called")
     if expires_in_days < 1 or expires_in_days > 30:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -41,10 +42,10 @@ def create_invitation(
     
     # Check if user with this email already exists
     existing_user = crud.get_user_by_email(db, invitation.email)
-    if existing_user:
+    if existing_user and getattr(existing_user, "is_invited", False):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User with this email already exists"
+            detail="User with this email already exists and has already used an invitation"
         )
     
     # Check if there's already a pending invitation for this email
