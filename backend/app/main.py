@@ -5,8 +5,8 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
-from .app.services import database
-from .app.routers import auth, users, tasks, sessions, reviews, dashboard, invitations
+from app.services import database
+from app.routers import auth, users, tasks, sessions, reviews, dashboard, invitations
 
 # Create FastAPI app
 app = FastAPI(

@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, or_, func
 from datetime import datetime
 
-from db import models
+from ..db import models
 from . import schemas
 
 

@@ -11,3 +11,4 @@ python-multipart
 boto3
 pydantic-settings
 boto3
+werkzeug

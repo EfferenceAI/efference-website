@@ -4,8 +4,6 @@ from datetime import datetime
 from typing import Optional
 
 # Import password hashing utilities
-from werkzeug.security import generate_password_hash, check_password_hash
-
 from sqlalchemy import (
     create_engine,
     Column,
@@ -72,19 +70,6 @@ class User(Base):
     invitation_used_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-
-    @property
-    def password(self):
-        raise AttributeError('password is not a readable attribute')
-
-    @password.setter
-    def password(self, password: str):
-        """Hashes the password and stores it."""
-        self.hashed_password = generate_password_hash(password)
-
-    def check_password(self, password: str) -> bool:
-        """Checks if the provided password matches the stored hash."""
-        return check_password_hash(self.hashed_password, password)
 
     # --- Relationships ---
     # A user (admin) can create many tasks
