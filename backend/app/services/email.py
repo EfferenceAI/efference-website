@@ -25,15 +25,10 @@ def send_email(to_address: str, subject: str, body: str) -> bool:
     try:
         response = s_client.send_email(
             Source=settings.SES_FROM_EMAIL,
-            Destination={'ToAddresses': [to_address]},
-            Message=
-            {
-                "Body": {
-                    "Html": {
-                        "Charset": "UTF-8",
-                        "Data": body,
-                    },
-                }
+            Destination={"ToAddresses": [to_address]},
+            Message={
+                "Subject": {"Data": subject},
+                "Body": {"Html": {"Data": body}}
             }
         )
     except ClientError as e:

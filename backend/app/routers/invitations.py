@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from app.services import crud, schemas, database
 from app.db.models import UserRole, InvitationStatus
 from app.services.auth import get_current_user, RequireRole
+from app.services.email import send_email
 
 
 router = APIRouter(
@@ -170,9 +171,48 @@ def send_invitation_email(
             detail="Invitation has already been sent or used"
         )
     
-    # TODO: Implement Amazon SES email sending here
-    # For now, just mark as sent
-    crud.mark_invitation_sent(db, db_invitation.invitation_id)
+    
+    #crud.mark_invitation_sent(db, db_invitation.invitation_id)
+    try: 
+        send_email(
+    to_address=db_invitation.email,
+    subject="You're Invited to Join Efference Video Training Platform",
+    body=f"""
+<html>
+  <body style="font-family: Arial, sans-serif; color: #222;">
+    <h2>You're Invited!</h2>
+    <p>
+      You have been invited to join the <strong>Efference Video Training Platform</strong>!
+    </p>
+    <p>
+      <strong>Your invitation code:</strong>
+      <br>
+      <span style="display:inline-block; margin:12px 0; padding:12px 24px; background:#f5f5f5; border-radius:8px; font-size:1.3em; letter-spacing:2px; font-weight:bold; color:#2a4d8f;">
+        {db_invitation.invitation_code}
+      </span>
+    </p>
+    <p>
+      <strong>Expires:</strong> {db_invitation.expires_at:%Y-%m-%d %H:%M UTC}
+    </p>
+    <p>
+      To register, visit:<br>
+      <a href="https://efference.com/register" style="color:#2a4d8f;">https://efference.com/register</a><br>
+      and enter your invitation code.
+    </p>
+    <hr>
+    <p>
+      Best regards,<br>
+      <strong>Efference Team</strong>
+    </p>
+  </body>
+</html>
+"""
+)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to send invitation email: {str(e)}"
+        )
     
     return schemas.MessageResponse(message="Invitation email sent successfully")
 
