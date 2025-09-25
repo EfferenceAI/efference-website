@@ -31,7 +31,7 @@ def create_invitation(
     Create a new invitation code for a user to join the platform.
     Only admins can create invitations.
     """
-    print("Create invitation endpoint called")
+    #print("Create invitation endpoint called")
     if expires_in_days < 1 or expires_in_days > 30:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

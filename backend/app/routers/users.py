@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.services import crud, schemas, database
 from app.db.models import UserRole
+from app.services.auth import get_current_user
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -139,3 +140,9 @@ def get_user_by_email(
             detail="User not found"
         )
     return db_user
+
+
+# Get logged in user current role
+@router.get("/me/role", response_model=UserRole)
+def get_current_user_role(current_user: schemas.User = Depends(get_current_user)) -> UserRole:
+    return current_user.role

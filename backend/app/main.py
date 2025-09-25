@@ -61,15 +61,15 @@ def health_check(db: Session = Depends(database.get_db)):
 @app.on_event("startup")
 async def startup_event():
     """Startup event handler"""
-    print("🚀 Efference Video Training Platform API is starting up...")
-    print("📚 API Documentation available at /docs")
+    print(" Efference Video Training Platform API is starting up...")
+    print("API Documentation available at /docs")
 
 
 # Shutdown event
 @app.on_event("shutdown")
 async def shutdown_event():
     """Shutdown event handler"""
-    print("🛑 Efference Video Training Platform API is shutting down...")
+    print(" Efference Video Training Platform API is shutting down...")
 
 
 if __name__ == "__main__":
