@@ -130,6 +130,13 @@ hr {
   font-weight: 200;
 }
 
+.indented-list, .process-steps {
+  color: white;
+  font-weight: 200;
+  margin-left: max(5em, 10%);
+  font-size: 24px;
+}
+
 .team h4, .team-description a {
   color: white;
 }
