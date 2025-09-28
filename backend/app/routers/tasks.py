@@ -83,39 +83,7 @@ def delete_task(
         )
     return schemas.MessageResponse(message="Task deleted successfully")
 
-
-# --- Task Assignment Endpoints ---
-
-# @router.post("/{task_id}/assignments", response_model=schemas.TaskAssignment, status_code=status.HTTP_201_CREATED)
-# def create_task_assignment(
-#     task_id: uuid.UUID,
-#     db: Session = Depends(database.get_db),
-#     current_user: schemas.User = Depends(get_current_user),
-# ):
-#     """Assign a task to a user"""
-#     # Verify task exists
-#     task = crud.get_task(db, task_id=task_id)
-#     if not task:
-#         raise HTTPException(
-#             status_code=status.HTTP_404_NOT_FOUND,
-#             detail="Task not found"
-#         )
-#     if not current_user:
-#         raise HTTPException(
-#             status_code=status.HTTP_404_NOT_FOUND,
-#             detail="User not found"
-#         )
-
-#     if current_user.role != UserRole.TRAINER:
-#         raise HTTPException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail="Only trainers can be assigned tasks"
-#         )
-
-#     assignment_data = schemas.TaskAssignmentCreate(task_id=task_id, user_id=current_user.user_id)
-#     return crud.create_task_assignment(db=db, assignment=assignment_data)
-
-# Trainers can apply for tasks, and then they get assigned to that task upon approval
+# Workers can apply for tasks, and then they get assigned to that task upon approval
 @router.post("/{task_id}/assignments", response_model=schemas.TaskAssignment, status_code=status.HTTP_201_CREATED)
 def create_task_assignment(
     task_id: uuid.UUID,
