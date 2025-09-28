@@ -7,6 +7,7 @@ from typing import Optional, List, Type
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, or_, func
 from datetime import datetime
+from sqlalchemy.inspection import inspect as sa_inspect
 """
 PS: I fell into this trap! Do not import get_password_hash, verify_password at the top level to avoid circular import.
 Import them inside functions where needed.
@@ -18,13 +19,24 @@ from . import schemas
 
 # --- Generic CRUD Operations ---
 
+def _get_single_pk_column(model: Type):
+    mapper = sa_inspect(model)
+    pks = mapper.primary_key
+    if not pks:
+        raise ValueError(f"No primary key defined for model {model.__name__}")
+    if len(pks) != 1:
+        raise ValueError(f"Composite primary keys not supported for generic helpers in {model.__name__}")
+    return pks[0]
+
+
 def get_by_id(db: Session, model: Type, id_value: uuid.UUID):
-    """Generic function to get a record by ID"""
-    return db.query(model).filter(getattr(model, f"{model.__tablename__[:-1]}_id") == id_value).first()
+    """Generic function to get a record by ID using the model's primary key column"""
+    pk_col = _get_single_pk_column(model)
+    return db.query(model).filter(pk_col == id_value).first()
 
 
 def delete_by_id(db: Session, model: Type, id_value: uuid.UUID) -> bool:
-    """Generic function to delete a record by ID"""
+    """Generic function to delete a record by ID using the model's primary key column"""
     record = get_by_id(db, model, id_value)
     if record:
         db.delete(record)

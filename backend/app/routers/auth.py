@@ -25,15 +25,18 @@ def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
+    # Block login for deactivated users (managed separately from sessions)
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User is deactivated"
+        )
+
     access_token_expires = timedelta(minutes=auth.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = auth.create_access_token(
         data={"sub": str(user.user_id), "email": user.email},
         expires_delta=access_token_expires
     )
-    user.is_active = True  # Mark user as active on login
-    db.add(user)
-    db.commit()
-    db.refresh(user)
     
     return schemas.Token(access_token=access_token, token_type="bearer")
 
