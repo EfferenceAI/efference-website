@@ -90,8 +90,8 @@ def delete_task(
 @router.post("/{task_id}/assignments", response_model=schemas.TaskAssignment, status_code=status.HTTP_201_CREATED)
 def create_task_assignment(
     task_id: uuid.UUID,
-    user_id: uuid.UUID = Query(..., description="ID of the user to assign the task to"),
-    db: Session = Depends(database.get_db)
+    db: Session = Depends(database.get_db),
+    current_user: schemas.User = Depends(get_current_user),
 ):
     """Assign a task to a user"""
     # Verify task exists
@@ -101,23 +101,19 @@ def create_task_assignment(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Task not found"
         )
-    
-    # Verify user exists and is a trainer
-    user = crud.get_user(db, user_id=user_id)
-    if not user:
+    if not current_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
-    current_Role = get_current_user_role(current_user=user)
-    # Note: In production, you'd check user role
-    if current_Role != "TRAINER":
+
+    if current_user.role != UserRole.TRAINER:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Only trainers can be assigned tasks"
         )
-    
-    assignment_data = schemas.TaskAssignmentCreate(task_id=task_id, user_id=user_id)
+
+    assignment_data = schemas.TaskAssignmentCreate(task_id=task_id, user_id=current_user.user_id)
     return crud.create_task_assignment(db=db, assignment=assignment_data)
 
 

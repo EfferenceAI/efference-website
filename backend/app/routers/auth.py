@@ -37,6 +37,16 @@ def login(
     
     return schemas.Token(access_token=access_token, token_type="bearer")
 
+@router.get("/logout", response_model=schemas.MessageResponse)
+def logout(
+    current_user: schemas.User = Depends(auth.get_current_active_user),
+    db: Session = Depends(database.get_db)
+):
+    """Logout endpoint to deactivate user session"""
+    current_user.is_active = False  # Mark user as inactive on logout
+    db.add(current_user)
+    db.commit()
+    return schemas.MessageResponse(message="Successfully logged out")
 
 @router.get("/me", response_model=schemas.User)
 def get_current_user_info(

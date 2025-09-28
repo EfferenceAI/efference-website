@@ -72,6 +72,13 @@ def update_user(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Email already registered"
             )
+    # If role is being updated, ensure it's a valid role
+    if user_update.role and user_update.role not in UserRole:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid user role"
+        )
+    
     
     db_user = crud.update_user(db, user_id=user_id, user_update=user_update)
     if db_user is None:
@@ -146,3 +153,4 @@ def get_user_by_email(
 @router.get("/me/role", response_model=UserRole)
 def get_current_user_role(current_user: schemas.User = Depends(get_current_user)) -> UserRole:
     return current_user.role
+
