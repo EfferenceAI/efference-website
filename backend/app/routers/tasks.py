@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.services import crud, schemas, database
+from app.routers.users import get_current_user_role
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -27,11 +28,12 @@ def create_task(
         )
     
     # Note: In production, you'd get this from JWT token authentication
-    # if creator.role != UserRole.ADMIN:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_403_FORBIDDEN,
-    #         detail="Only admins can create tasks"
-    #     )
+    current_Role = get_current_user_role(current_user=creator)
+    if current_Role != "ADMIN":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admins can create tasks"
+        )
     
     return crud.create_task(db=db, task=task, created_by_id=creator_id)
 
@@ -117,13 +119,13 @@ def create_task_assignment(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
-    
+    current_Role = get_current_user_role(current_user=user)
     # Note: In production, you'd check user role
-    # if user.role != UserRole.TRAINER:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_400_BAD_REQUEST,
-    #         detail="Only trainers can be assigned tasks"
-    #     )
+    if current_Role != "TRAINER":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only trainers can be assigned tasks"
+        )
     
     assignment_data = schemas.TaskAssignmentCreate(task_id=task_id, user_id=user_id)
     return crud.create_task_assignment(db=db, assignment=assignment_data)
