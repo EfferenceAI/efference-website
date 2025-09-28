@@ -1,0 +1,13 @@
+venv/
+backend/alembic
+backend/.env
+*.db
+*.sql
+*.pyc
+__pycache__/
+.DS_Store
+node_modules/
+.vscode/
+frontend/frontend/.next/
+frontend/frontend/.env
+backend/test.db
