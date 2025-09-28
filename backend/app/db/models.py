@@ -24,8 +24,9 @@ from .base import Base
 
 class UserRole(enum.Enum):
     ADMIN = "ADMIN"
-    TRAINER = "TRAINER"
+    WORKER = "WORKER"
     REVIEWER = "REVIEWER"
+    CLIENT = "CLIENT"
 
 class VideoSessionStatus(enum.Enum):
     UPLOADING = "UPLOADING"
@@ -51,10 +52,23 @@ class InvitationStatus(enum.Enum):
     EXPIRED = "EXPIRED"
 
 
+class TaskApplicationStatus(enum.Enum):
+    PENDING = "PENDING"
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
+
+
+class TaskRequestStatus(enum.Enum):
+    OPEN = "OPEN"
+    ASSIGNED = "ASSIGNED"
+    CLOSED = "CLOSED"
+    CANCELLED = "CANCELLED"
+
+
 # --- Model Definitions ---
 
 class User(Base):
-    """Represents a user in the system, who can be an Admin, Trainer, or Reviewer."""
+    """Represents a user in the system: Admin, Worker, Reviewer, or Client."""
     __tablename__ = "users"
 
     user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -78,10 +92,16 @@ class User(Base):
     # A user (admin) can create many tasks
     created_tasks: Mapped[list["Task"]] = relationship(back_populates="creator", foreign_keys="[Task.created_by_id]")
     
-    # A user (trainer) can have many task assignments
+    # A user (worker) can have many task assignments
     task_assignments: Mapped[list["TaskAssignment"]] = relationship(back_populates="user")
 
-    # A user (trainer) can create many video sessions
+    # A user (worker) can submit many task applications
+    task_applications: Mapped[list["TaskApplication"]] = relationship(
+        back_populates="user",
+        foreign_keys="[TaskApplication.user_id]"
+    )
+
+    # A user (worker) can create many video sessions
     created_sessions: Mapped[list["VideoSession"]] = relationship(back_populates="creator", foreign_keys="[VideoSession.creator_id]")
 
     # A user (reviewer) can be assigned to review many video sessions
@@ -92,6 +112,12 @@ class User(Base):
 
     # A user (admin) can send many invitations
     sent_invitations: Mapped[list["Invitation"]] = relationship(back_populates="invited_by")
+
+    # A user (client) can create many task requests
+    task_requests_created: Mapped[list["TaskRequest"]] = relationship(back_populates="client", foreign_keys="[TaskRequest.client_id]")
+
+    # A user (worker) may be assigned to task requests
+    task_requests_assigned: Mapped[list["TaskRequest"]] = relationship(back_populates="assigned_user", foreign_keys="[TaskRequest.assigned_user_id]")
 
     def __repr__(self):
         return f"<User(user_id={self.user_id}, name='{self.name}', role='{self.role.name}')>"
@@ -124,7 +150,7 @@ class Invitation(Base):
 
 
 class Task(Base):
-    """Represents a task defined by an Admin to be completed by a Trainer."""
+    """Represents a task template defined by an Admin."""
     __tablename__ = "tasks"
 
     task_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -134,21 +160,25 @@ class Task(Base):
     
     created_by_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.user_id"))
 
+    # Is Task active or completed
+    is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
+
     # --- Relationships ---
     creator: Mapped["User"] = relationship(back_populates="created_tasks")
     assignments: Mapped[list["TaskAssignment"]] = relationship(back_populates="task")
+    requests: Mapped[list["TaskRequest"]] = relationship(back_populates="task")
 
     def __repr__(self):
         return f"<Task(task_id={self.task_id}, title='{self.title}')>"
 
 
 class TaskAssignment(Base):
-    """Links a Trainer (User) to a Task they are assigned to complete."""
+    """Links a Worker (User) to a Task template they are assigned to for reporting."""
     __tablename__ = "task_assignments"
 
     assignment_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     task_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("tasks.task_id"))
-    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.user_id")) # This user must be a TRAINER
+    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.user_id")) # This user must be a WORKER
     assigned_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     # --- Relationships ---
@@ -159,12 +189,65 @@ class TaskAssignment(Base):
         return f"<TaskAssignment(task_id={self.task_id}, user_id={self.user_id})>"
 
 
+class TaskApplication(Base):
+    """Worker applies to a Client's TaskRequest; approver (admin or client) can approve/reject."""
+    __tablename__ = "task_applications"
+
+    application_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    request_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("task_requests.request_id"))
+    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.user_id"))  # worker id
+    status: Mapped[TaskApplicationStatus] = mapped_column(SQLAlchemyEnum(TaskApplicationStatus), default=TaskApplicationStatus.PENDING, nullable=False)
+    applied_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    decided_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    decided_by_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=True)
+
+    # Relationships
+    task_request: Mapped["TaskRequest"] = relationship()
+    user: Mapped["User"] = relationship(
+        back_populates="task_applications",
+        foreign_keys=[user_id]
+    )
+    decided_by: Mapped[Optional["User"]] = relationship(foreign_keys=[decided_by_id])
+
+    __table_args__ = (
+        UniqueConstraint('request_id', 'user_id', name='_request_user_application_uc'),
+    )
+
+    def __repr__(self):
+        return f"<TaskApplication(request_id={self.request_id}, user_id={self.user_id}, status='{self.status.name}')>"
+
+
+class TaskRequest(Base):
+    """A client requests help from workers for a specific task template."""
+    __tablename__ = "task_requests"
+
+    request_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    task_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("tasks.task_id"))
+    client_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.user_id"))
+    address: Mapped[str] = mapped_column(String(255), nullable=False)
+    other_info: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    status: Mapped[TaskRequestStatus] = mapped_column(SQLAlchemyEnum(TaskRequestStatus), default=TaskRequestStatus.OPEN, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    # Assignment details when approved
+    assigned_user_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=True)
+    assigned_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+    # Relationships
+    task: Mapped["Task"] = relationship(back_populates="requests")
+    client: Mapped["User"] = relationship(back_populates="task_requests_created", foreign_keys=[client_id])
+    assigned_user: Mapped[Optional["User"]] = relationship(back_populates="task_requests_assigned", foreign_keys=[assigned_user_id])
+
+    def __repr__(self):
+        return f"<TaskRequest(request_id={self.request_id}, task_id={self.task_id}, status='{self.status.name}')>"
+
+
 class VideoSession(Base):
-    """The central entity, representing a recording session for a specific task by a trainer."""
+    """The central entity, representing a recording session for a specific task by a worker."""
     __tablename__ = "video_sessions"
 
     session_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    creator_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.user_id")) # The trainer
+    creator_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.user_id")) # The worker
     task_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("tasks.task_id"))
     reviewer_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=True) # The reviewer
     

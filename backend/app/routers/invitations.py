@@ -174,7 +174,7 @@ def send_invitation_email(
     
     #crud.mark_invitation_sent(db, db_invitation.invitation_id)
     try: 
-        send_email(
+        sent = send_email(
     to_address=db_invitation.email,
     subject="You're Invited to Join Efference Video Training Platform",
     body=f"""
@@ -208,11 +208,15 @@ def send_invitation_email(
 </html>
 """
 )
+        if not sent:
+            raise RuntimeError("SES send_email returned False")
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to send invitation email: {str(e)}"
         )
+    # Mark as sent on success
+    crud.mark_invitation_sent(db, db_invitation.invitation_id)
     
     return schemas.MessageResponse(message="Invitation email sent successfully")
 

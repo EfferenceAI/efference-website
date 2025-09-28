@@ -147,10 +147,14 @@ class RequireRole:
 
 # Convenience functions for common role requirements
 require_admin = RequireRole(UserRole.ADMIN)
-require_trainer = RequireRole(UserRole.TRAINER)
+require_worker = RequireRole(UserRole.WORKER)
 require_reviewer = RequireRole(UserRole.REVIEWER)
-require_admin_or_trainer = RequireRole(UserRole.ADMIN, UserRole.TRAINER)
+require_admin_or_worker = RequireRole(UserRole.ADMIN, UserRole.WORKER)
 require_admin_or_reviewer = RequireRole(UserRole.ADMIN, UserRole.REVIEWER)
+
+# Backward-compatible aliases (deprecated)
+require_trainer = require_worker
+require_admin_or_trainer = require_admin_or_worker
 
 
 def get_current_user_id(current_user: User = Depends(get_current_active_user)) -> uuid.UUID:
