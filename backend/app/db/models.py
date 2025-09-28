@@ -64,7 +64,10 @@ class User(Base):
     
     # --- Security ---
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
-    
+
+    # --- Is User active ---
+    is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
+
     # --- Invitation Status ---
     is_invited: Mapped[bool] = mapped_column(default=False, nullable=False)
     invitation_used_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)

@@ -107,10 +107,9 @@ async def get_current_user(
 async def get_current_active_user(
     current_user: User = Depends(get_current_user)
 ) -> User:
-    """Get the current active user (placeholder for user deactivation logic)"""
-    # In the future, you might add an 'is_active' field to the User model
-    # if not current_user.is_active:
-    #     raise HTTPException(status_code=400, detail="Inactive user")
+    """Get the current active user"""
+    if not current_user.is_active:
+        raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
 
