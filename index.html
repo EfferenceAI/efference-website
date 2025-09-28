@@ -3,130 +3,94 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Efference | Robotic Ability Broker</title>
+  <title>Efference</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="/images/logo.png">
 </head>
 <body>
   <header>
+    <a href="#" class="logo-link">
+      <img class="logo" src="images/logo.png" alt="">
+      <h1>Efference</h1>
+    </a>
     <nav>
-      <ul>
-        <li><a href="#hero">Efference</a></li>
-        <li><a href="#company">Company</a></li>
-        <li><a href="#gallery">Gallery</a></li>
-        <li><a href="#team">Team</a></li>
-        <li><a href="index.html">Contact</a></li>
+      <ul class="nav-links">
+        <!-- <li><a href="#" class="standard-button">LEGO-1000</a></li>  -->
+        <li><a href="https://jobs.gem.com/efference-ai" class="standard-button">Careers</a></li>
+        <li><a href="mailto:gianluca@efference.ai" class="contact-us-button">Contact Us</a></li>
       </ul>
     </nav>
   </header>
 
-  <section id="hero" class="hero">
-    <div class="hero-container">
-      <h1 style="color: white">Your robotic ability broker</h1>
+  <div class="hero-container">
+  <video class="hero" autoplay loop muted playsinline>
+      <source src="videos/compressed.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  </div>
+
+  <!-- <hr> -->
+
+  <div id="company" class="company">
+    <h4>Company</h4>
+    <div class="company-description">
+      <h2>Efference integrates seamlessly into existing workflows to automate physical labor. 
+        We transform human demonstrations into robotic data, enabling robots that improve efficiency and cut costs, without disrupting ongoing operations.</h2>
     </div>
-  </section>
+  </div>
 
-  <section id="company" class="words">
-    <div class="words-container">
-      <h5>Company</h5>
-      <p>Efference sells robotic skills. We curate high-quality, first-person video from human experts across diverse capture devices. This data powers world models, pre-training for vision-language-action models, and specialized diffusion policies.</p>
-      <p>Robotics goes beyond folding laundry or making beds. Our goal is to inspire, entertain, and automate dangerous physical work. We capture everyday household tasks, factory operations, and high-risk activities alike.</p>
+  <!-- <div id="how-it-works" class="company">
+    <h4>How It Works</h4>
+    <div class="company-description">
+      <h2>Every physical workflow has inefficiencies:</h2>
+      <br>
+      <ul class="indented-list">
+        <li>A single slow step that drags down throughput.</li>
+        <li>Fatigue and human error that reduce consistency.</li>
+        <li>Mundane tasks no one wants to do but still cost valuable labor.</li>
+      </ul>
+      <br>
+      <h2>Think of assembling furniture at home, filling packages in a fulfillment center, or preparing a pharmaceutical shipment.</h2>
+      <br>
+      <ol class="process-steps">
+        <li>
+          <strong>Observe &amp; Analyze</strong> – We visit your workflow, identify inefficiencies, 
+          and determine where automation adds the most value.
+        </li>
+        <li>
+          <strong>Capture Expertise</strong> – We equip workers with cameras so normal work continues 
+          uninterrupted. Their demonstrations become training data.
+        </li>
+        <li>
+          <strong>Train the Robot</strong> – We turn that video into robotic skill data and teach 
+          robots to match human performance.
+        </li>
+        <li>
+          <strong>Deploy the Fit</strong> – We select the right robotic form factor for your task, 
+          test it, and integrate it into your existing operations.
+        </li>
+      </ol>
     </div>
-  </section>
+  </div> -->
 
-  <section class="words" style="padding-top:0; text-align:center; padding-bottom: 0;">
-    <div class="words-container">
-      <h4>Available Data</h4>
-
-      <div style="
-        display:inline-grid;
-        grid-template-columns:auto min-content auto min-content auto;
-        padding-top: 1em;
-        column-gap:.5rem; row-gap:.25rem; align-items:end;
-        font-variant-numeric:tabular-nums;">
-        
-        <!-- numbers row -->
-        <div style="font-size:2rem; font-weight:700; letter-spacing:.05em;">101</div>
-        <div style="font-size:2rem; font-weight:700;">:</div>
-        <div style="font-size:2rem; font-weight:700; letter-spacing:.05em;">51</div>
-        <div style="font-size:2rem; font-weight:700;">:</div>
-        <div style="font-size:2rem; font-weight:700; letter-spacing:.05em;">32</div>
-
-        <!-- labels row (under the number columns) -->
-        <div style="font-size:.9rem; letter-spacing:.08em;">Hours</div>
-        <div></div>
-        <div style="font-size:.9rem; letter-spacing:.08em;">Minutes</div>
-        <div></div>
-        <div style="font-size:.9rem; letter-spacing:.08em;">Seconds</div>
-      </div>
+  <div id="team" class="team">
+    <h4>Team</h4>
+    <div class="team-description">
+      <h2><a href="https://gianlucabencomo.github.io">Gianluca Bencomo</a></h2>
     </div>
-  </section>
+  </div>
 
-  <section id="gallery" class="tasks">
-    <h5>Gallery</h5>
-    <!-- <p>Some stuff about how we collect for anything. We have a bunch of human experts ready for various tasks to collect.</p> -->
-    <div class="tasks-grid" style="margin-top:1.5em">
-      <figure class="task">
-        <video src="videos/laundry.mp4" muted autoplay loop playsinline preload="metadata" poster="media/task01.jpg"></video>
-        <figcaption class="label">Laundry</figcaption>
-      </figure>
-
-      <figure class="task">
-        <video src="videos/furniture.mp4" muted autoplay loop playsinline preload="metadata" poster="media/task02.jpg"></video>
-        <figcaption class="label">Furniture Assembly</figcaption>
-      </figure>
-
-      <figure class="task">
-        <video src="videos/cleaning.mp4" muted autoplay loop playsinline preload="metadata" poster="media/task03.jpg"></video>
-        <figcaption class="label">Cleaning</figcaption>
-      </figure>
-
-      <figure class="task">
-        <video src="videos/driving.mp4" muted autoplay loop playsinline preload="metadata" poster="media/task03.jpg"></video>
-        <figcaption class="label">Driving</figcaption>
-      </figure>
-
-      <figure class="task">
-        <video src="videos/guitar.mp4" muted autoplay loop playsinline preload="metadata" poster="media/task03.jpg"></video>
-        <figcaption class="label">Guitar</figcaption>
-      </figure>
-
-      <figure class="task">
-        <video src="videos/medical.mp4" muted autoplay loop playsinline preload="metadata" poster="media/task03.jpg"></video>
-        <figcaption class="label">Medical</figcaption>
-      </figure>
-    </div>
-    <!-- <p style="margin-bottom:0">And much more. The tasks we are currently interested in include: ...</p> -->
-  </section>
-
-  <section id="team" class="words">
-    <div class="words-container">
-      <h5>Team</h5>
-      <p style="text-align: center"><a href="https://x.com/gianlucabencomo">Gianluca Bencomo</a></p>
-    </div>
-  </section>
-
-  <section class="words" style="padding-top:0">
-    <div class="words-container">
-      <h5>Contact</h5>
-      <p style="text-align:center;">
-        Reach out to us at 
-        <a href="mailto:sales@efference.ai" style="color:var(--primary-color); font-weight:600;">
-          sales@efference.ai
-        </a>
-        to discuss our pilot program.
-      </p>
-    </div>
-  </section>
+  <hr style="background: gray">
 
   <footer>
-  <p>© 2025 Remnant Robotics, Inc. All rights reserved.</p>
-  <p>
-    <a href="#company">Company</a> ·
-    <a href="#gallery">Gallery</a> ·
-    <a href="#team">Team</a> ·
-    <a href="#contact">Contact</a>
-  </p>
-</footer>
-
+    <p>© 2025 Remnant Robotics, Inc. All rights reserved.</p>
+    <p class="footer-links">
+      <a href="https://x.com/efferenceAI">X</a> 
+      &middot; 
+      <a href="https://www.linkedin.com/company/efference">LinkedIn</a> 
+      &middot; 
+      <a href="mailto:gianluca@efference.ai">Contact</a>
+    </p>
+  </footer>
 </body>
 </html>

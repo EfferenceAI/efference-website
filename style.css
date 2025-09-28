@@ -1,208 +1,185 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap');
-
-:root {
-    --base-color: #FAF9EE;
-    --text-color: #111111;
-    --primary-color: #A2AF9B;
-    --secondary-color: #DCCFC0;
-    --surface: #EEEEEE;
-    --container-max: 100em;
-    --pad: clamp(1rem, 3vw, 2rem);
-}
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap');
 
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
-
-html {
-  font-family: "Space Grotesk", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color: var(--text-color);
-}
-
-/* Layout containers */
-header, section {
-    margin: 0 auto;
-    width: min(var(--container-max), 100%);
-}
-section {
-    padding: 3em var(--pad);
-    background-color: var(--surface);
-}
-
-/* Nav */
-nav {
-    margin: 1em auto;
-    width: min(var(--container-max), 100%);
-    padding-inline: var(--pad);
-    font-size: 1.15rem;
-}
-nav ul {
-    display: flex;
-    align-items: center;
-    list-style-type: none;
-    gap: 2em;
-}
-nav li:first-child {
-    margin-right: auto;
-    font-weight: 700;
-}
-
-/* Links (kept global hover scale to match current behavior) */
-a {
-  text-decoration: none; /* Take off underline */
-  display: inline-block; /* Needed for transform */
-  color: var(--text-color);
-  transition: transform 0.25s ease; /* Needed for transform */
-}
-
-a:hover {
-    transform: scale(1.05);
-}
-
-/* Hero */
-.hero {
-  background: url("images/hero.jpg") center / cover no-repeat;
-  height: 420px;           /* constant height */
-  display: grid;           /* easy centering */
-  overflow: hidden;        /* prevents spillover if content is taller */
-}
-.hero-container {
-    justify-self: start;  /* right */
-    align-self: end;    /* bottom */
-    text-align: left;
-    max-inline-size: 60%;
-}
-
-/* Generic text sections */
-.words { 
-    text-align: left; 
-    background-color: transparent;
-}
-
-/* Typography */
-h1 { font-size: 2.5rem; }
-h2 { font-size: 2rem; }
-.text-lg { font-size: 1.25rem; }
-
 
 body {
-    background-color: var(--base-color);
+  background-color: black;
+  font-family: "Inter", sans-serif;
+  margin: 0 auto;
+  width: min(90em, 100%);
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 1em;
+  padding: 1em 0;
+}
+
+.logo-link {
+  display: flex;
+  justify-content: center;
+  gap: 0.2em;
+  text-decoration: none;
+  color: white;
+}
+
+.logo-link h1 {
+  font-size: 2.4em;
+  font-weight: 300;
+}
+
+.logo {
+  width: 2em;   /* control image size here */
+  height: auto;  /* keeps aspect ratio */
+  object-fit: contain;
 }
 
 
-.flex-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 3em;
+/* nav */
+.nav-links {
+  display: flex;
+  gap: 1em;
+  font-size: 1em;
+  font-weight: 500;
+  list-style: none;
 }
 
-header img {
-    max-width: 100%;
-    object-fit: cover;
-    object-position: bottom;
+/* buttons */
+.standard-button {
+  display: inline-block;
+  color: white;
+  text-decoration: none;
+  padding: 0.6em 1em;
+  font-weight: 500;
+  transition: all 0.2s ease;   /* smooth hover */
 }
 
-.text-container {
-    flex: 0 1 34em;
+.contact-us-button {
+  display: inline-block;
+  text-decoration: none;
+  color: black;                /* text color */
+  background-color: pink;      /* base background */
+  padding: 0.6em 1em;
+  font-weight: 500;
+  transition: all 0.2s ease;   /* smooth hover */
 }
 
-.text-container p {
-    margin: .75em 0 1em 0;
-    font-size: 1.25rem;
+.contact-us-button:hover, .standard-button:hover {
+  color: black;
+  background-color: white;
 }
 
-.cta-button {
-    display: inline-block;
-    text-decoration: none;
-    color: white;
-    background-color: var(--primary-color);
-    padding: .75em 1.25em;
-    font-weight: bold;
+.contact-us-button:active, .standard-button:active {
+  opacity: 0.7;
 }
 
-.secondary {
-    background-color: var(--secondary-color);
+/* hero */
+.hero-container {
+  width: calc(100% - 2em);   /* apply margin at the container level */
+  margin: 0 1em;
+  aspect-ratio: 1.618;
+  position: relative;
+  overflow: hidden;
 }
 
-section p {
-    margin-top: 1em;
-    font-size: 1.25rem;
-}
-
-/* Tasks section */
-.tasks {
-  text-align: left;                    /* override your section center */
-  background-color: var(--color-2);
-  padding: 3em min(2em, 15%);
-}
-
-#tasks > p {
-  margin-bottom: 1rem;            /* or margin-block-end: 1.25rem; */
-}
-
-.tasks-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem;
-}
-
-@media (max-width: 1200px) {
-  .tasks-grid { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 800px) {
-  .tasks-grid { grid-template-columns: 1fr; }
-}
-
-.task { 
-  position: relative;            /* establishes positioning context */
-  overflow: hidden;              /* keeps caption inside the tile */
-}
-
-.task video {
-  display: block;
-  width: 100%;
-  object-fit: cover;
-}
-
-.task .label {
+.hero {
   position: absolute;
-  left: .75rem;
-  bottom: .75rem;
-  color: #fff;
-  font-weight: 600;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;  /* ensures perfect center crop */
+  transform: translate(-50%, -50%);
+}
+
+hr, .internal-break {
+  border: none;
+  height: 1px;
+  margin: 1em 0;
+}
+
+hr { 
+  background: white; 
+  margin: 1em;
+}
+.internal-break { 
+  background: gray; 
+}
+
+.company, .team {
+  display: grid;
+  grid-template-columns: 1fr; /* always single column */
+  row-gap: 1em;               /* spacing between h4 and text */
+  margin: 1em;
+  margin-bottom: 2em;
+}
+
+.company h4,
+.company-description h2,
+.company-description p {
+  color: white;
+}
+
+.company-description h2 {
+  font-weight: 200;
+}
+
+.indented-list, .process-steps {
+  color: white;
+  font-weight: 200;
+  margin-left: max(5em, 10%);
+  font-size: 24px;
+}
+
+.team h4, .team-description a {
+  color: white;
+}
+
+.team-description h2{
+  text-align: center;
+}
+
+.team-description a {
+  text-decoration: none;
+  font-weight: 200;
+  transition: all 0.2s ease;
+}
+
+.team-description a:hover {
+  color: gray;
+}
+
+.team-description a:active {
+  opacity: 0.7;
 }
 
 footer {
-  background: var(--secondary-color);
-  color: var(--text-color);
   text-align: center;
-  padding: 1.5em var(--pad);
-  font-size: 0.9rem;
-  margin-top: 2em;
+  margin: 0 1em;
+  padding-bottom: 1em;
 }
 
-footer a {
-  color: var(--text-color);
-  font-weight: 600;
+footer p {
+  color: gray;
+  padding-bottom: 0.5em;
 }
 
-footer a:hover {
-  color: var(--primary-color);
-  transform: none; /* disable scale hover for footer links */
+.footer-links a {
+  color: white;
+  text-decoration: none;
+  transition: all 0.2s ease;
 }
 
-@media (max-width: 700px) {
-  nav ul {
-    justify-content: center;   /* center items */
-  }
-  nav ul li:not(:first-child) {
-    display: none;             /* hide all but first */
-  }
-  nav li:first-child {
-    margin-right: 0;           /* remove the auto push */
-  }
+.footer-links a:hover {
+  color: gray;
+}
+
+.footer-links a:active {
+  opacity: 0.7;
 }
