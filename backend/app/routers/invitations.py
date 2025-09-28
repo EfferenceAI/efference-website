@@ -39,7 +39,7 @@ def create_invitation(
             detail="Expiry must be between 1 and 30 days"
         )
     
-    expires_at = datetime.utcnow() + timedelta(days=expires_in_days)
+    expires_at = datetime.now(datetime.timezone.utc) + timedelta(days=expires_in_days)
     
     # Check if user with this email already exists
     existing_user = crud.get_user_by_email(db, invitation.email)
@@ -120,7 +120,7 @@ def update_invitation(
         raise HTTPException(status_code=404, detail="Invitation not found")
     
     if invitation_update.status is not None:
-        used_at = datetime.utcnow() if invitation_update.status == InvitationStatus.USED else None
+        used_at = datetime.now(datetime.timezone.utc) if invitation_update.status == InvitationStatus.USED else None
         updated_invitation = crud.update_invitation_status(
             db=db,
             invitation_id=invitation_id,
@@ -241,7 +241,7 @@ def validate_invitation_code(
             detail="Invitation code has expired or been used"
         )
     
-    if datetime.utcnow() > db_invitation.expires_at:
+    if datetime.now(datetime.timezone.utc) > db_invitation.expires_at:
         # Auto-expire the invitation
         crud.update_invitation_status(db, db_invitation.invitation_id, InvitationStatus.EXPIRED)
         raise HTTPException(
