@@ -149,8 +149,5 @@ def get_user_by_email(
     return db_user
 
 
-# Get logged in user current role
-@router.get("/me/role", response_model=UserRole)
-def get_current_user_role(current_user: schemas.User = Depends(get_current_user)) -> UserRole:
-    return current_user.role
+
 

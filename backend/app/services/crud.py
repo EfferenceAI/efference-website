@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, or_, func
 from datetime import datetime
 """
-Do not import get_password_hash, verify_password at the top level to avoid circular import.
+PS: I fell into this trap! Do not import get_password_hash, verify_password at the top level to avoid circular import.
 Import them inside functions where needed.
 """
 
@@ -91,12 +91,12 @@ def update_user_password(db: Session, user_id: uuid.UUID, password_update: schem
         return None
     
     # Verify current password
-        from .auth import verify_password, get_password_hash
-        if not verify_password(password_update.current_password, db_user.hashed_password):
-            return None
-    
+    from .auth import verify_password, get_password_hash
+    if not verify_password(password_update.current_password, db_user.hashed_password):
+        return None
+
     # Set new password
-        db_user.hashed_password = get_password_hash(password_update.new_password)
+    db_user.hashed_password = get_password_hash(password_update.new_password)
     db.commit()
     db.refresh(db_user)
     return db_user
@@ -201,7 +201,8 @@ def create_task(db: Session, task: schemas.TaskCreate, created_by_id: uuid.UUID)
     db_task = models.Task(
         title=task.title,
         description=task.description,
-        created_by_id=created_by_id
+        created_by_id=created_by_id,
+        is_active=task.is_active
     )
     db.add(db_task)
     db.commit()
@@ -273,6 +274,139 @@ def create_task_assignment(db: Session, assignment: schemas.TaskAssignmentCreate
 def delete_task_assignment(db: Session, assignment_id: uuid.UUID) -> bool:
     """Delete a task assignment"""
     return delete_by_id(db, models.TaskAssignment, assignment_id)
+
+
+# --- Task Application CRUD Operations ---
+
+def get_task_application(db: Session, application_id: uuid.UUID) -> Optional[models.TaskApplication]:
+    return db.query(models.TaskApplication).options(
+        joinedload(models.TaskApplication.task_request),
+        joinedload(models.TaskApplication.user)
+    ).filter(models.TaskApplication.application_id == application_id).first()
+
+
+def get_task_applications(
+    db: Session,
+    request_id: Optional[uuid.UUID] = None,
+    user_id: Optional[uuid.UUID] = None,
+    status: Optional[models.TaskApplicationStatus] = None,
+) -> List[models.TaskApplication]:
+    query = db.query(models.TaskApplication).options(
+        joinedload(models.TaskApplication.task_request),
+        joinedload(models.TaskApplication.user)
+    )
+    if request_id:
+        query = query.filter(models.TaskApplication.request_id == request_id)
+    if user_id:
+        query = query.filter(models.TaskApplication.user_id == user_id)
+    if status:
+        query = query.filter(models.TaskApplication.status == status)
+    return query.all()
+
+
+def create_task_application(db: Session, application: schemas.TaskApplicationCreate, user_id: uuid.UUID) -> models.TaskApplication:
+    # Prevent duplicate applications per (task_id, user_id)
+    existing = db.query(models.TaskApplication).filter(
+        and_(models.TaskApplication.request_id == application.request_id,
+             models.TaskApplication.user_id == user_id)
+    ).first()
+    if existing:
+        return existing
+
+    db_app = models.TaskApplication(
+        request_id=application.request_id,
+        user_id=user_id,
+    )
+    db.add(db_app)
+    db.commit()
+    db.refresh(db_app)
+    return db_app
+
+
+def decide_task_application(
+    db: Session,
+    application_id: uuid.UUID,
+    approver_id: uuid.UUID,
+    approve: bool,
+) -> Optional[models.TaskApplication]:
+    app = get_task_application(db, application_id)
+    if not app:
+        return None
+    if app.status != models.TaskApplicationStatus.PENDING:
+        return app
+
+    app.status = models.TaskApplicationStatus.APPROVED if approve else models.TaskApplicationStatus.REJECTED
+    app.decided_at = datetime.utcnow()
+    app.decided_by_id = approver_id
+    db.commit()
+    db.refresh(app)
+
+    # On approval, assign worker to request and create a TaskAssignment
+    if approve:
+        # Assign request to user
+        req = db.query(models.TaskRequest).filter(models.TaskRequest.request_id == app.request_id).first()
+        if req and req.status == models.TaskRequestStatus.OPEN:
+            req.status = models.TaskRequestStatus.ASSIGNED
+            req.assigned_user_id = app.user_id
+            req.assigned_at = datetime.utcnow()
+            db.commit()
+            db.refresh(req)
+            # Create TaskAssignment linking task template and worker (for reporting)
+            assignment = schemas.TaskAssignmentCreate(task_id=req.task_id, user_id=app.user_id)
+            create_task_assignment(db, assignment)
+
+    return app
+
+
+# --- Task Request CRUD Operations ---
+
+def get_task_request(db: Session, request_id: uuid.UUID) -> Optional[models.TaskRequest]:
+    return db.query(models.TaskRequest).options(
+        joinedload(models.TaskRequest.task),
+        joinedload(models.TaskRequest.client),
+        joinedload(models.TaskRequest.assigned_user)
+    ).filter(models.TaskRequest.request_id == request_id).first()
+
+
+def get_task_requests(
+    db: Session,
+    client_id: Optional[uuid.UUID] = None,
+    task_id: Optional[uuid.UUID] = None,
+    status: Optional[models.TaskRequestStatus] = None,
+) -> List[models.TaskRequest]:
+    query = db.query(models.TaskRequest)
+    if client_id:
+        query = query.filter(models.TaskRequest.client_id == client_id)
+    if task_id:
+        query = query.filter(models.TaskRequest.task_id == task_id)
+    if status:
+        query = query.filter(models.TaskRequest.status == status)
+    return query.all()
+
+
+def create_task_request(db: Session, req: schemas.TaskRequestCreate, client_id: uuid.UUID) -> models.TaskRequest:
+    db_req = models.TaskRequest(
+        task_id=req.task_id,
+        client_id=client_id,
+        address=req.address,
+        other_info=req.other_info
+    )
+    db.add(db_req)
+    db.commit()
+    db.refresh(db_req)
+    return db_req
+
+
+def update_task_request(db: Session, request_id: uuid.UUID, update: schemas.TaskRequestUpdate) -> Optional[models.TaskRequest]:
+    db_req = get_task_request(db, request_id)
+    if not db_req:
+        return None
+    data = update.model_dump(exclude_unset=True)
+    for k, v in data.items():
+        setattr(db_req, k, v)
+    db.commit()
+    db.refresh(db_req)
+    return db_req
 
 
 # --- Video Session CRUD Operations ---
@@ -522,7 +656,7 @@ def get_user_statistics(db: Session, user_id: uuid.UUID) -> dict:
     }
     
     # Count sessions created
-    if user.role == models.UserRole.TRAINER:
+    if user.role == models.UserRole.WORKER:
         stats["total_sessions_created"] = db.query(models.VideoSession).filter(
             models.VideoSession.creator_id == user_id
         ).count()
@@ -534,7 +668,7 @@ def get_user_statistics(db: Session, user_id: uuid.UUID) -> dict:
         ).count()
     
     # Count task assignments
-    if user.role == models.UserRole.TRAINER:
+    if user.role == models.UserRole.WORKER:
         stats["total_tasks_assigned"] = db.query(models.TaskAssignment).filter(
             models.TaskAssignment.user_id == user_id
         ).count()

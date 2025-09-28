@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime
 from typing import Optional, List
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
-from ..db.models import UserRole, VideoSessionStatus, ReviewStatus, ProcessingJobStatus, InvitationStatus
+from ..db.models import UserRole, VideoSessionStatus, ReviewStatus, ProcessingJobStatus, InvitationStatus, TaskApplicationStatus, TaskRequestStatus
 
 
 # --- Base Schemas ---
@@ -119,7 +119,7 @@ class TaskBase(BaseSchema):
 
 class TaskCreate(TaskBase):
     """Schema for creating a new task"""
-    pass
+    is_active: bool = True
 
 
 class TaskUpdate(BaseSchema):
@@ -160,6 +160,57 @@ class TaskAssignment(TaskAssignmentBase):
     assigned_at: datetime
     task: Optional[Task] = None
     user: Optional[User] = None
+
+
+# --- Task Application Schemas ---
+
+class TaskApplicationBase(BaseSchema):
+    request_id: uuid.UUID
+
+
+class TaskApplicationCreate(TaskApplicationBase):
+    pass
+
+
+class TaskApplicationUpdate(BaseSchema):
+    status: Optional[TaskApplicationStatus] = None
+
+
+class TaskApplication(TaskApplicationBase):
+    application_id: uuid.UUID
+    user_id: uuid.UUID
+    status: TaskApplicationStatus
+    applied_at: datetime
+    decided_at: Optional[datetime] = None
+    decided_by_id: Optional[uuid.UUID] = None
+    user: Optional[User] = None
+
+
+# --- Task Request Schemas ---
+
+class TaskRequestBase(BaseSchema):
+    task_id: uuid.UUID
+    address: str = Field(..., min_length=1, max_length=255)
+    other_info: Optional[str] = None
+
+
+class TaskRequestCreate(TaskRequestBase):
+    pass
+
+
+class TaskRequestUpdate(BaseSchema):
+    address: Optional[str] = Field(None, min_length=1, max_length=255)
+    other_info: Optional[str] = None
+    status: Optional[TaskRequestStatus] = None
+
+
+class TaskRequest(TaskRequestBase):
+    request_id: uuid.UUID
+    client_id: uuid.UUID
+    status: TaskRequestStatus
+    created_at: datetime
+    assigned_user_id: Optional[uuid.UUID] = None
+    assigned_at: Optional[datetime] = None
 
 
 # --- Video Session Schemas ---

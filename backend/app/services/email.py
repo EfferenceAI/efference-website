@@ -34,3 +34,6 @@ def send_email(to_address: str, subject: str, body: str) -> bool:
     except ClientError as e:
         print(f"Failed to send email: {e.response['Error']['Message']}")
         return False
+    else:
+        # print(f"SES MessageId: {response.get('MessageId')}")
+        return True
