@@ -1,6 +1,6 @@
 import uuid
 import enum
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 # Import password hashing utilities
@@ -85,8 +85,8 @@ class User(Base):
     # --- Invitation Status ---
     is_invited: Mapped[bool] = mapped_column(default=False, nullable=False)
     invitation_used_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
-    
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
 
     # --- Relationships ---
     # A user (admin) can create many tasks
@@ -138,7 +138,7 @@ class Invitation(Base):
     expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     
     # Timestamps
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
     sent_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     used_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     
@@ -156,7 +156,7 @@ class Task(Base):
     task_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(Text)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
     
     created_by_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.user_id"))
 
@@ -179,7 +179,7 @@ class TaskAssignment(Base):
     assignment_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     task_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("tasks.task_id"))
     user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.user_id")) # This user must be a WORKER
-    assigned_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    assigned_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
 
     # --- Relationships ---
     task: Mapped["Task"] = relationship(back_populates="assignments")
@@ -197,7 +197,7 @@ class TaskApplication(Base):
     request_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("task_requests.request_id"))
     user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.user_id"))  # worker id
     status: Mapped[TaskApplicationStatus] = mapped_column(SQLAlchemyEnum(TaskApplicationStatus), default=TaskApplicationStatus.PENDING, nullable=False)
-    applied_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    applied_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
     decided_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     decided_by_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=True)
 
@@ -227,7 +227,7 @@ class TaskRequest(Base):
     address: Mapped[str] = mapped_column(String(255), nullable=False)
     other_info: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     status: Mapped[TaskRequestStatus] = mapped_column(SQLAlchemyEnum(TaskRequestStatus), default=TaskRequestStatus.OPEN, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
 
     # Assignment details when approved
     assigned_user_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=True)
@@ -259,8 +259,8 @@ class VideoSession(Base):
     # For Step Functions manual review step
     step_function_task_token: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.now(timezone.utc))
 
     # --- Relationships ---
     creator: Mapped["User"] = relationship(back_populates="created_sessions", foreign_keys=[creator_id])
@@ -284,7 +284,7 @@ class RawClip(Base):
     s3_key: Mapped[str] = mapped_column(String(1024), nullable=False)
     part_number: Mapped[int] = mapped_column(Integer, nullable=False)
     filesize_bytes: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    upload_completed_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    upload_completed_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
 
     # --- Relationships ---
     session: Mapped["VideoSession"] = relationship(back_populates="raw_clips")
@@ -306,7 +306,7 @@ class Review(Base):
     status: Mapped[ReviewStatus] = mapped_column(SQLAlchemyEnum(ReviewStatus), nullable=False)
     comments: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
 
     # --- Relationships ---
     session: Mapped["VideoSession"] = relationship(back_populates="review")
@@ -328,7 +328,7 @@ class ProcessingJob(Base):
     batch_job_id_transcode: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     
     status: Mapped[ProcessingJobStatus] = mapped_column(SQLAlchemyEnum(ProcessingJobStatus), nullable=False)
-    start_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    start_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
     end_time: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     
     # --- Relationships ---
