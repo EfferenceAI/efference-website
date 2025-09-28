@@ -182,7 +182,7 @@ def mark_invitation_sent(db: Session, invitation_id: uuid.UUID) -> Optional[mode
         return None
     
     db_invitation.status = models.InvitationStatus.SENT
-    db_invitation.sent_at = datetime.utcnow()
+    db_invitation.sent_at = datetime.now(datetime.timezone.utc)
     db.commit()
     db.refresh(db_invitation)
     return db_invitation
@@ -348,7 +348,7 @@ def decide_task_application(
         return app
 
     app.status = models.TaskApplicationStatus.APPROVED if approve else models.TaskApplicationStatus.REJECTED
-    app.decided_at = datetime.utcnow()
+    app.decided_at = datetime.now(datetime.timezone.utc)
     app.decided_by_id = approver_id
     db.commit()
     db.refresh(app)
@@ -360,7 +360,7 @@ def decide_task_application(
         if req and req.status == models.TaskRequestStatus.OPEN:
             req.status = models.TaskRequestStatus.ASSIGNED
             req.assigned_user_id = app.user_id
-            req.assigned_at = datetime.utcnow()
+            req.assigned_at = datetime.now(datetime.timezone.utc)
             db.commit()
             db.refresh(req)
             # Create TaskAssignment linking task template and worker (for reporting)
@@ -487,7 +487,7 @@ def update_video_session(db: Session, session_id: uuid.UUID, session_update: sch
     for field, value in update_data.items():
         setattr(db_session, field, value)
     
-    db_session.updated_at = datetime.utcnow()
+    db_session.updated_at = datetime.now(datetime.timezone.utc)
     db.commit()
     db.refresh(db_session)
     return db_session
