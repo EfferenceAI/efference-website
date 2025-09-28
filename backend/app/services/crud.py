@@ -6,7 +6,7 @@ import uuid
 from typing import Optional, List, Type
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, or_, func
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.inspection import inspect as sa_inspect
 """
 PS: I fell into this trap! Do not import get_password_hash, verify_password at the top level to avoid circular import.
