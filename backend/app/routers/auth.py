@@ -30,6 +30,10 @@ def login(
         data={"sub": str(user.user_id), "email": user.email},
         expires_delta=access_token_expires
     )
+    user.is_active = True  # Mark user as active on login
+    db.add(user)
+    db.commit()
+    db.refresh(user)
     
     return schemas.Token(access_token=access_token, token_type="bearer")
 

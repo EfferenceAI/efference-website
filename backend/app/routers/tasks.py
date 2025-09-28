@@ -8,6 +8,8 @@ from sqlalchemy.orm import Session
 
 from app.services import crud, schemas, database
 from app.routers.users import get_current_user_role
+from app.db.models import UserRole
+from app.services.auth import get_current_user
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -15,28 +17,16 @@ router = APIRouter(prefix="/tasks", tags=["tasks"])
 @router.post("/", response_model=schemas.Task, status_code=status.HTTP_201_CREATED)
 def create_task(
     task: schemas.TaskCreate,
-    creator_id: uuid.UUID = Query(..., description="ID of the user creating the task"),
-    db: Session = Depends(database.get_db)
+    db: Session = Depends(database.get_db),
+    current_user: schemas.User = Depends(get_current_user),
 ):
     """Create a new task"""
-    # Verify that the creator exists and is an admin
-    creator = crud.get_user(db, user_id=creator_id)
-    if not creator:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Creator not found"
-        )
-    
-    # Note: In production, you'd get this from JWT token authentication
-    current_Role = get_current_user_role(current_user=creator)
-    if current_Role != "ADMIN":
+    if current_user.role != UserRole.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only admins can create tasks"
         )
-    
-    return crud.create_task(db=db, task=task, created_by_id=creator_id)
-
+    return crud.create_task(db=db, task=task, created_by_id=current_user.user_id)
 
 @router.get("/", response_model=List[schemas.Task])
 def list_tasks(
