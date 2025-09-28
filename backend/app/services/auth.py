@@ -15,11 +15,15 @@ from sqlalchemy.orm import Session
 
 from . import crud, database, schemas
 from ..db.models import User, UserRole
+from ..config import settings
 
 # JWT Configuration
-SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-here-change-in-production")
-ALGORITHM = "HS256"
+SECRET_KEY = settings.JWT_SECRET_KEY or os.getenv("SECRET_KEY")
+ALGORITHM = settings.JWT_ALGORITHM if hasattr(settings, "JWT_ALGORITHM") else "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
+ENV = (os.getenv("ENV") or os.getenv("ENVIRONMENT") or os.getenv("APP_ENV") or "development").lower()
+if ENV in {"production", "prod"} and not SECRET_KEY:
+    raise RuntimeError("JWT secret key is required in production")
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -152,9 +156,9 @@ require_reviewer = RequireRole(UserRole.REVIEWER)
 require_admin_or_worker = RequireRole(UserRole.ADMIN, UserRole.WORKER)
 require_admin_or_reviewer = RequireRole(UserRole.ADMIN, UserRole.REVIEWER)
 
-# Backward-compatible aliases (deprecated)
-require_trainer = require_worker
-require_admin_or_trainer = require_admin_or_worker
+# # Backward-compatible aliases (deprecated)
+# require_trainer = require_worker
+# require_admin_or_trainer = require_admin_or_worker
 
 
 def get_current_user_id(current_user: User = Depends(get_current_active_user)) -> uuid.UUID:
