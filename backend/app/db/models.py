@@ -260,7 +260,7 @@ class VideoSession(Base):
     step_function_task_token: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
     # --- Relationships ---
     creator: Mapped["User"] = relationship(back_populates="created_sessions", foreign_keys=[creator_id])

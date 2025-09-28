@@ -120,7 +120,7 @@ def register(
             detail="Invitation code is not valid for this email address"
         )
 
-    if datetime.now(datetime.timezone.utc) > invitation.expires_at:
+    if datetime.now(timezone.utc) > invitation.expires_at:
         # Auto-expire the invitation
         crud.update_invitation_status(db, invitation.invitation_id, schemas.InvitationStatus.EXPIRED)
         raise HTTPException(
@@ -139,7 +139,7 @@ def register(
     
     # Mark user as invited and update invitation status
     new_user.is_invited = True
-    new_user.invitation_used_at = datetime.now(datetime.timezone.utc)
+    new_user.invitation_used_at = datetime.now(timezone.utc)
     crud.update_invitation_status(
         db=db,
         invitation_id=invitation.invitation_id,
