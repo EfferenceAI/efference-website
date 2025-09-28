@@ -3,7 +3,7 @@ Invitation management API endpoints.
 Handles invitation creation, sending, and validation for user access control.
 """
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session

@@ -1,7 +1,7 @@
 """
 Authentication API endpoints.
 """
-from datetime import timedelta
+from datetime import timedelta, timezone, datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session

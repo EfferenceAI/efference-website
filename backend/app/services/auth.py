@@ -182,6 +182,5 @@ async def get_current_user_optional(
     if token_data is None:
         return None
     
-    from . import crud
     user = crud.get_user(db, user_id=token_data.user_id)
     return user
