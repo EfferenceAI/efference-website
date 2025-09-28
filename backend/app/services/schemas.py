@@ -36,7 +36,7 @@ class UserRegister(BaseSchema):
     email: EmailStr
     password: str = Field(..., min_length=8, max_length=255)
 
-# Deprecate for now. Users can't sign up with an invitation. Use admin-created invitations instead.
+# Schema for registering users with an invitation code. Still actively used for invitation-based registration.
 
 class UserRegisterWithInvitation(BaseSchema):
     """Schema for registering a new user with invitation code"""
