@@ -9,14 +9,12 @@ from sqlalchemy.pool import StaticPool
 from ..db.base import Base
 
 
-#Production database configuration
-# Database URL - can be overridden by environment variable
-# DATABASE_URL = os.getenv(
-#     "DATABASE_URL", 
-#     "postgresql://user:password@localhost:5432/efference_db"
-# )
 
-DATABASE_URL = "sqlite:///./test.db"  # Default to SQLite for development/testing
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "sqlite:///./test.db"  # Default to SQLite for development/testing ONLY
+)
+
 
 # For SQLite in development (optional)
 if DATABASE_URL.startswith("sqlite"):
