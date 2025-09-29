@@ -14,7 +14,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get session from database to get file information
     const session = await getVideoRecord(sessionId)
 
     if (!session) {
@@ -24,7 +23,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Generate PDF release form
     const files = session.files || []
     let pdfBase64: string
     
@@ -40,7 +38,6 @@ export async function POST(request: NextRequest) {
       throw new Error('Failed to generate PDF: ' + pdfError.message)
     }
 
-    // Step 1: Create document (metadata only) in Documenso
     const documentTitle = `Video Release Form - ${userName || userEmail}`
     console.log('Step 1: Creating Documenso document metadata...')
     
@@ -66,16 +63,13 @@ export async function POST(request: NextRequest) {
       throw new Error('Document ID or upload URL missing from Documenso response')
     }
     
-    // Step 2: Upload PDF to S3 presigned URL
     console.log('Step 2: Uploading PDF to S3...')
     await documensoClient.uploadPDFToS3(document.uploadUrl, pdfBase64)
     
-    // Step 3: Send document for signing via email
     console.log('Step 3: Sending document for signing via email...')
     console.log('About to call sendDocumentForSigning with:', { documentId: document.documentId, sendEmail: true })
     await documensoClient.sendDocumentForSigning(document.documentId, true)
 
-    // Update session with document info
     await updateVideoRecord(sessionId, {
       signatureStatus: 'pending',
       documensoDocumentId: document.documentId.toString()
