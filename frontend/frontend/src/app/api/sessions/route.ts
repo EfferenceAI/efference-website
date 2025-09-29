@@ -2,10 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 import { createVideoRecord, VideoRecord, initializeDatabase } from '@/lib/postgres'
 
-// Create video records for upload using Postgres
 export async function POST(request: NextRequest) {
   try {
-    // Ensure database is initialized
     await initializeDatabase()
 
     const body = await request.json()
@@ -41,13 +39,13 @@ export async function POST(request: NextRequest) {
         
         // Initialize signature fields
         signatureStatus: 'none',
-        files: files // Store all files for signature form
+        files: files 
       }
       
       await createVideoRecord(videoRecord)
       videoRecords.push(videoRecord)
       
-      console.log(`✅ Created session: ${sessionId} for ${file.name}`)
+      console.log(`Created session: ${sessionId} for ${file.name}`)
     }
 
     return NextResponse.json({
@@ -56,7 +54,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('❌ Error creating video records:', error)
+    console.error('Error creating video records:', error)
     return NextResponse.json(
       { error: 'Failed to create video records', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
@@ -64,7 +62,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Simple GET endpoint with database status
 export async function GET() {
   try {
     // Test database connection
@@ -80,7 +77,7 @@ export async function GET() {
       dbUrlMasked: process.env.DATABASE_URL?.replace(/\/\/.*@/, '//***:***@')
     })
   } catch (error) {
-    console.error('🔥 API GET Error:', error)
+    console.error('API GET Error:', error)
     return NextResponse.json({
       message: 'Video upload API ready',
       database: 'error',
