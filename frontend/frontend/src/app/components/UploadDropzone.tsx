@@ -29,10 +29,6 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
   const [userEmail, setUserEmail] = useState('');
   const [userName, setUserName] = useState('');
   
-  // Video summary state
-  const [showSummaryBox, setShowSummaryBox] = useState(false);
-  const [videoSummary, setVideoSummary] = useState('');
-  const [isSummarySubmitted, setIsSummarySubmitted] = useState(false);
 
   const generateId = () => Math.random().toString(36).substring(2, 15);
 
@@ -460,8 +456,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
       const result = await response.json();
       if (result.signatureStatus === 'signed') {
         setSignatureStatus('signed');
-        setShowSummaryBox(true);
-        onStatusUpdate?.('Release form signed! Please provide a summary of your videos.');
+        onStatusUpdate?.('Release form signed! You can now upload your files.');
       } else {
         onStatusUpdate?.('Signature still pending. Please check your email.');
       }
@@ -471,33 +466,6 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
     }
   };
 
-  const submitSummary = async () => {
-    if (!sessionId || !videoSummary.trim()) return;
-
-    try {
-      onStatusUpdate?.('Saving video summary...');
-      
-      const response = await fetch(`/api/sessions/${sessionId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          videoSummary: videoSummary.trim()
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save summary');
-      }
-
-      setIsSummarySubmitted(true);
-      setShowSummaryBox(false);
-      onStatusUpdate?.('Summary saved! You can now upload your files.');
-
-    } catch (error) {
-      console.error('Failed to save summary:', error);
-      onStatusUpdate?.('Failed to save summary. Please try again.');
-    }
-  };
 
   const startUpload = async () => {
     if (files.length === 0) return;
@@ -564,7 +532,6 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
         >
           Select Files
         </label>
-        <p className="text-xs text-[#999] mt-3">Supports: MP4, WebM, MOV up to 10GB each (files &gt;100MB use optimized multipart upload)</p>
       </div>
 
       {/* File List */}
@@ -631,49 +598,11 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
               </div>
             )}
 
-            {signatureStatus === 'signed' && !showSummaryBox && !isSummarySubmitted && (
+            {signatureStatus === 'signed' && (
               <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
-                <h4 className="font-semibold text-green-900 mb-2">Step 1: Release Form Signed ✓</h4>
+                <h4 className="font-semibold text-green-900 mb-2">Release Form Signed</h4>
                 <p className="text-sm text-green-800 mb-3">
                   Great! You can now proceed with uploading your files.
-                </p>
-              </div>
-            )}
-
-            {signatureStatus === 'signed' && showSummaryBox && (
-              <div className="mb-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
-                <h4 className="font-semibold text-purple-900 mb-3">Step 2: Video Summary</h4>
-                <p className="text-sm text-purple-800 mb-4">
-                  Please provide a brief summary of your video content. This helps us understand what you're uploading.
-                </p>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-purple-900 mb-2">Video Summary *</label>
-                  <textarea
-                    value={videoSummary}
-                    onChange={(e) => setVideoSummary(e.target.value)}
-                    placeholder="e.g., I recorded videos during my bartending shift serving drinks and interacting with customers. Around minute 27, I took a restroom break. The footage shows my typical work routine including mixing cocktails, taking orders, and cleaning glasses throughout the evening shift."
-                    className="w-full px-3 py-2 border border-purple-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 min-h-[100px] resize-vertical"
-                    required
-                  />
-                </div>
-                <button
-                  onClick={submitSummary}
-                  disabled={!videoSummary.trim()}
-                  className="bg-purple-600 text-white px-4 py-2 rounded-md font-medium hover:bg-purple-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-                >
-                  Save Summary & Continue
-                </button>
-              </div>
-            )}
-
-            {signatureStatus === 'signed' && isSummarySubmitted && (
-              <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
-                <h4 className="font-semibold text-green-900 mb-2">Step 2: Video Summary Saved ✓</h4>
-                <p className="text-sm text-green-800 mb-2">
-                  Summary: "{videoSummary}"
-                </p>
-                <p className="text-sm text-green-800">
-                  Ready to upload your files!
                 </p>
               </div>
             )}
@@ -725,7 +654,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
               ))}
             </div>
 
-            {files.length > 0 && signatureStatus === 'signed' && isSummarySubmitted && !isUploading && (
+            {files.length > 0 && signatureStatus === 'signed' && !isUploading && (
               <div className="mt-6 flex justify-end">
                 <button
                   onClick={startUpload}
