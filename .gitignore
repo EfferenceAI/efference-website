@@ -11,3 +11,4 @@ node_modules/
 frontend/frontend/.next/
 frontend/frontend/.env
 backend/test.db
+schema.sql
