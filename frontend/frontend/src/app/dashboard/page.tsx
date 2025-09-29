@@ -698,11 +698,6 @@ export default function DashboardPage() {
                       Upload high-quality videos for robotic ability training. Supported formats: MP4, WebM, MOV. 
                       Files will be processed and automatically categorized based on content analysis.
                     </p>
-                    <div className="flex items-center space-x-4 text-sm text-[#666]">
-                      <span>🎥 Max file size: 5GB</span>
-                      <span>⏱️ Max duration: 30 minutes</span>
-                      <span>📊 Quality: 720p minimum</span>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -750,7 +745,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="flex items-center space-x-3">
                         <span className="px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                          ✅ Processed
+                          Processed
                         </span>
                         <button className="text-[#A2AF9B] hover:text-[#8fa085] text-sm">View</button>
                       </div>
@@ -786,7 +781,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="flex items-center space-x-3">
                         <span className="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
-                          🔄 Processing
+                          Processing
                         </span>
                         <button className="text-[#666] text-sm cursor-not-allowed">Processing</button>
                       </div>
@@ -2406,8 +2401,8 @@ export default function DashboardPage() {
                     'bg-gray-100 text-gray-600'
                   }`}>
                     {selectedVideo.status === 'completed' ? 'Completed' :
-                     selectedVideo.status === 'in_progress' ? '🔄 In Progress' :
-                     '⏳ Pending'}
+                     selectedVideo.status === 'in_progress' ? 'In Progress' :
+                     'Pending'}
                   </span>
                 </div>
 
