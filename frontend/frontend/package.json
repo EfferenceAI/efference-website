@@ -9,25 +9,26 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "next": "15.5.2",
     "@aws-sdk/client-s3": "^3.490.0",
     "@aws-sdk/s3-request-presigner": "^3.490.0",
-    "@aws-sdk/client-dynamodb": "^3.490.0",
-    "@aws-sdk/lib-dynamodb": "^3.490.0",
+    "jspdf": "^3.0.2",
+    "next": "15.5.2",
+    "pg": "^8.13.1",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.10.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
+    "@types/uuid": "^9.0.7",
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
-    "@eslint/eslintrc": "^3",
-    "@types/uuid": "^9.0.7"
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }
