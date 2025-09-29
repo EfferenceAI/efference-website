@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getVideoRecord } from '@/lib/dynamodb'
-import { dynamodb, TABLE_NAME } from '@/lib/dynamodb'
-import { UpdateCommand } from '@aws-sdk/lib-dynamodb'
+import { getVideoRecord, updateVideoRecord } from '@/lib/postgres'
 
 export async function GET(
   request: NextRequest,
@@ -13,16 +11,17 @@ export async function GET(
 
     if (!video) {
       return NextResponse.json(
-        { error: 'Video not found' },
+        { error: 'Session not found' },
         { status: 404 }
       )
     }
 
+    console.log(`✅ Retrieved session: ${sessionId}`)
     return NextResponse.json(video)
   } catch (error) {
-    console.error('Error getting video:', error)
+    console.error('❌ Error getting session:', error)
     return NextResponse.json(
-      { error: 'Failed to get video' },
+      { error: 'Failed to get session', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }
@@ -36,37 +35,22 @@ export async function PATCH(
     const { sessionId } = await params
     const updates = await request.json()
 
-    console.log('Updating video record:', sessionId, updates)
+    console.log(`🔄 Updating session: ${sessionId}`, Object.keys(updates))
 
-    // Update the video record
-    const updateExpressions: string[] = []
-    const expressionAttributeNames: Record<string, string> = {}
-    const expressionAttributeValues: Record<string, unknown> = {}
-    
-    Object.entries(updates).forEach(([key, value], index) => {
-      const attrName = `#attr${index}`
-      const attrValue = `:val${index}`
-      
-      updateExpressions.push(`${attrName} = ${attrValue}`)
-      expressionAttributeNames[attrName] = key
-      expressionAttributeValues[attrValue] = value
+    // Update the video record using Postgres
+    await updateVideoRecord(sessionId, updates)
+
+    console.log(`✅ Session updated successfully: ${sessionId}`)
+
+    return NextResponse.json({ 
+      success: true,
+      sessionId,
+      updatedFields: Object.keys(updates)
     })
-
-    await dynamodb.send(new UpdateCommand({
-      TableName: TABLE_NAME,
-      Key: { sessionId },
-      UpdateExpression: `SET ${updateExpressions.join(', ')}`,
-      ExpressionAttributeNames: expressionAttributeNames,
-      ExpressionAttributeValues: expressionAttributeValues,
-    }))
-
-    console.log('Video record updated successfully')
-
-    return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error updating video:', error)
+    console.error('❌ Error updating session:', error)
     return NextResponse.json(
-      { error: 'Failed to update video', details: error instanceof Error ? error.message : String(error) },
+      { error: 'Failed to update session', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }
