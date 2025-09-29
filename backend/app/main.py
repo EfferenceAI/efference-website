@@ -4,6 +4,7 @@ Main FastAPI application.
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 
 from app.services import database
 from app.routers import auth, users, tasks, sessions, reviews, dashboard, invitations
@@ -51,7 +52,7 @@ def health_check(db: Session = Depends(database.get_db)):
     """Health check endpoint"""
     try:
         # Simple database connectivity test
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         return {"status": "healthy", "database": "connected"}
     except Exception as e:
         return {"status": "unhealthy", "database": "disconnected", "error": str(e)}

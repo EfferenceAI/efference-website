@@ -96,6 +96,7 @@ class User(Base):
     phone_number: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
     age: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     sex: Mapped[Optional[Sex]] = mapped_column(SQLAlchemyEnum(Sex), nullable=True)
+    profession: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
 

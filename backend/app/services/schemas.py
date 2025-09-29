@@ -26,6 +26,7 @@ class UserBase(BaseSchema):
     phone_number: Optional[str] = Field(None, min_length=7, max_length=32)
     age: Optional[int] = Field(None, ge=0, le=150)
     sex: Optional[Sex] = None
+    profession: Optional[str] = Field(None, min_length=1, max_length=100)
 
 
 class UserCreate(UserBase):
@@ -41,6 +42,7 @@ class UserRegister(BaseSchema):
     phone_number: Optional[str] = Field(None, min_length=7, max_length=32)
     age: Optional[int] = Field(None, ge=0, le=150)
     sex: Optional[Sex] = None
+    profession: Optional[str] = Field(None, min_length=1, max_length=100)
 
 # Schema for registering users with an invitation code. Still actively used for invitation-based registration.
 
@@ -53,6 +55,7 @@ class UserRegisterWithInvitation(BaseSchema):
     phone_number: Optional[str] = Field(None, min_length=7, max_length=32)
     age: Optional[int] = Field(None, ge=0, le=150)
     sex: Optional[Sex] = None
+    profession: Optional[str] = Field(None, min_length=1, max_length=100)
 
 
 class UserUpdate(BaseSchema):
