@@ -1,17 +1,41 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { login } from '@/lib/auth'
 
 export default function LoginPage() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const router = useRouter();
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    router.push('/dashboard');
-  };
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    setLoading(true)
+    try {
+      // Hit our Next API to set httpOnly cookie for middleware
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Login failed')
+      }
+      // Also keep localStorage token flow for client-side API usage
+      await login({ email, password })
+      router.push('/dashboard')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Login failed'
+      setError(message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#FAF9EE] flex items-center justify-center p-8">
@@ -28,16 +52,16 @@ export default function LoginPage() {
           
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-[#111111] mb-1">
-                Username
+              <label htmlFor="email" className="block text-sm font-medium text-[#111111] mb-1">
+                Email
               </label>
               <input
-                type="text"
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-3 py-2 border border-[#DCCFC0] rounded-md focus:outline-none focus:ring-2 focus:ring-[#A2AF9B] focus:border-transparent"
-                placeholder="Enter your username"
+                placeholder="Enter your email"
                 required
               />
             </div>
@@ -59,17 +83,17 @@ export default function LoginPage() {
             
             <button
               type="submit"
-              className="w-full bg-[#A2AF9B] text-white py-2 px-4 rounded-md hover:bg-[#8fa085] transition-colors font-medium"
+              disabled={loading}
+              className="w-full bg-[#A2AF9B] text-white py-2 px-4 rounded-md hover:bg-[#8fa085] transition-colors font-medium disabled:opacity-60"
             >
-              Login
+              {loading ? 'Logging in...' : 'Login'}
             </button>
           </form>
-          
-          <p className="text-xs text-[#666] text-center mt-4">
-            Demo login - any credentials will work
-          </p>
+          {error && (
+            <p className="text-sm text-red-600 text-center mt-4">{error}</p>
+          )}
         </div>
       </div>
     </div>
-  );
+  )
 }

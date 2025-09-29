@@ -23,14 +23,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const files = session.files || []
+  const files = (session.files || []) as Array<{ name: string; size: number }>
     let pdfBase64: string
     
     try {
       pdfBase64 = generateReleaseFormPDF(
-        userName || 'User',
-        userEmail,
-        files.map((f: any) => ({ name: f.name, size: f.size }))
+        (userName as string) || 'User',
+        userEmail as string,
+        files.map((f) => ({ name: f.name, size: f.size }))
       )
       console.log('PDF generated successfully, length:', pdfBase64.length)
     } catch (pdfError) {
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
         message: 'Add your address and sign, then submit.',
         signingOrder: 'SEQUENTIAL' as const
       }
-    }
+    } satisfies import('@/lib/documenso').DocumentUploadRequest
     
     const result = await createUploadAddFieldsSend(
       documensoClient,

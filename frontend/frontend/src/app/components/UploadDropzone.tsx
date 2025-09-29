@@ -302,7 +302,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
       };
 
       // Upload parts in parallel batches
-      const uploadPromises: Promise<any>[] = [];
+  // Upload in batches without storing unused promises array
       let completedParts = 0;
 
       for (let i = 0; i < partUrls.length; i += maxConcurrentUploads) {
@@ -435,7 +435,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
         throw new Error(error.message || 'Failed to send release form');
       }
 
-      const result = await signatureResponse.json();
+  await signatureResponse.json();
       setSignatureStatus('pending');
       
       onStatusUpdate?.(`Release form sent to ${userEmail}! Check your email and sign the document.`);
@@ -606,7 +606,6 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
                 </p>
               </div>
             )}
-
             <div className="space-y-4">
               {files.map((file) => (
                 <div key={file.id} className="flex items-center justify-between p-4 border border-[#EEEEEE] rounded-lg">

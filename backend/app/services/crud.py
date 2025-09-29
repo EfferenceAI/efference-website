@@ -77,6 +77,7 @@ def create_user(db: Session, user: schemas.UserCreate) -> models.User:
         phone_number=user.phone_number,
         age=user.age,
         sex=user.sex,
+        profession=user.profession,
     )
     db.add(db_user)
     db.commit()
@@ -660,50 +661,92 @@ def get_user_statistics(db: Session, user_id: uuid.UUID) -> dict:
     """Get statistics for a specific user"""
     user = get_user(db, user_id)
     if not user:
-        return {}
+        return {
+            "videos_uploaded": 0,
+            "videos_reviewed": 0,
+            "tasks_completed": 0,
+            "earnings": 0
+        }
     
+    # Base stats that match frontend interface
     stats = {
-        "user_id": user_id,
-        "total_sessions_created": 0,
-        "total_reviews_submitted": 0,
-        "total_tasks_assigned": 0,
-        "total_tasks_created": 0
+        "videos_uploaded": 0,
+        "videos_reviewed": 0,
+        "tasks_completed": 0,
+        "earnings": 0
     }
     
-    # Count sessions created
-    if user.role == models.UserRole.WORKER:
-        stats["total_sessions_created"] = db.query(models.VideoSession).filter(
-            models.VideoSession.creator_id == user_id
-        ).count()
+    # Count videos uploaded (sessions created by this user)
+    stats["videos_uploaded"] = db.query(models.VideoSession).filter(
+        models.VideoSession.creator_id == user_id
+    ).count()
     
-    # Count reviews submitted
+    # Count videos reviewed 
     if user.role == models.UserRole.REVIEWER:
-        stats["total_reviews_submitted"] = db.query(models.Review).filter(
+        stats["videos_reviewed"] = db.query(models.Review).filter(
             models.Review.reviewer_id == user_id
         ).count()
     
-    # Count task assignments
+    # Count tasks completed based on role
     if user.role == models.UserRole.WORKER:
-        stats["total_tasks_assigned"] = db.query(models.TaskAssignment).filter(
-            models.TaskAssignment.user_id == user_id
+        # For workers, count approved task applications
+        stats["tasks_completed"] = db.query(models.TaskApplication).filter(
+            models.TaskApplication.user_id == user_id,
+            models.TaskApplication.status == models.TaskApplicationStatus.APPROVED
+        ).count()
+    elif user.role == models.UserRole.REVIEWER:
+        # For reviewers, completed tasks = reviews submitted
+        stats["tasks_completed"] = stats["videos_reviewed"]
+    elif user.role == models.UserRole.ADMIN:
+        # For admins, count video sessions they've processed
+        stats["tasks_completed"] = db.query(models.VideoSession).filter(
+            models.VideoSession.creator_id == user_id,
+            models.VideoSession.status.in_([
+                models.VideoSessionStatus.APPROVED,
+                models.VideoSessionStatus.REJECTED
+            ])
         ).count()
     
-    # Count tasks created
-    if user.role == models.UserRole.ADMIN:
-        stats["total_tasks_created"] = db.query(models.Task).filter(
-            models.Task.created_by_id == user_id
-        ).count()
+    # Calculate earnings (placeholder - implement based on your payment system)
+    # For now, we'll use a simple calculation based on completed work
+    if user.role == models.UserRole.WORKER:
+        stats["earnings"] = stats["tasks_completed"] * 15  # $15 per task
+    elif user.role == models.UserRole.REVIEWER:
+        stats["earnings"] = stats["videos_reviewed"] * 10  # $10 per review
     
     return stats
 
 
 def get_dashboard_statistics(db: Session) -> dict:
     """Get overall dashboard statistics"""
+    # Get counts for the dashboard
+    total_users = db.query(models.User).count()
+    total_video_sessions = db.query(models.VideoSession).count()
+    total_reviews = db.query(models.Review).count()
+    active_workers = db.query(models.User).filter(models.User.role == models.UserRole.WORKER).count()
+    
+    # Count pending reviews (sessions that need to be reviewed)
+    pending_reviews = db.query(models.VideoSession).filter(
+        models.VideoSession.status.in_([
+            models.VideoSessionStatus.UPLOADING,
+            models.VideoSessionStatus.PROCESSING,
+            models.VideoSessionStatus.PENDING_REVIEW
+        ])
+    ).count()
+    
+    # Count completed tasks (reviews that are done)
+    completed_tasks = db.query(models.Review).count()
+    
     return {
-        "total_users": db.query(models.User).count(),
+        "total_videos": total_video_sessions,
+        "pending_reviews": pending_reviews,
+        "completed_tasks": completed_tasks,
+        "active_workers": active_workers,
+        # Additional detailed stats for future use
+        "total_users": total_users,
         "total_tasks": db.query(models.Task).count(),
-        "total_video_sessions": db.query(models.VideoSession).count(),
-        "total_reviews": db.query(models.Review).count(),
+        "total_video_sessions": total_video_sessions,
+        "total_reviews": total_reviews,
         "sessions_by_status": {
             status.value: db.query(models.VideoSession).filter(models.VideoSession.status == status).count()
             for status in models.VideoSessionStatus

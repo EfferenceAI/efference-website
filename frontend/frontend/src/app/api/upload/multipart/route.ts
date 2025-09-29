@@ -41,19 +41,36 @@ function calculateOptimalPartSize(fileSize: number): { partSize: number, totalPa
   return { partSize, totalParts }
 }
 
+function getUserIdFromCookie(req: NextRequest): string | undefined {
+  const token = req.cookies.get('auth_token')?.value
+  if (!token) return undefined
+  try {
+    // Decode JWT payload without verification (we only need the 'sub')
+    const parts = token.split('.')
+    if (parts.length < 2) return undefined
+    const payload = JSON.parse(Buffer.from(parts[1].replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8'))
+    const sub = payload?.sub
+    return typeof sub === 'string' ? sub : undefined
+  } catch {
+    return undefined
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { action, fileName, fileType, fileSize, userId, sessionId, fileId, uploadId, partNumber, parts } = body
+  const { action, fileName, fileType, fileSize, sessionId, fileId, uploadId, parts } = body
+    // Derive userId from auth cookie to prevent spoofing
+    const authUserId = getUserIdFromCookie(request)
 
     if (action === 'initiate') {
-      return await initiateMultipartUpload(fileName, fileType, fileSize, userId, sessionId, fileId)
+      return await initiateMultipartUpload(fileName, fileType, fileSize, authUserId, sessionId, fileId)
     } else if (action === 'getPartUrls') {
-      return await getPartUploadUrls(uploadId, fileName, fileSize, fileId, userId)
+      return await getPartUploadUrls(uploadId, fileName, fileSize, fileId, authUserId)
     } else if (action === 'complete') {
-      return await completeMultipartUpload(uploadId, fileName, parts, fileId, userId)
+      return await completeMultipartUpload(uploadId, fileName, parts, fileId, authUserId)
     } else if (action === 'abort') {
-      return await abortMultipartUpload(uploadId, fileName, fileId, userId)
+      return await abortMultipartUpload(uploadId, fileName, fileId, authUserId)
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
@@ -67,11 +84,11 @@ export async function POST(request: NextRequest) {
 }
 
 async function initiateMultipartUpload(
-  fileName: string, 
-  fileType: string, 
-  fileSize: number, 
-  userId: string, 
-  sessionId: string, 
+  fileName: string,
+  fileType: string,
+  fileSize: number,
+  userId: string | undefined,
+  sessionId: string,
   fileId?: string
 ) {
   if (fileSize < MIN_MULTIPART_SIZE) {
@@ -83,8 +100,9 @@ async function initiateMultipartUpload(
 
   const generatedFileId = fileId || uuidv4()
   const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_')
-  const fileKey = userId 
-    ? `uploads/${userId}/${generatedFileId}_${sanitizedFileName}`
+  // Store under user UUID folder if available: uploads/{userId}/{fileId}/{fileName}
+  const fileKey = userId
+    ? `uploads/${userId}/${generatedFileId}/${sanitizedFileName}`
     : `uploads/sessions/${generatedFileId}/${sanitizedFileName}`
 
   const { partSize, totalParts } = calculateOptimalPartSize(fileSize)
@@ -127,8 +145,8 @@ async function initiateMultipartUpload(
 
 async function getPartUploadUrls(uploadId: string, fileName: string, fileSize: number, fileId: string, userId?: string) {
   const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_')
-  const fileKey = userId 
-    ? `uploads/${userId}/${fileId}_${sanitizedFileName}`
+  const fileKey = userId
+    ? `uploads/${userId}/${fileId}/${sanitizedFileName}`
     : `uploads/sessions/${fileId}/${sanitizedFileName}`
   
   console.log(`Getting part URLs for uploadId: ${uploadId}, fileKey: ${fileKey}, fileId: ${fileId}, userId: ${userId}`);
@@ -168,8 +186,8 @@ async function getPartUploadUrls(uploadId: string, fileName: string, fileSize: n
 
 async function completeMultipartUpload(uploadId: string, fileName: string, parts: Array<{PartNumber: number, ETag: string}>, fileId: string, userId?: string) {
   const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_')
-  const fileKey = userId 
-    ? `uploads/${userId}/${fileId}_${sanitizedFileName}`
+  const fileKey = userId
+    ? `uploads/${userId}/${fileId}/${sanitizedFileName}`
     : `uploads/sessions/${fileId}/${sanitizedFileName}`
 
   const command = new CompleteMultipartUploadCommand({
@@ -193,8 +211,8 @@ async function completeMultipartUpload(uploadId: string, fileName: string, parts
 
 async function abortMultipartUpload(uploadId: string, fileName: string, fileId: string, userId?: string) {
   const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_')
-  const fileKey = userId 
-    ? `uploads/${userId}/${fileId}_${sanitizedFileName}`
+  const fileKey = userId
+    ? `uploads/${userId}/${fileId}/${sanitizedFileName}`
     : `uploads/sessions/${fileId}/${sanitizedFileName}`
 
   const command = new AbortMultipartUploadCommand({

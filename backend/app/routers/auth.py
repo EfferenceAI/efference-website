@@ -79,6 +79,7 @@ def register_no_invite(
         phone_number=user_data.phone_number,
         age=user_data.age,
         sex=user_data.sex,
+        profession=user_data.profession,
     )
     new_user = crud.create_user(db=db, user=user_create_data)
     
@@ -140,6 +141,7 @@ def register(
         phone_number=user_data.phone_number,
         age=user_data.age,
         sex=user_data.sex,
+        profession=user_data.profession,
     )
     new_user = crud.create_user(db=db, user=user_create_data)
     

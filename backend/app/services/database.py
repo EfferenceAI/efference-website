@@ -7,13 +7,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import StaticPool
 from ..db.base import Base
+from ..config import settings
 
 
 
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "sqlite:///./test.db"  # Default to SQLite for development/testing ONLY
-)
+# Prefer app settings for database URL; falls back to env var for compatibility
+DATABASE_URL = settings.DATABASE_URL or os.getenv("DATABASE_URL", "sqlite:///./test.db")
 
 
 # For SQLite in development (optional)
@@ -27,8 +26,11 @@ else:
     # PostgreSQL configuration
     engine = create_engine(
         DATABASE_URL,
-        pool_pre_ping=True,  # Verify connections before use
-        pool_recycle=300,    # Recycle connections every 5 minutes
+        pool_pre_ping=True,   # Verify connections before use
+        pool_size=5,
+        max_overflow=10,
+        pool_recycle=300,     # Recycle connections every 5 minutes
+        pool_timeout=30,
     )
 
 # Create SessionLocal class
