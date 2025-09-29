@@ -47,16 +47,41 @@ export default function DashboardPage() {
   const loadDashboardData = async (user: User) => {
     try {
       setLoading(true);
+      console.log('Loading dashboard data for user:', user.role, user.user_id);
       
       // Load appropriate stats based on user role
       if (user.role === 'ADMIN') {
-        const stats = await apiFetch<DashboardStats>('/dashboard/statistics');
-        setDashboardStats(stats);
+        console.log('Fetching admin dashboard statistics...');
+        try {
+          const stats = await apiFetch<DashboardStats>('/dashboard/statistics');
+          console.log('Dashboard stats received:', stats);
+          setDashboardStats(stats);
+        } catch (adminError) {
+          console.error('Failed to load admin dashboard stats:', adminError);
+          setDashboardStats({
+            total_videos: 0,
+            pending_reviews: 0,
+            completed_tasks: 0,
+            active_workers: 0
+          });
+        }
       }
       
       // Load user-specific stats for all roles
-      const userStats = await apiFetch<UserStats>(`/users/${user.user_id}/statistics`);
-      setUserStats(userStats);
+      console.log('Fetching user statistics...');
+      try {
+        const userStats = await apiFetch<UserStats>(`/users/${user.user_id}/statistics`);
+        console.log('User stats received:', userStats);
+        setUserStats(userStats);
+      } catch (userError) {
+        console.error('Failed to load user stats:', userError);
+        setUserStats({
+          videos_uploaded: 0,
+          videos_reviewed: 0,
+          tasks_completed: 0,
+          earnings: 0
+        });
+      }
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
       // Set fallback data
