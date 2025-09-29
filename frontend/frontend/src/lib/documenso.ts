@@ -1,3 +1,4 @@
+import { jsPDF } from 'jspdf'
 interface DocumentUploadRequest {
   title: string
   externalId?: string
@@ -68,8 +69,7 @@ class DocumensoClient {
     console.log('Documenso API Request:', {
       url,
       method: options.method || 'GET',
-      body: options.body ? JSON.parse(options.body as string) : undefined,
-      rawBody: options.body
+      body: typeof options.body === 'string' ? options.body : undefined,
     })
     
     const response = await fetch(url, {
@@ -96,7 +96,7 @@ class DocumensoClient {
   }
 
   async createDocument(request: DocumentUploadRequest): Promise<DocumentoCreateResponse> {
-    const response = await this.makeRequest<any>('/documents', {
+    const response = await this.makeRequest<DocumentoCreateResponse>('/documents', {
       method: 'POST',
       body: JSON.stringify(request),
     })
@@ -178,7 +178,7 @@ class DocumensoClient {
 
   async testConnection(): Promise<{ success: boolean; message: string }> {
     try {
-      const response = await this.makeRequest<any>('/documents?limit=1')
+      const response = await this.makeRequest<{ documents?: unknown[] }>('/documents?limit=1')
       return {
         success: true,
         message: `Connected successfully. Found ${response.documents?.length || 0} documents.`
@@ -192,9 +192,6 @@ class DocumensoClient {
 export const documensoClient = new DocumensoClient()
 
 export function generateReleaseFormPDF(userName: string, userEmail: string, files: Array<{ name: string; size: number }>): string {
-  // Import jsPDF properly for server-side usage
-  const { jsPDF } = require('jspdf')
-  
   const doc = new jsPDF()
   
   // Add title

@@ -306,7 +306,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
       };
 
       // Upload parts in parallel batches
-      const uploadPromises: Promise<any>[] = [];
+  // Upload in batches without storing unused promises array
       let completedParts = 0;
 
       for (let i = 0; i < partUrls.length; i += maxConcurrentUploads) {
@@ -439,7 +439,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
         throw new Error(error.message || 'Failed to send release form');
       }
 
-      const result = await signatureResponse.json();
+  await signatureResponse.json();
       setSignatureStatus('pending');
       
       onStatusUpdate?.(`Release form sent to ${userEmail}! Check your email and sign the document.`);
@@ -644,7 +644,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
               <div className="mb-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
                 <h4 className="font-semibold text-purple-900 mb-3">Step 2: Video Summary</h4>
                 <p className="text-sm text-purple-800 mb-4">
-                  Please provide a brief summary of your video content. This helps us understand what you're uploading.
+                  Please provide a brief summary of your video content. This helps us understand what you&#39;re uploading.
                 </p>
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-purple-900 mb-2">Video Summary *</label>
@@ -670,7 +670,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
               <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
                 <h4 className="font-semibold text-green-900 mb-2">Step 2: Video Summary Saved ✓</h4>
                 <p className="text-sm text-green-800 mb-2">
-                  Summary: "{videoSummary}"
+                  Summary: &quot;{videoSummary}&quot;
                 </p>
                 <p className="text-sm text-green-800">
                   Ready to upload your files!
