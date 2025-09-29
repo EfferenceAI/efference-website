@@ -22,7 +22,15 @@ def get_or_create_user(db: Session, *, email: str, name: str, role: schemas.User
     if user:
         print(f"User exists: {email} ({role.name})")
         return user
-    created = crud.create_user(db, schemas.UserCreate(name=name, email=email, password=password, role=role))
+    created = crud.create_user(db, schemas.UserCreate(
+        name=name,
+        email=email,
+        password=password,
+        role=role,
+        phone_number=None,
+        age=None,
+        sex=None,
+    ))
     print(f"Created user: {email} ({role.name})")
     return created
 
