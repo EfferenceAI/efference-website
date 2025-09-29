@@ -23,19 +23,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const files = session.files || []
+  const files = (session.files || []) as Array<{ name: string; size: number }>
     let pdfBase64: string
     
     try {
       pdfBase64 = generateReleaseFormPDF(
-        userName || 'User',
-        userEmail,
-        files.map((f: any) => ({ name: f.name, size: f.size }))
+        (userName as string) || 'User',
+        userEmail as string,
+        files.map((f) => ({ name: f.name, size: f.size }))
       )
       console.log('PDF generated successfully, length:', pdfBase64.length)
-    } catch (pdfError) {
-      console.error('PDF generation error:', pdfError)
-      throw new Error('Failed to generate PDF: ' + pdfError.message)
+    } catch (err) {
+      console.error('PDF generation error:', err)
+      const msg = err instanceof Error ? err.message : 'Unknown error'
+      throw new Error('Failed to generate PDF: ' + msg)
     }
 
     const documentTitle = `Video Release Form - ${userName || userEmail}`
@@ -44,18 +45,18 @@ export async function POST(request: NextRequest) {
     const createRequest = {
       title: documentTitle,
       recipients: [{
-        name: userName || 'User',
-        email: userEmail,
-        role: 'SIGNER'
+        name: (userName as string) || 'User',
+        email: userEmail as string,
+        role: 'SIGNER' as const,
       }],
       meta: {
-        signingOrder: 'PARALLEL'
+        signingOrder: 'PARALLEL' as const,
       }
-    }
+    } satisfies import('@/lib/documenso').DocumentUploadRequest
     
     console.log('Document creation request:', JSON.stringify(createRequest, null, 2))
     
-    const document = await documensoClient.createDocument(createRequest)
+  const document = await documensoClient.createDocument(createRequest)
 
     console.log('Document metadata created successfully:', document)
     
@@ -74,8 +75,6 @@ export async function POST(request: NextRequest) {
       signatureStatus: 'pending',
       documensoDocumentId: document.documentId.toString()
     })
-
-    const signingUrl = document.recipients[0]?.signingUrl
 
     return NextResponse.json({
       success: true,

@@ -1,11 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import UploadDropzone from '../components/UploadDropzone';
+import { getMe, logout, User } from '@/lib/auth';
 
 export default function DashboardPage() {
   const router = useRouter();
+  const [me, setMe] = useState<User | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<string>('overview');
   const [currentRole, setCurrentRole] = useState<string>('client');
@@ -34,8 +37,22 @@ export default function DashboardPage() {
   const [showSummaryModal, setShowSummaryModal] = useState<boolean>(false);
   const [videoSummary, setVideoSummary] = useState<string>('');
 
-  const handleLogout = () => {
-    router.push('/login');
+  useEffect(() => {
+    (async () => {
+      const user = await getMe();
+      if (!user) {
+        router.replace('/login');
+        return;
+      }
+      setMe(user);
+      setCurrentRole(user.role.toLowerCase());
+      setAuthChecked(true);
+    })();
+  }, [router]);
+
+  const handleLogout = async () => {
+    await logout();
+    router.replace('/login');
   };
 
   const handleOverview = () => {
@@ -118,7 +135,8 @@ export default function DashboardPage() {
     setSelectedTaskForApply('');
   };
 
-  const videoCategories: any[] = [];
+  type VideoCategory = { id: string; title: string; description: string }
+  const videoCategories: VideoCategory[] = [];
 
   const roles = [
     { id: 'client', label: 'Client', description: 'View and manage your content' },
@@ -129,6 +147,14 @@ export default function DashboardPage() {
   const handleRoleChange = (roleId: string) => {
     setCurrentRole(roleId);
   };
+
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-[#FAF9EE] flex items-center justify-center">
+        <p className="text-[#666]">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FAF9EE] flex">
@@ -650,7 +676,7 @@ export default function DashboardPage() {
                         <div className="flex items-center justify-center">
                           <div className="text-2xl font-bold text-[#A2AF9B]">$247.50</div>
                           <div className="ml-4">
-                            <p className="text-sm font-medium text-[#666]">This Week's Earnings</p>
+                            <p className="text-sm font-medium text-[#666]">This Week&#39;s Earnings</p>
                             <p className="text-xs text-[#999]">From completed tasks</p>
                           </div>
                         </div>
@@ -1490,7 +1516,7 @@ export default function DashboardPage() {
                 <div className="bg-white rounded-lg border border-[#DCCFC0] p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-[#666]">This Month's Total</p>
+                      <p className="text-sm font-medium text-[#666]">This Month&#39;s Total</p>
                       <p className="text-2xl font-bold text-[#111111] mt-1">$8,934.25</p>
                     </div>
                     <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -1977,7 +2003,7 @@ export default function DashboardPage() {
                               <span>Rate: $22/hr requested</span>
                             </div>
                             <p className="text-sm text-[#666]">
-                              "I have extensive experience in medical video analysis and compliance verification. Previously worked on surgical training content review."
+                              &quot;I have extensive experience in medical video analysis and compliance verification. Previously worked on surgical training content review.&quot;
                             </p>
                           </div>
                         </div>
@@ -2014,7 +2040,7 @@ export default function DashboardPage() {
                               <span>Rate: $20/hr requested</span>
                             </div>
                             <p className="text-sm text-[#666]">
-                              "Background in healthcare quality assurance and medical procedure documentation. Detail-oriented approach to compliance standards."
+                              &quot;Background in healthcare quality assurance and medical procedure documentation. Detail-oriented approach to compliance standards.&quot;
                             </p>
                           </div>
                         </div>
@@ -2051,7 +2077,7 @@ export default function DashboardPage() {
                               <span>Rate: $14/hr requested</span>
                             </div>
                             <p className="text-sm text-[#666]">
-                              "New to video analysis but eager to learn. Strong attention to detail and experience in data categorization tasks."
+                              &quot;New to video analysis but eager to learn. Strong attention to detail and experience in data categorization tasks.&quot;
                             </p>
                           </div>
                         </div>
@@ -2566,7 +2592,7 @@ export default function DashboardPage() {
             <div className="p-6 border-b border-[#EEEEEE]">
               <h3 className="text-lg font-semibold text-[#111111]">Apply for Task</h3>
               <p className="text-sm text-[#666] mt-1">
-                Tell us why you want to work on "{selectedTaskForApply}"
+                Tell us why you want to work on &quot;{selectedTaskForApply}&quot;
               </p>
             </div>
 
@@ -2634,9 +2660,9 @@ export default function DashboardPage() {
                   <div className="text-sm">
                     <div className="font-medium text-[#111111] mb-2">Example:</div>
                     <div className="text-[#666] italic">
-                      "This is a bartending tutorial where I demonstrate how to make a classic mojito. 
+                      &quot;This is a bartending tutorial where I demonstrate how to make a classic mojito.
                       The video shows the complete process from muddling mint to garnishing. 
-                      Note: At the 7th minute I took a bathroom break, so there's a brief pause in the demonstration."
+                      Note: At the 7th minute I took a bathroom break, so there&#39;s a brief pause in the demonstration.&quot;
                     </div>
                   </div>
                 </div>

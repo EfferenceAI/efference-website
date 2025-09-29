@@ -1,4 +1,4 @@
-import { Pool, PoolClient } from 'pg'
+import { Pool } from 'pg'
 
 // Create connection pool for AWS RDS Postgres
 const pool = new Pool({
@@ -209,8 +209,8 @@ export async function getVideoRecord(sessionId: string): Promise<VideoRecord | n
 export async function updateVideoRecord(sessionId: string, updates: Partial<VideoRecord>): Promise<void> {
   const client = await pool.connect()
   try {
-    const setClause: string[] = ['updated_at = NOW()']
-    const values: any[] = []
+  const setClause: string[] = ['updated_at = NOW()']
+  const values: unknown[] = []
     let paramCount = 1
 
     // Build dynamic update query
@@ -224,7 +224,7 @@ export async function updateVideoRecord(sessionId: string, updates: Partial<Vide
       }
       
       setClause.push(`${dbColumn} = $${paramCount}`)
-      values.push(value)
+  values.push(value as unknown)
       paramCount++
     })
 
@@ -335,10 +335,15 @@ export async function testConnection(): Promise<boolean> {
   } catch (error) {
     console.error('Database connection failed:')
     console.error('Error message:', (error as Error).message)
-    console.error('Error code:', (error as any).code)
-    if ((error as any).code === 'ENOTFOUND') {
+    let code: string | undefined = undefined
+    if (typeof error === 'object' && error !== null && 'code' in error) {
+      const maybe = (error as Record<string, unknown>).code
+      code = typeof maybe === 'string' ? maybe : undefined
+    }
+    console.error('Error code:', code)
+    if (code === 'ENOTFOUND') {
       console.error('This suggests the hostname cannot be resolved')
-    } else if ((error as any).code === 'ETIMEDOUT') {
+    } else if (code === 'ETIMEDOUT') {
       console.error('This suggests a firewall/security group is blocking the connection')
     }
     return false
@@ -352,11 +357,11 @@ export async function closePool(): Promise<void> {
 }
 
 // Execute a raw query (for migrations, admin tasks, etc.)
-export async function executeQuery(query: string, params: any[] = []): Promise<any> {
+export async function executeQuery<T = unknown>(query: string, params: unknown[] = []): Promise<T> {
   const client = await pool.connect()
   try {
-    const result = await client.query(query, params)
-    return result
+  const result = await client.query(query, params as unknown[] as string[])
+    return result as unknown as T
   } finally {
     client.release()
   }
