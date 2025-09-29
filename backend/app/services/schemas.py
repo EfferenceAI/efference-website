@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime
 from typing import Optional, List
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
-from ..db.models import UserRole, VideoSessionStatus, ReviewStatus, ProcessingJobStatus, InvitationStatus, TaskApplicationStatus, TaskRequestStatus
+from ..db.models import UserRole, VideoSessionStatus, ReviewStatus, ProcessingJobStatus, InvitationStatus, TaskApplicationStatus, TaskRequestStatus, Sex
 
 
 # --- Base Schemas ---
@@ -23,6 +23,9 @@ class UserBase(BaseSchema):
     name: str = Field(..., min_length=1, max_length=255)
     email: EmailStr
     role: UserRole
+    phone_number: Optional[str] = Field(None, min_length=7, max_length=32)
+    age: Optional[int] = Field(None, ge=0, le=150)
+    sex: Optional[Sex] = None
 
 
 class UserCreate(UserBase):
@@ -35,6 +38,9 @@ class UserRegister(BaseSchema):
     name: str = Field(..., min_length=1, max_length=255)
     email: EmailStr
     password: str = Field(..., min_length=8, max_length=255)
+    phone_number: Optional[str] = Field(None, min_length=7, max_length=32)
+    age: Optional[int] = Field(None, ge=0, le=150)
+    sex: Optional[Sex] = None
 
 # Schema for registering users with an invitation code. Still actively used for invitation-based registration.
 
@@ -44,6 +50,9 @@ class UserRegisterWithInvitation(BaseSchema):
     email: EmailStr
     password: str = Field(..., min_length=8, max_length=255)
     invitation_code: str = Field(..., min_length=1, max_length=255)
+    phone_number: Optional[str] = Field(None, min_length=7, max_length=32)
+    age: Optional[int] = Field(None, ge=0, le=150)
+    sex: Optional[Sex] = None
 
 
 class UserUpdate(BaseSchema):
@@ -51,6 +60,9 @@ class UserUpdate(BaseSchema):
     name: Optional[str] = Field(None, min_length=1, max_length=255)
     email: Optional[EmailStr] = None
     role: Optional[UserRole] = None
+    phone_number: Optional[str] = Field(None, min_length=7, max_length=32)
+    age: Optional[int] = Field(None, ge=0, le=150)
+    sex: Optional[Sex] = None
 
 
 class UserPasswordUpdate(BaseSchema):

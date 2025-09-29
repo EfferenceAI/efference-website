@@ -67,6 +67,12 @@ class TaskRequestStatus(enum.Enum):
 
 # --- Model Definitions ---
 
+class Sex(enum.Enum):
+    MALE = "MALE"
+    FEMALE = "FEMALE"
+    OTHER = "OTHER"
+    PREFER_NOT_TO_SAY = "PREFER_NOT_TO_SAY"
+
 class User(Base):
     """Represents a user in the system: Admin, Worker, Reviewer, or Client."""
     __tablename__ = "users"
@@ -85,6 +91,11 @@ class User(Base):
     # --- Invitation Status ---
     is_invited: Mapped[bool] = mapped_column(default=False, nullable=False)
     invitation_used_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+    # --- Basic profile info ---
+    phone_number: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+    age: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    sex: Mapped[Optional[Sex]] = mapped_column(SQLAlchemyEnum(Sex), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
 

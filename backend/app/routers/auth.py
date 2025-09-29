@@ -75,7 +75,10 @@ def register_no_invite(
         name=user_data.name,
         email=user_data.email,
         password=user_data.password,
-        role=schemas.UserRole.WORKER  # Default role
+        role=schemas.UserRole.WORKER,  # Default role
+        phone_number=user_data.phone_number,
+        age=user_data.age,
+        sex=user_data.sex,
     )
     new_user = crud.create_user(db=db, user=user_create_data)
     
@@ -133,7 +136,10 @@ def register(
         name=user_data.name,
         email=user_data.email,
         password=user_data.password,
-        role=invitation.role
+        role=invitation.role,
+        phone_number=user_data.phone_number,
+        age=user_data.age,
+        sex=user_data.sex,
     )
     new_user = crud.create_user(db=db, user=user_create_data)
     
