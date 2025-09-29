@@ -16,10 +16,10 @@ export async function GET(
       )
     }
 
-    console.log(`✅ Retrieved session: ${sessionId}`)
+    console.log(`Retrieved session: ${sessionId}`)
     return NextResponse.json(video)
   } catch (error) {
-    console.error('❌ Error getting session:', error)
+    console.error('Error getting session:', error)
     return NextResponse.json(
       { error: 'Failed to get session', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
@@ -40,7 +40,7 @@ export async function PATCH(
     // Update the video record using Postgres
     await updateVideoRecord(sessionId, updates)
 
-    console.log(`✅ Session updated successfully: ${sessionId}`)
+    console.log(`Session updated successfully: ${sessionId}`)
 
     return NextResponse.json({ 
       success: true,
@@ -48,7 +48,7 @@ export async function PATCH(
       updatedFields: Object.keys(updates)
     })
   } catch (error) {
-    console.error('❌ Error updating session:', error)
+    console.error('Error updating session:', error)
     return NextResponse.json(
       { error: 'Failed to update session', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
