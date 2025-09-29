@@ -73,9 +73,9 @@ export async function initializeDatabase(): Promise<void> {
   const client = await pool.connect()
   try {
     await client.query(CREATE_SESSIONS_TABLE)
-    console.log('✅ Postgres sessions table initialized successfully')
+    console.log('Postgres sessions table initialized successfully')
   } catch (error) {
-    console.error('❌ Failed to initialize database:', error)
+    console.error('Failed to initialize database:', error)
     throw error
   } finally {
     client.release()
@@ -133,9 +133,9 @@ export async function createVideoRecord(video: VideoRecord): Promise<void> {
       new Date(video.uploadedAt)
     ])
     
-    console.log(`✅ Created/updated session: ${video.sessionId}`)
+    console.log(`Created/updated session: ${video.sessionId}`)
   } catch (error) {
-    console.error('❌ Failed to create video record:', error)
+    console.error('Failed to create video record:', error)
     throw error
   } finally {
     client.release()
@@ -198,7 +198,7 @@ export async function getVideoRecord(sessionId: string): Promise<VideoRecord | n
       uploadedAt: row.uploaded_at.toISOString()
     }
   } catch (error) {
-    console.error('❌ Failed to get video record:', error)
+    console.error('Failed to get video record:', error)
     throw error
   } finally {
     client.release()
@@ -236,9 +236,9 @@ export async function updateVideoRecord(sessionId: string, updates: Partial<Vide
       WHERE session_id = $${paramCount}
     `, values)
     
-    console.log(`✅ Updated session: ${sessionId}`)
+    console.log(`Updated session: ${sessionId}`)
   } catch (error) {
-    console.error('❌ Failed to update video record:', error)
+    console.error('Failed to update video record:', error)
     throw error
   } finally {
     client.release()
@@ -313,8 +313,8 @@ export async function getUserSessions(userEmail: string, limit = 50): Promise<Vi
 // Test database connection
 export async function testConnection(): Promise<boolean> {
   try {
-    console.log('🔄 Testing database connection...')
-    console.log('📍 Database URL:', process.env.DATABASE_URL?.replace(/\/\/.*@/, '//***:***@'))
+    console.log('Testing database connection...')
+    console.log('Database URL:', process.env.DATABASE_URL?.replace(/\/\/.*@/, '//***:***@'))
     
     // Try with a shorter timeout first
     const { Client } = await import('pg')
@@ -326,20 +326,20 @@ export async function testConnection(): Promise<boolean> {
     
     await client.connect()
     const result = await client.query('SELECT NOW() as current_time, version() as pg_version')
-    console.log('✅ Database connection successful:', {
+    console.log('Database connection successful:', {
       time: result.rows[0].current_time,
       version: result.rows[0].pg_version.split(' ')[0]
     })
     await client.end()
     return true
   } catch (error) {
-    console.error('❌ Database connection failed:')
-    console.error('   Error message:', (error as Error).message)
-    console.error('   Error code:', (error as any).code)
+    console.error('Database connection failed:')
+    console.error('Error message:', (error as Error).message)
+    console.error('Error code:', (error as any).code)
     if ((error as any).code === 'ENOTFOUND') {
-      console.error('   💡 This suggests the hostname cannot be resolved')
+      console.error('This suggests the hostname cannot be resolved')
     } else if ((error as any).code === 'ETIMEDOUT') {
-      console.error('   💡 This suggests a firewall/security group is blocking the connection')
+      console.error('This suggests a firewall/security group is blocking the connection')
     }
     return false
   }
@@ -348,7 +348,7 @@ export async function testConnection(): Promise<boolean> {
 // Close the connection pool (for cleanup)
 export async function closePool(): Promise<void> {
   await pool.end()
-  console.log('✅ Database pool closed')
+  console.log('Database pool closed')
 }
 
 // Execute a raw query (for migrations, admin tasks, etc.)
