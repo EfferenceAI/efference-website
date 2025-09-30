@@ -197,7 +197,7 @@ export async function updateVideoRecord(sessionId: string, updates: Partial<Vide
     Object.entries(updates).forEach(([key, value]) => {
       const dbColumn = key.replace(/([A-Z])/g, '_$1').toLowerCase()
       
-      let processedValue: any = value
+      let processedValue: unknown = value
       if (key.endsWith('At') && value && typeof value === 'string') {
         processedValue = new Date(value)
       }
@@ -320,10 +320,10 @@ export async function closePool(): Promise<void> {
   console.log('Database pool closed')
 }
 
-export async function executeQuery(query: string, params: any[] = []): Promise<any> {
+export async function executeQuery<T = unknown>(query: string, params: unknown[] = []): Promise<T> {
   const client = await pool.connect()
   try {
-  const result = await client.query(query, params as unknown[] as string[])
+    const result = await client.query(query, params as string[])
     return result as unknown as T
   } finally {
     client.release()

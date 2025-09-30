@@ -242,10 +242,10 @@ async function findLabelBoxPercent(
 
     const textContent = await page.getTextContent();
 
-    let hit: any = null;
+    let hit: unknown = null;
 
-    for (const item of textContent.items as any[]) {
-      const text = (item.str || '').trim();
+    for (const item of textContent.items as unknown[]) {
+      const text = ((item as { str?: string }).str || '').trim();
       if (labelRegex.test(text)) {
         hit = item;
         break;
@@ -253,9 +253,9 @@ async function findLabelBoxPercent(
     }
     if (!hit) return null;
 
-    const [a, b, c, d, e, f] = hit.transform;
+    const [a, , , d, e, f] = (hit as { transform: number[] }).transform;
     const fontSize = Math.hypot(a, d);       
-    const textWidthPx = hit.width;           
+    const textWidthPx = (hit as { width: number }).width;           
     const textHeightPx = fontSize;           
 
     const pageW = viewport.width;
@@ -360,8 +360,8 @@ export async function createUploadAddFieldsSend(
   return { documentId, recipientId };
 }
 
-export function generateReleaseFormPDF(userName: string, userEmail: string, files: Array<{ name: string; size: number }>): string {
-  const { jsPDF } = require('jspdf')
+export async function generateReleaseFormPDF(userName: string, userEmail: string, files: Array<{ name: string; size: number }>): Promise<string> {
+  const { jsPDF } = await import('jspdf')
   const doc = new jsPDF()
   const pageWidth = doc.internal.pageSize.width
   const margin = 20
