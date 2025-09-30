@@ -12,6 +12,7 @@ from sqlalchemy import (
     ForeignKey,
     DateTime,
     Integer,
+    BigInteger,
     Enum as SQLAlchemyEnum,
     UniqueConstraint
 )
@@ -270,6 +271,20 @@ class VideoSession(Base):
     
     # For Step Functions manual review step
     step_function_task_token: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # Additional fields to support frontend upload workflow
+    video_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    user_email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    s3_bucket: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    file_size: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
+    content_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    upload_status: Mapped[Optional[str]] = mapped_column(String(20), nullable=True, default='pending')
+    signature_status: Mapped[Optional[str]] = mapped_column(String(20), nullable=True, default='none')
+    documenso_document_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    video_summary: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    summary_added_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    release_form_signed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    uploaded_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))

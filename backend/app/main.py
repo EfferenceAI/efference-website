@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 
 from app.services import database
-from app.routers import auth, users, tasks, sessions, reviews, dashboard, invitations
+from app.routers import auth, users, tasks, sessions, reviews, dashboard, invitations, upload
 
 # Create FastAPI app
 app = FastAPI(
@@ -35,6 +35,8 @@ app.include_router(sessions.router)
 app.include_router(reviews.router)
 app.include_router(dashboard.router)
 app.include_router(invitations.router)
+app.include_router(upload.router)
+app.include_router(upload.router)
 
 
 @app.get("/")

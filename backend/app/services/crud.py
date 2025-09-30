@@ -481,6 +481,26 @@ def create_video_session(db: Session, session: schemas.VideoSessionCreate, creat
     return db_session
 
 
+def create_video_session_from_upload(db: Session, session: schemas.VideoSessionCreateFromUpload) -> models.VideoSession:
+    """Create a new video session from frontend upload"""
+    db_session = models.VideoSession(
+        creator_id=session.creator_id,
+        task_id=session.task_id,
+        status=models.VideoSessionStatus.UPLOADING,
+        video_name=session.video_name,
+        user_email=session.user_email,
+        file_size=session.file_size,
+        content_type=session.content_type,
+        s3_bucket=session.s3_bucket or 'uploadz-videos',
+        upload_status='pending',
+        signature_status='none'
+    )
+    db.add(db_session)
+    db.commit()
+    db.refresh(db_session)
+    return db_session
+
+
 def update_video_session(db: Session, session_id: uuid.UUID, session_update: schemas.VideoSessionUpdate) -> Optional[models.VideoSession]:
     """Update a video session"""
     db_session = get_video_session(db, session_id)

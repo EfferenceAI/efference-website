@@ -241,6 +241,17 @@ class VideoSessionCreate(VideoSessionBase):
     pass
 
 
+class VideoSessionCreateFromUpload(BaseSchema):
+    """Schema for creating a video session from frontend upload"""
+    video_name: str
+    user_email: str
+    file_size: int
+    content_type: str
+    s3_bucket: Optional[str] = None
+    task_id: Optional[uuid.UUID] = None  # Make optional for now
+    creator_id: Optional[uuid.UUID] = None  # Make optional for now
+
+
 class VideoSessionUpdate(BaseSchema):
     """Schema for updating a video session"""
     reviewer_id: Optional[uuid.UUID] = None
@@ -248,6 +259,18 @@ class VideoSessionUpdate(BaseSchema):
     raw_concatenated_s3_key: Optional[str] = None
     processed_1080p_s3_key: Optional[str] = None
     step_function_task_token: Optional[str] = None
+    video_name: Optional[str] = None
+    user_email: Optional[str] = None
+    s3_bucket: Optional[str] = None
+    file_size: Optional[int] = None
+    content_type: Optional[str] = None
+    upload_status: Optional[str] = None
+    signature_status: Optional[str] = None
+    documenso_document_id: Optional[str] = None
+    video_summary: Optional[str] = None
+    summary_added_at: Optional[datetime] = None
+    release_form_signed_at: Optional[datetime] = None
+    uploaded_at: Optional[datetime] = None
 
 
 class VideoSession(VideoSessionBase):
@@ -258,6 +281,18 @@ class VideoSession(VideoSessionBase):
     raw_concatenated_s3_key: Optional[str] = None
     processed_1080p_s3_key: Optional[str] = None
     step_function_task_token: Optional[str] = None
+    video_name: Optional[str] = None
+    user_email: Optional[str] = None
+    s3_bucket: Optional[str] = None
+    file_size: Optional[int] = None
+    content_type: Optional[str] = None
+    upload_status: Optional[str] = None
+    signature_status: Optional[str] = None
+    documenso_document_id: Optional[str] = None
+    video_summary: Optional[str] = None
+    summary_added_at: Optional[datetime] = None
+    release_form_signed_at: Optional[datetime] = None
+    uploaded_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
     creator: Optional[User] = None

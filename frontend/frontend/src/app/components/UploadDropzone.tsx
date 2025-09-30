@@ -392,10 +392,10 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
     if (files.length === 0 || !userEmail.trim()) return;
 
     try {
-      onStatusUpdate?.('Creating session for signature...');
+      onStatusUpdate?.('Creating session in both frontend and backend databases...');
       
-      // Create session with file metadata
-      const sessionResponse = await fetch('/api/sessions', {
+      // Create session with file metadata using the bridge API
+      const sessionResponse = await fetch('/api/sessions-bridge', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -435,10 +435,19 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
         throw new Error(error.message || 'Failed to send release form');
       }
 
-  await signatureResponse.json();
-      setSignatureStatus('pending');
+      const signatureResult = await signatureResponse.json();
       
-      onStatusUpdate?.(`Release form sent to ${userEmail}! Check your email and sign the document.`);
+      // Handle different response states
+      if (signatureResult.alreadySigned) {
+        setSignatureStatus('signed');
+        onStatusUpdate?.('Release form has already been signed! You can now upload your files.');
+      } else if (signatureResult.alreadyPending) {
+        setSignatureStatus('pending');
+        onStatusUpdate?.('Release form has already been sent. Check your email and sign the document.');
+      } else {
+        setSignatureStatus('pending');
+        onStatusUpdate?.(`Release form sent to ${userEmail}! Check your email and sign the document.`);
+      }
 
     } catch (error) {
       console.error('Signature request failed:', error);
