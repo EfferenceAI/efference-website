@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { backendApi, Task } from '@/lib/backend-api';
+import { getMe, User } from '@/lib/auth';
 
 interface UploadFile {
   id: string;
@@ -16,12 +18,20 @@ interface UploadFile {
 interface UploadDropzoneProps {
   onUploadComplete?: (files: UploadFile[]) => void;
   onStatusUpdate?: (status: string) => void;
+  preSelectedTask?: string; // Task ID to pre-select
+  requireTaskSelection?: boolean; // Whether task selection is required
 }
 
-export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: UploadDropzoneProps) {
+export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSelectedTask, requireTaskSelection = true }: UploadDropzoneProps) {
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  
+  // Task selection state
+  const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
+  const [selectedTask, setSelectedTask] = useState<string>(preSelectedTask || '');
+  const [loadingTasks, setLoadingTasks] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   
   // Signature workflow state
   const [signatureStatus, setSignatureStatus] = useState<'none' | 'pending' | 'signed'>('none');
@@ -29,6 +39,45 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
   const [userEmail, setUserEmail] = useState('');
   const [userName, setUserName] = useState('');
   
+  // Load tasks and user data on component mount
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoadingTasks(true);
+        
+        // Get current user
+        const user = await getMe();
+        setCurrentUser(user);
+        
+        if (user) {
+          setUserEmail(user.email);
+          setUserName(user.name);
+          
+          // Load available tasks based on user role
+          if (user.role === 'ADMIN') {
+            // Admins can see all tasks
+            const tasks = await backendApi.getTasks();
+            setAvailableTasks(tasks.filter(task => task.is_active));
+          } else if (user.role === 'WORKER') {
+            // Workers can see their assigned tasks
+            const assignments = await backendApi.getTaskAssignments(undefined, user.user_id);
+            const taskIds = assignments.map(a => a.task_id);
+            const allTasks = await backendApi.getTasks();
+            const assignedTasks = allTasks.filter(task => 
+              task.is_active && taskIds.includes(task.task_id)
+            );
+            setAvailableTasks(assignedTasks);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load tasks:', error);
+      } finally {
+        setLoadingTasks(false);
+      }
+    };
+    
+    loadData();
+  }, []);
 
   const generateId = () => Math.random().toString(36).substring(2, 15);
 
@@ -390,6 +439,12 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
 
   const requestSignature = async () => {
     if (files.length === 0 || !userEmail.trim()) return;
+    
+    // Validate task selection if required
+    if (requireTaskSelection && !selectedTask) {
+      onStatusUpdate?.('Please select a task before proceeding.');
+      return;
+    }
 
     try {
       onStatusUpdate?.('Creating session in both frontend and backend databases...');
@@ -401,6 +456,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
         body: JSON.stringify({
           userEmail,
           userName: userName || 'User',
+          taskId: selectedTask || undefined, // Include task ID
           files: files.map(f => ({
             name: f.name,
             size: f.size,
@@ -559,6 +615,46 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
                 <p className="text-sm text-blue-800 mb-4">
                   Before uploading, you must sign a release form. This will be sent to your email.
                 </p>
+                
+                {/* Task Selection */}
+                {requireTaskSelection && availableTasks.length > 0 && (
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-blue-900 mb-1">Select Task *</label>
+                    <select
+                      value={selectedTask}
+                      onChange={(e) => setSelectedTask(e.target.value)}
+                      className="w-full px-3 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    >
+                      <option value="">Choose a task...</option>
+                      {availableTasks.map((task) => (
+                        <option key={task.task_id} value={task.task_id}>
+                          {task.title}
+                        </option>
+                      ))}
+                    </select>
+                    {selectedTask && (
+                      <p className="text-xs text-blue-700 mt-1">
+                        {availableTasks.find(t => t.task_id === selectedTask)?.description}
+                      </p>
+                    )}
+                  </div>
+                )}
+                
+                {requireTaskSelection && availableTasks.length === 0 && !loadingTasks && (
+                  <div className="mb-4 p-3 bg-yellow-50 rounded-md border border-yellow-200">
+                    <p className="text-sm text-yellow-800">
+                      No tasks are available for upload. Please contact your administrator or check if you have assigned tasks.
+                    </p>
+                  </div>
+                )}
+                
+                {loadingTasks && (
+                  <div className="mb-4 p-3 bg-gray-50 rounded-md">
+                    <p className="text-sm text-gray-600">Loading available tasks...</p>
+                  </div>
+                )}
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
                   <div>
                     <label className="block text-sm font-medium text-blue-900 mb-1">Email Address *</label>
@@ -584,7 +680,12 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate }: Upl
                 </div>
                 <button
                   onClick={requestSignature}
-                  disabled={!userEmail.trim() || files.length === 0}
+                  disabled={
+                    !userEmail.trim() || 
+                    files.length === 0 || 
+                    (requireTaskSelection && !selectedTask) ||
+                    loadingTasks
+                  }
                   className="bg-blue-600 text-white px-4 py-2 rounded-md font-medium hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   Send Release Form to Email

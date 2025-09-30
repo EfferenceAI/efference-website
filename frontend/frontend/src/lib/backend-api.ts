@@ -33,6 +33,42 @@ interface CreateVideoSessionFromUpload {
   creator_id?: string;
 }
 
+interface Task {
+  task_id: string;
+  title: string;
+  description?: string;
+  created_at: string;
+  created_by_id: string;
+  is_active: boolean;
+}
+
+interface TaskCreate {
+  title: string;
+  description?: string;
+}
+
+interface TaskAssignment {
+  assignment_id: string;
+  task_id: string;
+  user_id: string;
+  assigned_at: string;
+  task?: Task;
+  user?: {
+    user_id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+}
+
+interface User {
+  user_id: string;
+  name: string;
+  email: string;
+  role: string;
+  created_at: string;
+}
+
 class BackendApiClient {
   private baseUrl: string;
 
@@ -119,7 +155,88 @@ class BackendApiClient {
       return { status: 'error', error: String(error) };
     }
   }
+
+  // Task management
+  async createTask(taskData: TaskCreate): Promise<Task> {
+    return this.request<Task>('/tasks/', {
+      method: 'POST',
+      body: JSON.stringify(taskData),
+    });
+  }
+
+  async getTasks(params?: {
+    skip?: number;
+    limit?: number;
+    created_by_id?: string;
+  }): Promise<Task[]> {
+    const queryParams = new URLSearchParams();
+    if (params?.skip !== undefined) queryParams.append('skip', params.skip.toString());
+    if (params?.limit !== undefined) queryParams.append('limit', params.limit.toString());
+    if (params?.created_by_id) queryParams.append('created_by_id', params.created_by_id);
+    
+    const queryString = queryParams.toString();
+    return this.request<Task[]>(`/tasks/${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getTask(taskId: string): Promise<Task> {
+    return this.request<Task>(`/tasks/${taskId}`);
+  }
+
+  async updateTask(taskId: string, updates: Partial<TaskCreate>): Promise<Task> {
+    return this.request<Task>(`/tasks/${taskId}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  }
+
+  async deleteTask(taskId: string): Promise<void> {
+    return this.request<void>(`/tasks/${taskId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Task assignments
+  async getTaskAssignments(taskId?: string, userId?: string): Promise<TaskAssignment[]> {
+    const queryParams = new URLSearchParams();
+    if (taskId) queryParams.append('task_id', taskId);
+    if (userId) queryParams.append('user_id', userId);
+    
+    const queryString = queryParams.toString();
+    return this.request<TaskAssignment[]>(`/task-assignments/${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async createTaskAssignment(taskId: string, userId: string): Promise<TaskAssignment> {
+    return this.request<TaskAssignment>('/task-assignments/', {
+      method: 'POST',
+      body: JSON.stringify({ task_id: taskId, user_id: userId }),
+    });
+  }
+
+  async deleteTaskAssignment(assignmentId: string): Promise<void> {
+    return this.request<void>(`/task-assignments/${assignmentId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // User management
+  async getUsers(params?: {
+    skip?: number;
+    limit?: number;
+    role?: string;
+  }): Promise<User[]> {
+    const queryParams = new URLSearchParams();
+    if (params?.skip !== undefined) queryParams.append('skip', params.skip.toString());
+    if (params?.limit !== undefined) queryParams.append('limit', params.limit.toString());
+    if (params?.role) queryParams.append('role', params.role);
+    
+    const queryString = queryParams.toString();
+    return this.request<User[]>(`/users/${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getUser(userId: string): Promise<User> {
+    return this.request<User>(`/users/${userId}`);
+  }
 }
 
 export const backendApi = new BackendApiClient();
-export type { BackendVideoSession, CreateVideoSessionFromUpload };
+export type { BackendVideoSession, CreateVideoSessionFromUpload, Task, TaskCreate, TaskAssignment, User };

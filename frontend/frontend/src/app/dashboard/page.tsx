@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import UploadDropzone from '../components/UploadDropzone';
+import TaskManagement from '../components/TaskManagement';
+import WorkerTasks from '../components/WorkerTasks';
+import ReviewerVideoQueue from '../components/ReviewerVideoQueue';
 import { getMe, logout, User } from '@/lib/auth';
 import { apiFetch } from '@/lib/api';
 
@@ -217,6 +220,7 @@ export default function DashboardPage() {
       case 'ADMIN':
         return [
           { id: 'overview', label: 'Dashboard', description: 'System overview and analytics' },
+          { id: 'tasks', label: 'Task Management', description: 'Create and manage tasks' },
           { id: 'upload', label: 'Upload Videos', description: 'Upload and manage content' },
           { id: 'videos', label: 'All Videos', description: 'View all video sessions' },
           { id: 'users', label: 'User Management', description: 'Manage users and permissions' },
@@ -265,12 +269,22 @@ export default function DashboardPage() {
   };
 
   const renderAdminContent = () => {
+    if (currentView === 'tasks') {
+      return (
+        <div className="space-y-6">
+          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
+            {me && <TaskManagement currentUser={me} />}
+          </div>
+        </div>
+      );
+    }
+
     if (currentView === 'upload') {
       return (
         <div className="space-y-6">
           <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
             <h2 className="text-xl font-semibold text-[#111111] mb-4">Upload Videos</h2>
-            <UploadDropzone />
+            <UploadDropzone requireTaskSelection={false} />
           </div>
         </div>
       );
@@ -358,7 +372,7 @@ export default function DashboardPage() {
           <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
             <h2 className="text-xl font-semibold text-[#111111] mb-4">Upload Videos</h2>
             <p className="text-[#666] mb-4">Upload videos for your assigned tasks</p>
-            <UploadDropzone />
+            <UploadDropzone requireTaskSelection={true} />
           </div>
         </div>
       );
@@ -389,8 +403,7 @@ export default function DashboardPage() {
       return (
         <div className="space-y-6">
           <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <h2 className="text-xl font-semibold text-[#111111] mb-4">Available Tasks</h2>
-            <p className="text-[#666]">No tasks available at the moment. Check back later.</p>
+            {me && <WorkerTasks currentUser={me} />}
           </div>
         </div>
       );
@@ -440,7 +453,7 @@ export default function DashboardPage() {
           <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
             <h2 className="text-xl font-semibold text-[#111111] mb-4">Upload Videos</h2>
             <p className="text-[#666] mb-4">Upload videos for review and evaluation</p>
-            <UploadDropzone />
+            <UploadDropzone requireTaskSelection={false} />
           </div>
         </div>
       );
@@ -471,8 +484,7 @@ export default function DashboardPage() {
       return (
         <div className="space-y-6">
           <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <h2 className="text-xl font-semibold text-[#111111] mb-4">Review Queue</h2>
-            <p className="text-[#666]">No videos pending review at the moment.</p>
+            {me && <ReviewerVideoQueue currentUser={me} />}
           </div>
         </div>
       );
