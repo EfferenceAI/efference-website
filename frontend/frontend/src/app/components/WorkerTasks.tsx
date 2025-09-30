@@ -8,9 +8,10 @@ interface WorkerTasksProps {
     name: string;
     email: string;
   };
+  onNavigateToUpload?: (taskId: string, taskTitle: string) => void;
 }
 
-export default function WorkerTasks({ currentUser }: WorkerTasksProps) {
+export default function WorkerTasks({ currentUser, onNavigateToUpload }: WorkerTasksProps) {
   const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
   const [myAssignments, setMyAssignments] = useState<TaskAssignment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,7 +50,7 @@ export default function WorkerTasks({ currentUser }: WorkerTasksProps) {
   const handleRequestAssignment = async (taskId: string) => {
     setRequestingAssignment(taskId);
     try {
-      await backendApi.createTaskAssignment(taskId, currentUser.user_id);
+      await backendApi.createTaskAssignment(taskId);
       
       // Reload assignments to show the new assignment
       await loadMyAssignments();
@@ -64,17 +65,34 @@ export default function WorkerTasks({ currentUser }: WorkerTasksProps) {
     }
   };
 
+  const handleUnassignTask = async (taskId: string) => {
+    const assignment = myAssignments.find(a => a.task_id === taskId);
+    if (!assignment) return;
+    
+    try {
+      await backendApi.deleteTaskAssignment(assignment.assignment_id);
+      
+      // Reload assignments to reflect the change
+      await loadMyAssignments();
+      
+      // Show success message
+      alert('Successfully unassigned from task!');
+    } catch (error) {
+      console.error('Failed to unassign task:', error);
+      alert('Failed to unassign task. Please try again.');
+    }
+  };
+
   const handleUploadForTask = (taskId: string, taskTitle: string) => {
-    // Navigate to upload page with task pre-selected
-    // Store the selected task in localStorage so the upload component can use it
-    localStorage.setItem('selectedTaskId', taskId);
-    localStorage.setItem('selectedTaskTitle', taskTitle);
-    
-    // Navigate to upload section - assuming it's on the same page or navigate programmatically
-    window.location.hash = '#upload';
-    
-    // If you're using Next.js router, use this instead:
-    // router.push('/dashboard#upload');
+    if (onNavigateToUpload) {
+      // Use callback to navigate properly
+      onNavigateToUpload(taskId, taskTitle);
+    } else {
+      // Fallback to localStorage method
+      localStorage.setItem('selectedTaskId', taskId);
+      localStorage.setItem('selectedTaskTitle', taskTitle);
+      window.location.hash = '#upload';
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -128,15 +146,18 @@ export default function WorkerTasks({ currentUser }: WorkerTasksProps) {
                     <div>Created: {formatDate(task.created_at)}</div>
                   </div>
 
-                  <div className="mt-4">
+                  <div className="mt-4 space-y-2">
                     <button 
-                      onClick={() => {
-                        // TODO: Navigate to upload with this task pre-selected
-                        console.log('Upload for task:', task.task_id);
-                      }}
+                      onClick={() => handleUploadForTask(task.task_id, task.title)}
                       className="w-full bg-[#A2AF9B] text-white py-2 px-4 rounded-lg hover:bg-[#8a9784] transition-colors text-sm"
                     >
                       Upload Video for This Task
+                    </button>
+                    <button 
+                      onClick={() => handleUnassignTask(task.task_id)}
+                      className="w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors text-sm"
+                    >
+                      Unassign from Task
                     </button>
                   </div>
                 </div>
@@ -173,13 +194,11 @@ export default function WorkerTasks({ currentUser }: WorkerTasksProps) {
 
                 <div className="mt-4">
                   <button 
-                    onClick={() => {
-                      // TODO: Allow workers to request assignment to tasks
-                      console.log('Request assignment to task:', task.task_id);
-                    }}
-                    className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                    onClick={() => handleRequestAssignment(task.task_id)}
+                    disabled={requestingAssignment === task.task_id}
+                    className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-sm"
                   >
-                    Request Assignment
+                    {requestingAssignment === task.task_id ? 'Requesting...' : 'Request Assignment'}
                   </button>
                 </div>
               </div>
