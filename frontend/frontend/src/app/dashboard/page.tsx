@@ -118,7 +118,7 @@ export default function DashboardPage() {
     setSelectedTaskForApply('');
   };
 
-  const videoCategories: any[] = [];
+  const videoCategories: { id: string; title: string; description: string }[] = [];
 
   const roles = [
     { id: 'client', label: 'Client', description: 'View and manage your content' },

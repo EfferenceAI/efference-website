@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getFileRecord, updateFileRecord } from '@/lib/dynamodb'
+import { getVideoRecord, updateVideoRecord } from '@/lib/postgres'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { fileId: string } }
+  { params }: { params: Promise<{ fileId: string }> }
 ) {
   try {
-    const { fileId } = params
+    const { fileId } = await params
 
-    const file = await getFileRecord(fileId)
+    const file = await getVideoRecord(fileId)
 
     if (!file) {
       return NextResponse.json(
@@ -29,14 +29,14 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { fileId: string } }
+  { params }: { params: Promise<{ fileId: string }> }
 ) {
   try {
-    const { fileId } = params
+    const { fileId } = await params
     const body = await request.json()
 
-    // Update the file record
-    await updateFileRecord(fileId, body)
+    // Update the video record
+    await updateVideoRecord(fileId, body)
 
     return NextResponse.json({ success: true })
   } catch (error) {

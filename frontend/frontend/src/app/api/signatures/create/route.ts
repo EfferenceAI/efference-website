@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     let pdfBase64: string
     
     try {
-      pdfBase64 = generateReleaseFormPDF(
+      pdfBase64 = await generateReleaseFormPDF(
         (userName as string) || 'User',
         userEmail as string,
         files.map((f) => ({ name: f.name, size: f.size }))
