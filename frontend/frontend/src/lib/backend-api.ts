@@ -45,6 +45,7 @@ interface Task {
 interface TaskCreate {
   title: string;
   description?: string;
+  is_active?: boolean;
 }
 
 interface TaskAssignment {
@@ -82,12 +83,22 @@ class BackendApiClient {
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     
+    // Get authentication token from localStorage
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    };
+    
+    // Add authorization header if token exists
+    if (token) {
+      (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
+    }
+    
     const response = await fetch(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
       ...options,
+      headers,
     });
 
     if (!response.ok) {

@@ -148,6 +148,7 @@ class Task(TaskBase):
     task_id: uuid.UUID
     created_at: datetime
     created_by_id: uuid.UUID
+    is_active: bool
     creator: Optional[User] = None
 
 

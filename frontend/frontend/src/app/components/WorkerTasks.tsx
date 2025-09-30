@@ -14,6 +14,7 @@ export default function WorkerTasks({ currentUser }: WorkerTasksProps) {
   const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
   const [myAssignments, setMyAssignments] = useState<TaskAssignment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [requestingAssignment, setRequestingAssignment] = useState<string | null>(null);
 
   useEffect(() => {
     loadTasks();
@@ -23,7 +24,8 @@ export default function WorkerTasks({ currentUser }: WorkerTasksProps) {
   const loadTasks = async () => {
     try {
       const tasksData = await backendApi.getTasks();
-      setAvailableTasks(tasksData.filter(task => task.is_active));
+      const activeTasks = tasksData.filter(task => task.is_active);
+      setAvailableTasks(activeTasks);
     } catch (error) {
       console.error('Failed to load tasks:', error);
     }
@@ -42,6 +44,37 @@ export default function WorkerTasks({ currentUser }: WorkerTasksProps) {
 
   const isTaskAssigned = (taskId: string) => {
     return myAssignments.some(assignment => assignment.task_id === taskId);
+  };
+
+  const handleRequestAssignment = async (taskId: string) => {
+    setRequestingAssignment(taskId);
+    try {
+      await backendApi.createTaskAssignment(taskId, currentUser.user_id);
+      
+      // Reload assignments to show the new assignment
+      await loadMyAssignments();
+      
+      // Show success message
+      alert('Assignment request submitted successfully!');
+    } catch (error) {
+      console.error('Failed to request assignment:', error);
+      alert('Failed to request assignment. Please try again.');
+    } finally {
+      setRequestingAssignment(null);
+    }
+  };
+
+  const handleUploadForTask = (taskId: string, taskTitle: string) => {
+    // Navigate to upload page with task pre-selected
+    // Store the selected task in localStorage so the upload component can use it
+    localStorage.setItem('selectedTaskId', taskId);
+    localStorage.setItem('selectedTaskTitle', taskTitle);
+    
+    // Navigate to upload section - assuming it's on the same page or navigate programmatically
+    window.location.hash = '#upload';
+    
+    // If you're using Next.js router, use this instead:
+    // router.push('/dashboard#upload');
   };
 
   const formatDate = (dateString: string) => {

@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.services import crud, schemas, database
+from app.db import models
 from app.db.models import UserRole, TaskApplicationStatus, TaskRequestStatus
 from app.services.auth import get_current_user
 
@@ -82,6 +83,26 @@ def delete_task(
             detail="Task not found"
         )
     return schemas.MessageResponse(message="Task deleted successfully")
+
+
+@router.post("/activate-all", response_model=schemas.MessageResponse)
+def activate_all_tasks(
+    db: Session = Depends(database.get_db),
+    current_user: schemas.User = Depends(get_current_user),
+):
+    """Activate all existing tasks (admin only)"""
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admins can activate tasks"
+        )
+    
+    # Update all tasks to be active
+    updated_count = db.query(models.Task).update({models.Task.is_active: True})
+    db.commit()
+    
+    return schemas.MessageResponse(message=f"Activated {updated_count} tasks")
+
 
 # Workers can apply for tasks, and then they get assigned to that task upon approval
 @router.post("/{task_id}/assignments", response_model=schemas.TaskAssignment, status_code=status.HTTP_201_CREATED)
