@@ -40,6 +40,50 @@ def list_tasks(
     return tasks
 
 
+@router.get("/assignments", response_model=List[schemas.TaskAssignment])
+def list_all_task_assignments(
+    task_id: Optional[str] = Query(None, description="Filter by task ID"),
+    user_id: Optional[str] = Query(None, description="Filter by user ID"),
+    db: Session = Depends(database.get_db),
+    current_user: schemas.User = Depends(get_current_user),
+):
+    """Get all task assignments with optional filtering"""
+    
+    # Convert string UUIDs to UUID objects if provided
+    task_uuid = None
+    user_uuid = None
+    
+    if task_id:
+        try:
+            task_uuid = uuid.UUID(task_id)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid task_id format"
+            )
+    
+    if user_id:
+        try:
+            user_uuid = uuid.UUID(user_id)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid user_id format"
+            )
+    
+    # Allow admins to see all assignments, workers to see their own
+    if current_user.role == UserRole.ADMIN:
+        return crud.get_all_task_assignments(db, task_id=task_uuid, user_id=user_uuid)
+    elif current_user.role == UserRole.WORKER:
+        # Workers can only see their own assignments
+        return crud.get_all_task_assignments(db, task_id=task_uuid, user_id=current_user.user_id)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to view task assignments"
+        )
+
+
 @router.get("/{task_id}", response_model=schemas.Task)
 def get_task(
     task_id: uuid.UUID,
@@ -108,16 +152,35 @@ def activate_all_tasks(
 @router.post("/{task_id}/assignments", response_model=schemas.TaskAssignment, status_code=status.HTTP_201_CREATED)
 def create_task_assignment(
     task_id: uuid.UUID,
-    user_id: uuid.UUID = Query(..., description="ID of the worker to assign to this task"),
+    user_id: uuid.UUID = Query(None, description="ID of the worker to assign to this task (admin only)"),
     db: Session = Depends(database.get_db),
     current_user: schemas.User = Depends(get_current_user),
 ):
-    """Assign a task to a worker (admin only)."""
-    # AuthZ: only admins can assign
-    if current_user.role != UserRole.ADMIN:
+    """Assign a task to a worker or request assignment for self."""
+    
+    # Determine the target user ID
+    target_user_id = user_id
+    
+    # Permission logic
+    if current_user.role == UserRole.ADMIN:
+        # Admins can assign to any worker, but user_id must be provided
+        if not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Admin must specify user_id to assign task"
+            )
+    elif current_user.role == UserRole.WORKER:
+        # Workers can only request assignments for themselves
+        if user_id and str(user_id) != str(current_user.user_id):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Workers can only request assignments for themselves"
+            )
+        target_user_id = current_user.user_id
+    else:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only admins can assign tasks"
+            detail="Not authorized to create task assignments"
         )
 
     # Verify task exists
@@ -129,7 +192,7 @@ def create_task_assignment(
         )
 
     # Verify assignee exists and is a worker
-    assignee = crud.get_user(db, user_id=user_id)
+    assignee = crud.get_user(db, user_id=target_user_id)
     if not assignee:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -141,9 +204,16 @@ def create_task_assignment(
             detail="Assignee must be a WORKER"
         )
 
-    assignment_data = schemas.TaskAssignmentCreate(task_id=task_id, user_id=user_id)
-    return crud.create_task_assignment(db=db, assignment=assignment_data)
+    # Check if assignment already exists
+    existing = crud.get_task_assignment_by_task_and_user(db, task_id=task_id, user_id=target_user_id)
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Task assignment already exists"
+        )
 
+    assignment_data = schemas.TaskAssignmentCreate(task_id=task_id, user_id=target_user_id)
+    return crud.create_task_assignment(db=db, assignment=assignment_data)
 
 
 @router.get("/{task_id}/assignments", response_model=List[schemas.TaskAssignment])
@@ -166,9 +236,36 @@ def list_task_assignments(
 @router.delete("/assignments/{assignment_id}", response_model=schemas.MessageResponse)
 def delete_task_assignment(
     assignment_id: uuid.UUID,
-    db: Session = Depends(database.get_db)
+    db: Session = Depends(database.get_db),
+    current_user: schemas.User = Depends(get_current_user),
 ):
     """Remove a task assignment"""
+    
+    # Get the assignment to check permissions
+    assignment = crud.get_task_assignment(db, assignment_id=assignment_id)
+    if not assignment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task assignment not found"
+        )
+    
+    # Permission check
+    if current_user.role == UserRole.ADMIN:
+        # Admins can delete any assignment
+        pass
+    elif current_user.role == UserRole.WORKER:
+        # Workers can only unassign themselves
+        if str(assignment.user_id) != str(current_user.user_id):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Workers can only unassign themselves"
+            )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to delete task assignments"
+        )
+    
     if not crud.delete_task_assignment(db, assignment_id=assignment_id):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

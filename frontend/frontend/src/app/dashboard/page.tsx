@@ -51,6 +51,7 @@ export default function DashboardPage() {
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [videoSessions, setVideoSessions] = useState<VideoSession[]>([]);
   const [loading, setLoading] = useState(true);
+  const [preSelectedTask, setPreSelectedTask] = useState<{id: string, title: string} | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -144,9 +145,14 @@ export default function DashboardPage() {
     }
   };
 
+  const handleNavigateToUpload = (taskId: string, taskTitle: string) => {
+    setPreSelectedTask({ id: taskId, title: taskTitle });
+    setCurrentView('upload');
+  };
+
   const handleLogout = async () => {
     await logout();
-    router.replace('/login');
+    router.push('/');
   };
 
   const VideoSessionCard = ({ session }: { session: VideoSession }) => {
@@ -371,8 +377,16 @@ export default function DashboardPage() {
         <div className="space-y-6">
           <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
             <h2 className="text-xl font-semibold text-[#111111] mb-4">Upload Videos</h2>
-            <p className="text-[#666] mb-4">Upload videos for your assigned tasks</p>
-            <UploadDropzone requireTaskSelection={true} />
+            <p className="text-[#666] mb-4">
+              {preSelectedTask 
+                ? `Upload video for task: ${preSelectedTask.title}` 
+                : 'Upload videos for your assigned tasks'
+              }
+            </p>
+            <UploadDropzone 
+              requireTaskSelection={true} 
+              preSelectedTask={preSelectedTask?.id}
+            />
           </div>
         </div>
       );
@@ -403,7 +417,7 @@ export default function DashboardPage() {
       return (
         <div className="space-y-6">
           <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            {me && <WorkerTasks currentUser={me} />}
+            {me && <WorkerTasks currentUser={me} onNavigateToUpload={handleNavigateToUpload} />}
           </div>
         </div>
       );

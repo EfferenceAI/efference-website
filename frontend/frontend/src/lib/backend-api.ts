@@ -213,18 +213,21 @@ class BackendApiClient {
     if (userId) queryParams.append('user_id', userId);
     
     const queryString = queryParams.toString();
-    return this.request<TaskAssignment[]>(`/task-assignments/${queryString ? `?${queryString}` : ''}`);
+    return this.request<TaskAssignment[]>(`/tasks/assignments${queryString ? `?${queryString}` : ''}`);
   }
 
-  async createTaskAssignment(taskId: string, userId: string): Promise<TaskAssignment> {
-    return this.request<TaskAssignment>('/task-assignments/', {
+  async createTaskAssignment(taskId: string, userId?: string): Promise<TaskAssignment> {
+    const queryParams = new URLSearchParams();
+    if (userId) queryParams.append('user_id', userId);
+    
+    const queryString = queryParams.toString();
+    return this.request<TaskAssignment>(`/tasks/${taskId}/assignments${queryString ? `?${queryString}` : ''}`, {
       method: 'POST',
-      body: JSON.stringify({ task_id: taskId, user_id: userId }),
     });
   }
 
   async deleteTaskAssignment(assignmentId: string): Promise<void> {
-    return this.request<void>(`/task-assignments/${assignmentId}`, {
+    return this.request<void>(`/tasks/assignments/${assignmentId}`, {
       method: 'DELETE',
     });
   }
