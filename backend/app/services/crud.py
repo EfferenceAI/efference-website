@@ -3,7 +3,7 @@ CRUD operations for database models.
 Contains reusable functions for Create, Read, Update, Delete operations.
 """
 import uuid
-from typing import Optional, List, Type
+from typing import Optional, List, Type, Union
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, or_, func
 from datetime import datetime, timezone
@@ -458,7 +458,7 @@ def get_video_sessions(
     limit: int = 100,
     creator_id: Optional[uuid.UUID] = None,
     reviewer_id: Optional[uuid.UUID] = None,
-    status: Optional[models.VideoSessionStatus] = None,
+    status: Optional[Union[models.VideoSessionStatus, List[models.VideoSessionStatus]]] = None,
     task_id: Optional[uuid.UUID] = None
 ) -> List[models.VideoSession]:
     """Get multiple video sessions with optional filtering"""
@@ -473,7 +473,10 @@ def get_video_sessions(
     if reviewer_id:
         query = query.filter(models.VideoSession.reviewer_id == reviewer_id)
     if status:
-        query = query.filter(models.VideoSession.status == status)
+        if isinstance(status, list):
+            query = query.filter(models.VideoSession.status.in_(status))
+        else:
+            query = query.filter(models.VideoSession.status == status)
     if task_id:
         query = query.filter(models.VideoSession.task_id == task_id)
     
