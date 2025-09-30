@@ -51,7 +51,7 @@ export default function ReviewerVideoQueue({ currentUser }: ReviewerVideoQueuePr
       setLoading(true);
       
       // Load video sessions that need review
-      const sessions = await apiFetch<VideoSession[]>('/sessions?status=PENDING_REVIEW,PROCESSING');
+      const sessions = await apiFetch<VideoSession[]>('/sessions/?status=PENDING_REVIEW,PROCESSING');
       setVideoSessions(sessions);
       
       // Load tasks for filtering

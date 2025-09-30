@@ -47,7 +47,7 @@ export default function GalleryPage() {
         if (user.role === 'ADMIN') {
           sessions = await apiFetch<VideoSession[]>('/sessions');
         } else {
-          sessions = await apiFetch<VideoSession[]>(`/sessions?creator_id=${user.user_id}`);
+          sessions = await apiFetch<VideoSession[]>(`/sessions/?creator_id=${user.user_id}`);
         }
         setVideoSessions(sessions);
       } catch (error) {

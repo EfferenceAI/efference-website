@@ -113,10 +113,10 @@ export default function DashboardPage() {
         let sessions: VideoSession[] = [];
         if (user.role === 'ADMIN') {
           // Admins can see all video sessions
-          sessions = await apiFetch<VideoSession[]>('/sessions');
+          sessions = await apiFetch<VideoSession[]>('/sessions/');
         } else {
           // Other users see only their own sessions
-          sessions = await apiFetch<VideoSession[]>(`/sessions?creator_id=${user.user_id}`);
+          sessions = await apiFetch<VideoSession[]>(`/sessions/?creator_id=${user.user_id}`);
         }
         console.log('Video sessions received:', sessions);
         setVideoSessions(sessions);

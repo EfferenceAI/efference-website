@@ -6,7 +6,8 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.services import crud, schemas, database
+from app.services import crud, schemas, database, auth
+from ..db import models
 from ..db.models import VideoSessionStatus
 
 router = APIRouter(prefix="/sessions", tags=["video-sessions"])
@@ -50,7 +51,8 @@ def create_video_session(
 @router.post("/upload", response_model=schemas.VideoSession, status_code=status.HTTP_201_CREATED)
 def create_video_session_from_upload(
     session: schemas.VideoSessionCreateFromUpload,
-    db: Session = Depends(database.get_db)
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(auth.get_current_user)
 ):
     """Create a new video session from frontend upload"""
     try:
@@ -65,16 +67,8 @@ def create_video_session_from_upload(
                 )
             session.task_id = default_task[0].task_id
         
-        # For now, create a default user if none provided
-        if not session.creator_id:
-            # Get or create a default user
-            default_user = crud.get_users(db, limit=1)
-            if not default_user:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="No users available. Please create a user first."
-                )
-            session.creator_id = default_user[0].user_id
+        # Use the authenticated user as creator
+        session.creator_id = current_user.user_id
 
         # Create the video session with upload data
         return crud.create_video_session_from_upload(db=db, session=session)
@@ -92,18 +86,29 @@ def list_video_sessions(
     limit: int = Query(100, ge=1, le=1000, description="Maximum number of sessions to return"),
     creator_id: Optional[uuid.UUID] = Query(None, description="Filter by creator ID"),
     reviewer_id: Optional[uuid.UUID] = Query(None, description="Filter by reviewer ID"),
-    status: Optional[VideoSessionStatus] = Query(None, description="Filter by status"),
+    status: Optional[str] = Query(None, description="Filter by status (comma-separated for multiple)"),
     task_id: Optional[uuid.UUID] = Query(None, description="Filter by task ID"),
     db: Session = Depends(database.get_db)
 ):
     """Get a list of video sessions"""
+    # Parse status parameter to handle multiple statuses
+    status_list = None
+    if status:
+        try:
+            status_list = [VideoSessionStatus(s.strip()) for s in status.split(',')]
+        except ValueError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid status value: {str(e)}"
+            )
+    
     sessions = crud.get_video_sessions(
         db,
         skip=skip,
         limit=limit,
         creator_id=creator_id,
         reviewer_id=reviewer_id,
-        status=status,
+        status=status_list,
         task_id=task_id
     )
     return sessions

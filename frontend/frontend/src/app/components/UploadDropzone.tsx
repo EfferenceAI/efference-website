@@ -187,19 +187,24 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
               f.id === uploadFile.id ? { ...f, status: 'completed', progress: 100, s3Key: fileKey } : f
             ));
             
-            // Update video record in PostgreSQL
+            // Update video session status in backend database
             try {
-              await fetch(`/api/sessions/${videoId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+              const token = localStorage.getItem('token');
+              await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/sessions/${videoId}`, {
+                method: 'PUT',
+                headers: { 
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify({
+                  status: 'PENDING_REVIEW',
                   uploadStatus: 'completed',
-                  s3Key: fileKey,
-                  uploadedAt: new Date().toISOString()
+                  uploaded_at: new Date().toISOString()
                 }),
               });
+              console.log('✅ Video session status updated to PENDING_REVIEW');
             } catch (error) {
-              console.error('Failed to update video record:', error);
+              console.error('Failed to update video session status:', error);
             }
             
             resolve();
@@ -396,19 +401,24 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
         f.id === uploadFile.id ? { ...f, status: 'completed', progress: 100, s3Key: fileKey } : f
       ));
 
-      // Update video record in DynamoDB
+      // Update video session status in backend database
       try {
-        await fetch(`/api/sessions/${videoId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+        const token = localStorage.getItem('token');
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/sessions/${videoId}`, {
+          method: 'PUT',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
           body: JSON.stringify({
+            status: 'PENDING_REVIEW',
             uploadStatus: 'completed',
-            s3Key: fileKey,
-            uploadedAt: new Date().toISOString()
+            uploaded_at: new Date().toISOString()
           }),
         });
+        console.log('✅ Video session status updated to PENDING_REVIEW');
       } catch (error) {
-        console.error('Failed to update video record:', error);
+        console.error('Failed to update video session status:', error);
       }
 
     } catch (error) {
