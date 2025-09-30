@@ -1,16 +1,14 @@
 import { Pool } from 'pg'
 
-// Create connection pool for AWS RDS Postgres
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }, // Always use SSL for RDS
+  ssl: { rejectUnauthorized: false }, 
   max: 20,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000, // Increased timeout
+  connectionTimeoutMillis: 10000, 
   query_timeout: 15000,
 })
 
-// Session record interface matching your existing DynamoDB structure
 export interface VideoRecord {
   sessionId: string           // UUID primary key
   videoId: string            // UUID video identifier
@@ -24,8 +22,6 @@ export interface VideoRecord {
   uploadStatus: 'pending' | 'completed' | 'failed'
   signatureStatus?: 'none' | 'pending' | 'signed'
   documensoDocumentId?: string    // Documenso document ID
-  videoSummary?: string     // User-provided video summary
-  summaryAddedAt?: string   // When summary was added
   releaseFormSignedAt?: string // When release form was signed
   files?: Array<{           // For multi-file sessions
     name: string
@@ -37,7 +33,6 @@ export interface VideoRecord {
   uploadedAt: string        // ISO timestamp
 }
 
-// SQL to create the sessions table with proper Postgres types
 export const CREATE_SESSIONS_TABLE = `
 CREATE TABLE IF NOT EXISTS sessions (
   session_id UUID PRIMARY KEY,
@@ -52,8 +47,6 @@ CREATE TABLE IF NOT EXISTS sessions (
   upload_status VARCHAR(20) DEFAULT 'pending' CHECK (upload_status IN ('pending', 'completed', 'failed')),
   signature_status VARCHAR(20) DEFAULT 'none' CHECK (signature_status IN ('none', 'pending', 'signed')),
   documenso_document_id VARCHAR(255),
-  video_summary TEXT,
-  summary_added_at TIMESTAMPTZ,
   release_form_signed_at TIMESTAMPTZ,
   files JSONB,
   created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -68,7 +61,6 @@ CREATE INDEX IF NOT EXISTS idx_sessions_created_at ON sessions(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_sessions_video_id ON sessions(video_id);
 `
 
-// Initialize database schema
 export async function initializeDatabase(): Promise<void> {
   const client = await pool.connect()
   try {
@@ -82,7 +74,6 @@ export async function initializeDatabase(): Promise<void> {
   }
 }
 
-// Create a video record using INSERT ... ON CONFLICT
 export async function createVideoRecord(video: VideoRecord): Promise<void> {
   const client = await pool.connect()
   try {
@@ -90,10 +81,10 @@ export async function createVideoRecord(video: VideoRecord): Promise<void> {
       INSERT INTO sessions (
         session_id, video_id, video_name, user_name, user_email,
         s3_key, s3_bucket, file_size, content_type, upload_status,
-        signature_status, documenso_document_id, video_summary, 
-        summary_added_at, release_form_signed_at, files,
+        signature_status, documenso_document_id, 
+        release_form_signed_at, files,
         created_at, updated_at, uploaded_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
       ON CONFLICT (session_id) 
       DO UPDATE SET
         video_name = EXCLUDED.video_name,
@@ -106,8 +97,6 @@ export async function createVideoRecord(video: VideoRecord): Promise<void> {
         upload_status = EXCLUDED.upload_status,
         signature_status = EXCLUDED.signature_status,
         documenso_document_id = EXCLUDED.documenso_document_id,
-        video_summary = EXCLUDED.video_summary,
-        summary_added_at = EXCLUDED.summary_added_at,
         release_form_signed_at = EXCLUDED.release_form_signed_at,
         files = EXCLUDED.files,
         updated_at = NOW()
@@ -124,8 +113,6 @@ export async function createVideoRecord(video: VideoRecord): Promise<void> {
       video.uploadStatus,
       video.signatureStatus || 'none',
       video.documensoDocumentId || null,
-      video.videoSummary || null,
-      video.summaryAddedAt ? new Date(video.summaryAddedAt) : null,
       video.releaseFormSignedAt ? new Date(video.releaseFormSignedAt) : null,
       video.files ? JSON.stringify(video.files) : null,
       new Date(video.createdAt),
@@ -142,7 +129,6 @@ export async function createVideoRecord(video: VideoRecord): Promise<void> {
   }
 }
 
-// Get a specific video record
 export async function getVideoRecord(sessionId: string): Promise<VideoRecord | null> {
   const client = await pool.connect()
   try {
@@ -160,8 +146,6 @@ export async function getVideoRecord(sessionId: string): Promise<VideoRecord | n
         upload_status,
         signature_status,
         documenso_document_id,
-        video_summary,
-        summary_added_at,
         release_form_signed_at,
         files,
         created_at,
@@ -189,8 +173,6 @@ export async function getVideoRecord(sessionId: string): Promise<VideoRecord | n
       uploadStatus: row.upload_status,
       signatureStatus: row.signature_status,
       documensoDocumentId: row.documenso_document_id,
-      videoSummary: row.video_summary,
-      summaryAddedAt: row.summary_added_at?.toISOString(),
       releaseFormSignedAt: row.release_form_signed_at?.toISOString(),
       files: row.files,
       createdAt: row.created_at.toISOString(),
@@ -205,7 +187,6 @@ export async function getVideoRecord(sessionId: string): Promise<VideoRecord | n
   }
 }
 
-// Update video record with UPSERT capability
 export async function updateVideoRecord(sessionId: string, updates: Partial<VideoRecord>): Promise<void> {
   const client = await pool.connect()
   try {
@@ -213,22 +194,20 @@ export async function updateVideoRecord(sessionId: string, updates: Partial<Vide
   const values: unknown[] = []
     let paramCount = 1
 
-    // Build dynamic update query
     Object.entries(updates).forEach(([key, value]) => {
-      // Convert camelCase to snake_case for database columns
       const dbColumn = key.replace(/([A-Z])/g, '_$1').toLowerCase()
       
-      // Handle timestamp fields
-      if (key.endsWith('At') && value) {
-        value = new Date(value as string)
+      let processedValue: any = value
+      if (key.endsWith('At') && value && typeof value === 'string') {
+        processedValue = new Date(value)
       }
       
       setClause.push(`${dbColumn} = $${paramCount}`)
-  values.push(value as unknown)
+      values.push(processedValue)
       paramCount++
     })
 
-    values.push(sessionId) // Add sessionId as the last parameter
+    values.push(sessionId)
 
     await client.query(`
       UPDATE sessions 
@@ -245,15 +224,7 @@ export async function updateVideoRecord(sessionId: string, updates: Partial<Vide
   }
 }
 
-// Update video summary specifically
-export async function updateVideoSummary(sessionId: string, summary: string): Promise<void> {
-  await updateVideoRecord(sessionId, { 
-    videoSummary: summary,
-    summaryAddedAt: new Date().toISOString()
-  })
-}
 
-// Get all sessions for a user
 export async function getUserSessions(userEmail: string, limit = 50): Promise<VideoRecord[]> {
   const client = await pool.connect()
   try {
@@ -271,8 +242,6 @@ export async function getUserSessions(userEmail: string, limit = 50): Promise<Vi
         upload_status,
         signature_status,
         documenso_document_id,
-        video_summary,
-        summary_added_at,
         release_form_signed_at,
         files,
         created_at,
@@ -297,8 +266,6 @@ export async function getUserSessions(userEmail: string, limit = 50): Promise<Vi
       uploadStatus: row.upload_status,
       signatureStatus: row.signature_status,
       documensoDocumentId: row.documenso_document_id,
-      videoSummary: row.video_summary,
-      summaryAddedAt: row.summary_added_at?.toISOString(),
       releaseFormSignedAt: row.release_form_signed_at?.toISOString(),
       files: row.files,
       createdAt: row.created_at.toISOString(),
@@ -310,13 +277,11 @@ export async function getUserSessions(userEmail: string, limit = 50): Promise<Vi
   }
 }
 
-// Test database connection
 export async function testConnection(): Promise<boolean> {
   try {
     console.log('Testing database connection...')
     console.log('Database URL:', process.env.DATABASE_URL?.replace(/\/\/.*@/, '//***:***@'))
     
-    // Try with a shorter timeout first
     const { Client } = await import('pg')
     const client = new Client({
       connectionString: process.env.DATABASE_URL,
@@ -350,14 +315,12 @@ export async function testConnection(): Promise<boolean> {
   }
 }
 
-// Close the connection pool (for cleanup)
 export async function closePool(): Promise<void> {
   await pool.end()
   console.log('Database pool closed')
 }
 
-// Execute a raw query (for migrations, admin tasks, etc.)
-export async function executeQuery<T = unknown>(query: string, params: unknown[] = []): Promise<T> {
+export async function executeQuery(query: string, params: any[] = []): Promise<any> {
   const client = await pool.connect()
   try {
   const result = await client.query(query, params as unknown[] as string[])

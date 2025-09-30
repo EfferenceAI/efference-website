@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { documensoClient, generateReleaseFormPDF } from '@/lib/documenso'
+import { documensoClient, generateReleaseFormPDF, createUploadAddFieldsSend } from '@/lib/documenso'
 import { getVideoRecord, updateVideoRecord } from '@/lib/postgres'
 
 export async function POST(request: NextRequest) {
@@ -33,56 +33,48 @@ export async function POST(request: NextRequest) {
         files.map((f) => ({ name: f.name, size: f.size }))
       )
       console.log('PDF generated successfully, length:', pdfBase64.length)
-    } catch (err) {
-      console.error('PDF generation error:', err)
-      const msg = err instanceof Error ? err.message : 'Unknown error'
-      throw new Error('Failed to generate PDF: ' + msg)
+    } catch (pdfError) {
+      console.error('PDF generation error:', pdfError)
+      throw new Error('Failed to generate PDF: ' + (pdfError instanceof Error ? pdfError.message : 'Unknown error'))
     }
 
     const documentTitle = `Video Release Form - ${userName || userEmail}`
-    console.log('Step 1: Creating Documenso document metadata...')
+    console.log('Creating and sending document using helper function...')
     
-    const createRequest = {
+    const payload = {
       title: documentTitle,
       recipients: [{
-        name: (userName as string) || 'User',
-        email: userEmail as string,
+        name: userName || 'User',
+        email: userEmail,
         role: 'SIGNER' as const,
+        signingOrder: 0
       }],
       meta: {
-        signingOrder: 'PARALLEL' as const,
+        subject: 'Please sign the release form',
+        message: 'Add your address and sign, then submit.',
+        signingOrder: 'SEQUENTIAL' as const
       }
     } satisfies import('@/lib/documenso').DocumentUploadRequest
     
-    console.log('Document creation request:', JSON.stringify(createRequest, null, 2))
-    
-  const document = await documensoClient.createDocument(createRequest)
+    const result = await createUploadAddFieldsSend(
+      documensoClient,
+      pdfBase64,
+      payload,
+      true 
+    );
 
-    console.log('Document metadata created successfully:', document)
-    
-    if (!document.documentId || !document.uploadUrl) {
-      throw new Error('Document ID or upload URL missing from Documenso response')
-    }
-    
-    console.log('Step 2: Uploading PDF to S3...')
-    await documensoClient.uploadPDFToS3(document.uploadUrl, pdfBase64)
-    
-    console.log('Step 3: Sending document for signing via email...')
-    console.log('About to call sendDocumentForSigning with:', { documentId: document.documentId, sendEmail: true })
-    await documensoClient.sendDocumentForSigning(document.documentId, true)
+    console.log('Document creation and sending completed:', result)
 
     await updateVideoRecord(sessionId, {
       signatureStatus: 'pending',
-      documensoDocumentId: document.documentId.toString()
+      documensoDocumentId: result.documentId.toString()
     })
 
     return NextResponse.json({
       success: true,
-      documentId: document.documentId,
-      signingUrl: document.recipients[0]?.signingUrl,
+      documentId: result.documentId,
       emailSent: true,
-      message: 'Release form sent to your email! Check your inbox and sign the document.',
-      directSigningUrl: document.recipients[0]?.signingUrl
+      message: 'Release form sent to your email! Check your inbox and sign the document.'
     })
 
   } catch (error) {
