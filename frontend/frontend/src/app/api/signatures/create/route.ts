@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { documensoClient, generateReleaseFormPDF, createUploadAddFieldsSend } from '@/lib/documenso'
-import { getVideoRecord, updateVideoRecord } from '@/lib/postgres'
+import { getVideoRecord, updateVideoRecord, getUserSignedDocument } from '@/lib/postgres'
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,6 +21,75 @@ export async function POST(request: NextRequest) {
         { error: 'Session not found' },
         { status: 404 }
       )
+    }
+
+    // Check if document has already been signed
+    if (session.signatureStatus === 'signed' && session.documensoDocumentId) {
+      return NextResponse.json({
+        success: true,
+        documentId: parseInt(session.documensoDocumentId),
+        emailSent: false,
+        alreadySigned: true,
+        message: 'Release form has already been signed for this session.'
+      })
+    }
+
+    // Check if user has any signed document from previous sessions
+    const existingSignedDocument = await getUserSignedDocument(userEmail)
+    if (existingSignedDocument && existingSignedDocument.documensoDocumentId) {
+      // Update current session to reference the existing signed document
+      await updateVideoRecord(sessionId, {
+        signatureStatus: 'signed',
+        documensoDocumentId: existingSignedDocument.documensoDocumentId,
+        releaseFormSignedAt: existingSignedDocument.releaseFormSignedAt
+      })
+      
+      return NextResponse.json({
+        success: true,
+        documentId: parseInt(existingSignedDocument.documensoDocumentId),
+        emailSent: false,
+        alreadySigned: true,
+        message: 'You have already signed a release form previously. Using existing signature.'
+      })
+    }
+
+    // Check if document is pending and exists
+    if (session.signatureStatus === 'pending' && session.documensoDocumentId) {
+      try {
+        // Verify the document still exists in Documenso
+        const documentStatus = await documensoClient.getDocumentStatus(session.documensoDocumentId)
+        
+        // If document is completed or signed, update our database
+        const isSigned = documentStatus.status === 'COMPLETED' || 
+                        documentStatus.recipients.some(r => r.status === 'SIGNED' || r.status === 'COMPLETED')
+        
+        if (isSigned) {
+          await updateVideoRecord(sessionId, {
+            signatureStatus: 'signed'
+          })
+          
+          return NextResponse.json({
+            success: true,
+            documentId: parseInt(session.documensoDocumentId),
+            emailSent: false,
+            alreadySigned: true,
+            message: 'Release form has already been signed for this session.'
+          })
+        }
+        
+        // Document exists and is still pending, return existing document info
+        return NextResponse.json({
+          success: true,
+          documentId: parseInt(session.documensoDocumentId),
+          emailSent: false,
+          alreadyPending: true,
+          message: 'Release form has already been sent. Check your email to sign the document.'
+        })
+        
+      } catch (docCheckError) {
+        console.error('Error checking existing document status:', docCheckError)
+        // Continue with creating new document if check fails
+      }
     }
 
   const files = (session.files || []) as Array<{ name: string; size: number }>

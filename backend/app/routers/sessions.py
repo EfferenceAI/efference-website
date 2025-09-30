@@ -47,6 +47,45 @@ def create_video_session(
     return crud.create_video_session(db=db, session=session, creator_id=creator_id)
 
 
+@router.post("/upload", response_model=schemas.VideoSession, status_code=status.HTTP_201_CREATED)
+def create_video_session_from_upload(
+    session: schemas.VideoSessionCreateFromUpload,
+    db: Session = Depends(database.get_db)
+):
+    """Create a new video session from frontend upload"""
+    try:
+        # For now, create a default task if none provided
+        if not session.task_id:
+            # Get or create a default task
+            default_task = crud.get_tasks(db, limit=1)
+            if not default_task:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="No tasks available. Please create a task first."
+                )
+            session.task_id = default_task[0].task_id
+        
+        # For now, create a default user if none provided
+        if not session.creator_id:
+            # Get or create a default user
+            default_user = crud.get_users(db, limit=1)
+            if not default_user:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="No users available. Please create a user first."
+                )
+            session.creator_id = default_user[0].user_id
+
+        # Create the video session with upload data
+        return crud.create_video_session_from_upload(db=db, session=session)
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create video session: {str(e)}"
+        )
+
+
 @router.get("/", response_model=List[schemas.VideoSession])
 def list_video_sessions(
     skip: int = Query(0, ge=0, description="Number of sessions to skip"),

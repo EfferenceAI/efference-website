@@ -277,6 +277,63 @@ export async function getUserSessions(userEmail: string, limit = 50): Promise<Vi
   }
 }
 
+export async function getUserSignedDocument(userEmail: string): Promise<VideoRecord | null> {
+  const client = await pool.connect()
+  try {
+    const result = await client.query(`
+      SELECT 
+        session_id,
+        video_id,
+        video_name,
+        user_name,
+        user_email,
+        s3_key,
+        s3_bucket,
+        file_size,
+        content_type,
+        upload_status,
+        signature_status,
+        documenso_document_id,
+        release_form_signed_at,
+        files,
+        created_at,
+        updated_at,
+        uploaded_at
+      FROM sessions 
+      WHERE user_email = $1 AND signature_status = 'signed' AND documenso_document_id IS NOT NULL
+      ORDER BY release_form_signed_at DESC
+      LIMIT 1
+    `, [userEmail])
+
+    if (result.rows.length === 0) {
+      return null
+    }
+
+    const row = result.rows[0]
+    return {
+      sessionId: row.session_id,
+      videoId: row.video_id,
+      videoName: row.video_name,
+      userName: row.user_name,
+      userEmail: row.user_email,
+      s3Key: row.s3_key,
+      s3Bucket: row.s3_bucket,
+      fileSize: parseInt(row.file_size),
+      contentType: row.content_type,
+      uploadStatus: row.upload_status,
+      signatureStatus: row.signature_status,
+      documensoDocumentId: row.documenso_document_id,
+      releaseFormSignedAt: row.release_form_signed_at?.toISOString(),
+      files: row.files,
+      createdAt: row.created_at.toISOString(),
+      updatedAt: row.updated_at.toISOString(),
+      uploadedAt: row.uploaded_at.toISOString()
+    }
+  } finally {
+    client.release()
+  }
+}
+
 export async function testConnection(): Promise<boolean> {
   try {
     console.log('Testing database connection...')

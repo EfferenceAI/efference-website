@@ -229,7 +229,16 @@ async function findLabelBoxPercent(
   opts?: { fieldWidthPct?: number; fieldHeightPct?: number; xPad?: number; yAdjust?: number }
 ): Promise<Anchor | null> {
   try {
+    // For server-side execution, we'll skip PDF parsing and use fallback coordinates
+    if (typeof window === 'undefined') {
+      console.log('Server-side execution detected, using fallback coordinates for PDF field placement');
+      return null; // This will trigger the fallback coordinates
+    }
+    
     const pdfjs = await import('pdfjs-dist');
+    
+    // Configure the worker for client-side
+    pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
     
     const { fieldWidthPct = 40, fieldHeightPct = 6, xPad = 6, yAdjust = 2 } = opts || {};
     const data = base64ToU8(pdfBase64);
@@ -361,7 +370,7 @@ export async function createUploadAddFieldsSend(
 }
 
 export async function generateReleaseFormPDF(userName: string, userEmail: string, files: Array<{ name: string; size: number }>): Promise<string> {
-  const { jsPDF } = await import('jspdf')
+  const jsPDF = (await import('jspdf')).default
   const doc = new jsPDF()
   const pageWidth = doc.internal.pageSize.width
   const margin = 20
