@@ -1,6 +1,11 @@
 from pydantic_settings import BaseSettings
 from typing import Optional
 import os
+from pathlib import Path
+
+# Get the backend directory path (parent of app directory)
+BACKEND_DIR = Path(__file__).parent.parent
+ENV_FILE_PATH = BACKEND_DIR / ".env"
 
 class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./test.db"
@@ -13,11 +18,18 @@ class Settings(BaseSettings):
     SES_FROM_EMAIL: Optional[str] = None
 
     class Config:
-        env_file = ".env"
+        env_file = str(ENV_FILE_PATH)
         env_file_encoding = 'utf-8'
         extra = "ignore"
 
 settings = Settings()
+
+
+# Debug: Print configuration loading
+print(f"📁 Backend directory: {BACKEND_DIR}")
+print(f"📄 ENV file path: {ENV_FILE_PATH}")
+print(f"📄 ENV file exists: {ENV_FILE_PATH.exists()}")
+print(f"🔧 DATABASE_URL: {settings.DATABASE_URL}")
 
 # Fail fast in production if JWT secret is missing
 ENV = (os.getenv("ENV") or os.getenv("ENVIRONMENT") or os.getenv("APP_ENV") or "development").lower()

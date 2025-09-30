@@ -218,7 +218,7 @@ def create_task(db: Session, task: schemas.TaskCreate, created_by_id: uuid.UUID)
         title=task.title,
         description=task.description,
         created_by_id=created_by_id,
-        is_active=task.is_active
+        is_active=getattr(task, 'is_active', True)  # Default to True if not provided
     )
     db.add(db_task)
     db.commit()
@@ -264,6 +264,19 @@ def get_task_assignments(db: Session, task_id: Optional[uuid.UUID] = None, user_
     if user_id:
         query = query.filter(models.TaskAssignment.user_id == user_id)
     return query.all()
+
+
+def get_all_task_assignments(db: Session, task_id: Optional[uuid.UUID] = None, user_id: Optional[uuid.UUID] = None) -> List[models.TaskAssignment]:
+    """Get all task assignments with optional filtering (alias for get_task_assignments)"""
+    return get_task_assignments(db, task_id=task_id, user_id=user_id)
+
+
+def get_task_assignment_by_task_and_user(db: Session, task_id: uuid.UUID, user_id: uuid.UUID) -> Optional[models.TaskAssignment]:
+    """Get a task assignment by task ID and user ID"""
+    return db.query(models.TaskAssignment).filter(
+        and_(models.TaskAssignment.task_id == task_id,
+             models.TaskAssignment.user_id == user_id)
+    ).first()
 
 
 def create_task_assignment(db: Session, assignment: schemas.TaskAssignmentCreate) -> models.TaskAssignment:
