@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     await initializeDatabase()
 
     const body = await request.json()
-    const { files, userEmail, userName } = body
+    const { files, userEmail, userName, taskId } = body
 
     if (!files || !Array.isArray(files)) {
       return NextResponse.json(
@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
           file_size: file.size,
           content_type: file.type,
           s3_bucket: process.env.S3_BUCKET_NAME || 'uploadz-videos',
+          task_id: taskId, // Include task ID for backend
         }
 
         const backendSession = await backendApi.createVideoSessionFromUpload(backendSessionData)
