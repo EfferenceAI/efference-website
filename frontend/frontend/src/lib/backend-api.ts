@@ -1,4 +1,6 @@
 // Backend API client for communicating with the FastAPI backend
+import 'server-only';
+
 const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
 
 interface BackendVideoSession {

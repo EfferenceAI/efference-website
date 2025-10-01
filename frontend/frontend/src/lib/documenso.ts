@@ -1,4 +1,7 @@
 
+import 'server-only';
+
+
  interface DocumentUploadRequest {
   title: string
   externalId?: string
