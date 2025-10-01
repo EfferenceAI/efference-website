@@ -3,29 +3,30 @@ backend:
   phases:
     preBuild:
       commands:
-        - echo "Installing Python 3.11 and setting up environment"
-        - yum update -y
-        - yum install -y python3 python3-pip python3-devel gcc
-        - python3 -m pip install --upgrade pip
+        - echo "Setting up Python environment for Amplify"
+        - echo "Python version:"
+        - python3 --version
+        - echo "Pip version:"
+        - python3 -m pip --version
         - cd backend
         - echo "Installing Python dependencies"
-        - pip3 install -r requirements.txt
+        - python3 -m pip install --user -r requirements-prod.txt
     build:
       commands:
         - echo "Running database migrations"
         - cd backend
-        - alembic upgrade head || echo "Skipping migrations - database may not be configured"
-        - echo "Build completed"
+        - python3 -m alembic upgrade head || echo "Skipping migrations - database may not be configured"
+        - echo "Backend build completed"
     postBuild:
       commands:
-        - echo "Post-build setup completed"
+        - echo "Backend post-build setup completed"
   artifacts:
     baseDirectory: backend
     files:
       - '**/*'
   cache:
     paths:
-      - backend/.cache/pip/**/*
+      - ~/.cache/pip/**/*
 frontend:
   phases:
     preBuild:
