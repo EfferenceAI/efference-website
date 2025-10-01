@@ -14,10 +14,16 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = "sqlite:///./test.db"
     
-    # AWS Configuration
+    # AWS Configuration (using alternative names for Amplify compatibility)
+    # Note: AWS_ prefixed variables are reserved in Amplify
     AWS_REGION: str = "us-east-1"
     AWS_ACCESS_KEY_ID: Optional[str] = None
     AWS_SECRET_ACCESS_KEY: Optional[str] = None
+    
+    # Alternative AWS variable names for Amplify (fallback)
+    REGION: Optional[str] = None
+    ACCESS_KEY_ID: Optional[str] = None
+    SECRET_ACCESS_KEY: Optional[str] = None
     
     # JWT Configuration
     JWT_SECRET_KEY: Optional[str] = None
@@ -51,6 +57,21 @@ class Settings(BaseSettings):
     @property
     def is_development(self) -> bool:
         return self.ENV.lower() in {"dev", "development", "local"}
+    
+    @property
+    def aws_region(self) -> str:
+        """Get AWS region, preferring alternative variable names for Amplify"""
+        return self.REGION or self.AWS_REGION
+    
+    @property
+    def aws_access_key_id(self) -> Optional[str]:
+        """Get AWS access key, preferring alternative variable names for Amplify"""
+        return self.ACCESS_KEY_ID or self.AWS_ACCESS_KEY_ID
+    
+    @property
+    def aws_secret_access_key(self) -> Optional[str]:
+        """Get AWS secret key, preferring alternative variable names for Amplify"""
+        return self.SECRET_ACCESS_KEY or self.AWS_SECRET_ACCESS_KEY
 
 settings = Settings()
 
