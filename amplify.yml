@@ -26,8 +26,6 @@ backend:
         - pwd
         - echo "Listing current directory:"
         - ls -la
-        - echo "Changing to backend directory for migrations"
-        - cd backend
         - echo "Checking installed packages:"
         - python3 -m pip list
         - echo "Adding user local bin to PATH"
