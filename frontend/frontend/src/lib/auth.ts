@@ -1,4 +1,5 @@
 import { apiFetch, setToken, clearToken, getStoredToken } from './api'
+import 'server-only';
 
 export interface LoginForm {
   email: string
