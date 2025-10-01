@@ -1,77 +1,13 @@
 version: 1
-backend:
-  phases:
-    preBuild:
-      commands:
-        - echo "Setting up Python environment for Amplify"
-        - echo "Python version:"
-        - python3 --version
-        - echo "Pip version:"
-        - python3 -m pip --version
-        - echo "Current directory:"
-        - pwd
-        - echo "Listing root directory:"
-        - ls -la
-        - echo "Changing to backend directory"
-        - cd backend
-        - echo "Listing backend directory:"
-        - ls -la
-        - echo "Installing Python dependencies from requirements-prod.txt"
-        - python3 -m pip install --user --upgrade pip
-        - python3 -m pip install --user -r requirements-prod.txt --verbose
-    build:
-      commands:
-        - echo "Starting build phase"
-        - echo "Current directory in build:"
-        - pwd
-        - echo "Listing current directory:"
-        - ls -la
-        - echo "Checking installed packages:"
-        - python3 -m pip list
-        - echo "Adding user local bin to PATH"
-        - export PATH="/root/.local/bin:$PATH"
-        - echo "Running database migrations"
-        - python3 -m alembic upgrade head || echo "Skipping migrations - database may not be configured"
-        - echo "Backend build completed successfully"
-    postBuild:
-      commands:
-        - echo "Backend post-build setup completed"
-  artifacts:
-    baseDirectory: backend
-    files:
-      - '**/*'
-  cache:
-    paths:
-      - ~/.cache/pip/**/*
 frontend:
   phases:
     preBuild:
       commands:
-        - echo "Starting frontend preBuild"
-        - echo "Current directory:"
-        - pwd
-        - echo "Going back to project root:"
-        - cd ..
-        - echo "Current directory after cd ..:"
-        - pwd
-        - echo "Listing root directory:"
-        - ls -la
-        - echo "Checking frontend directory:"
-        - ls -la frontend/
-        - echo "Changing to frontend/frontend directory"
         - cd frontend/frontend
-        - echo "Frontend directory contents:"
-        - ls -la
-        - echo "Installing Node.js dependencies"
         - npm ci
     build:
       commands:
-        - echo "Starting frontend build"
-        - echo "Current directory:"
-        - pwd
-        - echo "We should already be in frontend/frontend, let's verify:"
-        - ls -la
-        - echo "Building Next.js application (ignoring ESLint errors)"
+        - cd frontend/frontend
         - npm run build -- --no-lint
   artifacts:
     baseDirectory: frontend/frontend
