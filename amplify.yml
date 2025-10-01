@@ -8,15 +8,33 @@ backend:
         - python3 --version
         - echo "Pip version:"
         - python3 -m pip --version
+        - echo "Current directory:"
+        - pwd
+        - echo "Listing root directory:"
+        - ls -la
+        - echo "Changing to backend directory"
         - cd backend
-        - echo "Installing Python dependencies"
-        - python3 -m pip install --user -r requirements-prod.txt
+        - echo "Listing backend directory:"
+        - ls -la
+        - echo "Installing Python dependencies from requirements-prod.txt"
+        - python3 -m pip install --user --upgrade pip
+        - python3 -m pip install --user -r requirements-prod.txt --verbose
     build:
       commands:
-        - echo "Running database migrations"
+        - echo "Starting build phase"
+        - echo "Current directory in build:"
+        - pwd
+        - echo "Listing current directory:"
+        - ls -la
+        - echo "Changing to backend directory for migrations"
         - cd backend
-        - python3 -m alembic upgrade head || echo "Skipping migrations - database may not be configured"
-        - echo "Backend build completed"
+        - echo "Checking installed packages:"
+        - python3 -m pip list
+        - echo "Adding user local bin to PATH"
+        - export PATH="/root/.local/bin:$PATH"
+        - echo "Running database migrations"
+        - /root/.local/bin/python3 -m alembic upgrade head || echo "Skipping migrations - database may not be configured"
+        - echo "Backend build completed successfully"
     postBuild:
       commands:
         - echo "Backend post-build setup completed"
