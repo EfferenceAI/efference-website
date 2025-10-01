@@ -50,6 +50,10 @@ frontend:
         - echo "Starting frontend preBuild"
         - echo "Current directory:"
         - pwd
+        - echo "Going back to project root:"
+        - cd ..
+        - echo "Current directory after cd ..:"
+        - pwd
         - echo "Listing root directory:"
         - ls -la
         - echo "Checking frontend directory:"
@@ -65,6 +69,8 @@ frontend:
         - echo "Starting frontend build"
         - echo "Current directory:"
         - pwd
+        - echo "Going back to project root:"
+        - cd ..
         - echo "Changing to frontend/frontend directory"
         - cd frontend/frontend
         - echo "Building Next.js application"
