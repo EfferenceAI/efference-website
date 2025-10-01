@@ -74,9 +74,11 @@ frontend:
         - echo "Building Next.js application (ignoring ESLint errors)"
         - npm run build -- --no-lint
   artifacts:
-    baseDirectory: frontend/frontend/.next
+    baseDirectory: frontend/frontend
     files:
-      - '**/*'
+      - '.next/**/*'
+      - 'public/**/*'
+      - 'package.json'
   cache:
     paths:
       - frontend/frontend/node_modules/**/*
