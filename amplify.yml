@@ -3,12 +3,10 @@ frontend:
   phases:
     preBuild:
       commands:
-        - cd frontend/frontend
-        - npm ci
+        - cd frontend/frontend && npm ci
     build:
       commands:
-        - cd frontend/frontend
-        - npm run build -- --no-lint
+        - cd frontend/frontend && npm run build -- --no-lint
   artifacts:
     baseDirectory: frontend/frontend
     files:
