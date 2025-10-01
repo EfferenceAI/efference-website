@@ -92,6 +92,18 @@ export default function LoginPage() {
           {error && (
             <p className="text-sm text-red-600 text-center mt-4">{error}</p>
           )}
+          
+          <div className="mt-6 text-center">
+            <p className="text-sm text-[#666]">
+              Don't have an account?{' '}
+              <button
+                onClick={() => router.push('/signup')}
+                className="text-[#A2AF9B] hover:text-[#8fa085] font-medium underline"
+              >
+                Sign up here
+              </button>
+            </p>
+          </div>
         </div>
       </div>
     </div>
