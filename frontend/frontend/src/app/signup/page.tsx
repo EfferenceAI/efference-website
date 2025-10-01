@@ -72,8 +72,19 @@ export default function SignupPage() {
         skipAuth: true,
       })
 
-      // Log in the user
-      const loginResponse = await apiFetch('/auth/login', {
+      // Log in the user through Next.js API to set httpOnly cookie
+      const loginApiResponse = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+      
+      if (!loginApiResponse.ok) {
+        throw new Error('Auto-login failed after registration')
+      }
+
+      // Also get token for localStorage (client-side API usage)
+      const loginData = await apiFetch<{access_token: string, token_type: string}>('/auth/login', {
         method: 'POST',
         body: JSON.stringify({
           email: email,
@@ -81,11 +92,9 @@ export default function SignupPage() {
         }),
         skipAuth: true,
       })
-
-      const data = await (loginResponse as Response).json()
       
       // Save the token
-      localStorage.setItem('token', data.access_token)
+      localStorage.setItem('token', loginData.access_token)
       
       // Redirect to dashboard
       router.push('/dashboard')
@@ -230,6 +239,18 @@ export default function SignupPage() {
           {error && (
             <p className="text-sm text-red-600 text-center mt-4">{error}</p>
           )}
+          
+          <div className="mt-6 text-center">
+            <p className="text-sm text-[#666]">
+              Already have an account?{' '}
+              <button
+                onClick={() => router.push('/login')}
+                className="text-[#A2AF9B] hover:text-[#8fa085] font-medium underline"
+              >
+                Log in here
+              </button>
+            </p>
+          </div>
         </div>
       </div>
     </div>
