@@ -31,7 +31,7 @@ backend:
         - echo "Adding user local bin to PATH"
         - export PATH="/root/.local/bin:$PATH"
         - echo "Running database migrations"
-        - /root/.local/bin/python3 -m alembic upgrade head || echo "Skipping migrations - database may not be configured"
+        - python3 -m alembic upgrade head || echo "Skipping migrations - database may not be configured"
         - echo "Backend build completed successfully"
     postBuild:
       commands:
@@ -47,11 +47,27 @@ frontend:
   phases:
     preBuild:
       commands:
+        - echo "Starting frontend preBuild"
+        - echo "Current directory:"
+        - pwd
+        - echo "Listing root directory:"
+        - ls -la
+        - echo "Checking frontend directory:"
+        - ls -la frontend/
+        - echo "Changing to frontend/frontend directory"
         - cd frontend/frontend
+        - echo "Frontend directory contents:"
+        - ls -la
+        - echo "Installing Node.js dependencies"
         - npm ci
     build:
       commands:
+        - echo "Starting frontend build"
+        - echo "Current directory:"
+        - pwd
+        - echo "Changing to frontend/frontend directory"
         - cd frontend/frontend
+        - echo "Building Next.js application"
         - npm run build
   artifacts:
     baseDirectory: frontend/frontend/.next
