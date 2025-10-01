@@ -69,10 +69,8 @@ frontend:
         - echo "Starting frontend build"
         - echo "Current directory:"
         - pwd
-        - echo "Going back to project root:"
-        - cd ..
-        - echo "Changing to frontend/frontend directory"
-        - cd frontend/frontend
+        - echo "We should already be in frontend/frontend, let's verify:"
+        - ls -la
         - echo "Building Next.js application"
         - npm run build
   artifacts:
