@@ -57,7 +57,7 @@ Resources:
       Cors:
         AllowMethods: "'*'"
         AllowHeaders: "'*'"
-        AllowOrigin: "'https://efference-website.vercel.app'"
+        AllowOrigin: "'https://efference-website-ke9q0cmvh-efference.vercel.app'"
         AllowCredentials: true
 
 Outputs:
