@@ -22,6 +22,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "https://app.efference.ai",
         "https://efference-website.vercel.app",
         "https://efference-website-git-master-efference.vercel.app", 
         "https://efference-website-o8qf00ifw-efference.vercel.app"
