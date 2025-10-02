@@ -108,7 +108,7 @@ export async function GET() {
       timestamp: new Date().toISOString(),
       hasDbUrl: !!process.env.DATABASE_URL,
       dbUrlMasked: process.env.DATABASE_URL?.replace(/\/\/.*@/, '//***:***@'),
-      backendUrl: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
+      backendUrl: process.env.NEXT_PUBLIC_BACKEND_URL || 'https://gm6cgy8uoa.execute-api.us-east-1.amazonaws.com/prod'
     })
   } catch (error) {
     console.error('API GET Error:', error)

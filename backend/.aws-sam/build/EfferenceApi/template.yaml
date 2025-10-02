@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Efference Video Training Platform Backend API
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: python3.11
+
+Parameters:
+  DatabaseUrl:
+    Type: String
+    Description: PostgreSQL database connection URL
+    Default: "postgresql://admin_user:3fPkPiw4XXxzmgosMB3C@upload-video-sessions.cmz0wq0ucld0.us-east-1.rds.amazonaws.com:5432/mydb?sslmode=require"
+    NoEcho: true
+  JwtSecret:
+    Type: String
+    Description: JWT secret key
+    Default: "rULk7P7ixYzLIcihHLM01F4mFebm2mRobLZy2L6Rye8"
+    NoEcho: true
+  Environment:
+    Type: String
+    Default: production
+    Description: Environment name
+
+Resources:
+  EfferenceApi:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: lambda_handler.handler
+      Runtime: python3.11
+      Environment:
+        Variables:
+          DATABASE_URL: !Ref DatabaseUrl
+          JWT_SECRET: !Ref JwtSecret
+          ENVIRONMENT: !Ref Environment
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+            RestApiId: !Ref ApiGateway
+        RootApi:
+          Type: Api
+          Properties:
+            Path: /
+            Method: ANY
+            RestApiId: !Ref ApiGateway
+
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      Cors:
+        AllowMethods: "'*'"
+        AllowHeaders: "'*'"
+        AllowOrigin: "'https://efference-website.vercel.app'"
+        AllowCredentials: true
+
+Outputs:
+  ApiUrl:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/"
+  ApiGatewayId:
+    Description: "API Gateway ID"
+    Value: !Ref ApiGateway

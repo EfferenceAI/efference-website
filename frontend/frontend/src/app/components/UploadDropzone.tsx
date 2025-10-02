@@ -190,7 +190,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
             // Update video session status in backend database
             try {
               const token = localStorage.getItem('token');
-              await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/sessions/${videoId}`, {
+              await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://gm6cgy8uoa.execute-api.us-east-1.amazonaws.com/prod'}/sessions/${videoId}`, {
                 method: 'PUT',
                 headers: { 
                   'Content-Type': 'application/json',
@@ -404,7 +404,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
       // Update video session status in backend database
       try {
         const token = localStorage.getItem('token');
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/sessions/${videoId}`, {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://gm6cgy8uoa.execute-api.us-east-1.amazonaws.com/prod'}/sessions/${videoId}`, {
           method: 'PUT',
           headers: { 
             'Content-Type': 'application/json',

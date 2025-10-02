@@ -1,5 +1,5 @@
 // Backend API client for communicating with the FastAPI backend
-const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://gm6cgy8uoa.execute-api.us-east-1.amazonaws.com/prod';
 
 interface BackendVideoSession {
   session_id: string;
