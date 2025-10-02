@@ -2,6 +2,14 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  
+  // Remove console logs in production
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production" ? {
+      exclude: ['error', 'warn'], // Keep error and warn logs
+    } : false,
+  },
+  
   webpack: (config, { isServer }) => {
     // Handle PDF.js worker files
     if (!isServer) {
