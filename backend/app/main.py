@@ -21,7 +21,11 @@ app = FastAPI(
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=[
+        "https://efference-website.vercel.app",
+        "https://efference-website-git-master-efference.vercel.app", 
+        "https://efference-website-o8qf00ifw-efference.vercel.app"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
