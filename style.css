@@ -1,4 +1,40 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap');
+@font-face {
+  font-family: "Micro Technic Extended Outline Bold";
+  src: url("fonts/Micro\ Technic\ Extended\ Outline\ Bold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Helvetica Neue Condensed Bold";
+  src: url("fonts/Helvetica\ Neue\ Condensed\ Bold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Helvetica Condensed Regular";
+  src: url("fonts/Helvetica\ Condensed\ Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Arial Narrow Bold";
+  src: url("fonts/Arial\ Narrow\ Bold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Arial Narrow";
+  src: url("fonts/Arial\ Narrow.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Neue Helvetica Condensed BQ Regular";
+  src: url("fonts/Neue\ Helvetica\ Condensed\ BQ\ Regular.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
 
 * {
   margin: 0;
@@ -7,21 +43,22 @@
 
 body {
   background-color: black;
-  font-family: "Inter", sans-serif;
+  font-family: "Neue Helvetica Condensed BQ Regular", sans-serif;
   margin: 0 auto;
   width: min(90em, 100%);
 }
 
 header {
-  display: flex;
+  display: block;
   justify-content: space-between;
   align-items: center;
-  margin: 0 1em;
-  padding: 1em 0;
+  padding: 0.7em 0;
+  font-family: "Arial Narrow Bold", sans-serif;
 }
 
 .logo-link {
   display: flex;
+  font-family: "Micro Technic Extended Outline Bold", sans-serif;
   justify-content: center;
   gap: 0.2em;
   text-decoration: none;
@@ -43,6 +80,7 @@ header {
 /* nav */
 .nav-links {
   display: flex;
+  justify-content: center;
   gap: 1em;
   font-size: 1em;
   font-weight: 500;
@@ -59,22 +97,12 @@ header {
   transition: all 0.2s ease;   /* smooth hover */
 }
 
-.contact-us-button {
-  display: inline-block;
-  text-decoration: none;
-  color: black;                /* text color */
-  background-color: pink;      /* base background */
-  padding: 0.6em 1em;
-  font-weight: 500;
-  transition: all 0.2s ease;   /* smooth hover */
-}
-
-.contact-us-button:hover, .standard-button:hover {
+.standard-button:hover {
   color: black;
   background-color: white;
 }
 
-.contact-us-button:active, .standard-button:active {
+.standard-button:active {
   opacity: 0.7;
 }
 
@@ -114,13 +142,13 @@ hr {
 
 .company, .team {
   display: grid;
-  grid-template-columns: 1fr; /* always single column */
+  grid-template-columns: 1fr 1fr; /* always single column */
   row-gap: 1em;               /* spacing between h4 and text */
   margin: 1em;
   margin-bottom: 2em;
 }
 
-.company h4,
+.company h2,
 .company-description h2,
 .company-description p {
   color: white;
@@ -137,13 +165,10 @@ hr {
   font-size: 24px;
 }
 
-.team h4, .team-description a {
+.team h2, .team-description a {
   color: white;
 }
 
-.team-description h2{
-  text-align: center;
-}
 
 .team-description a {
   text-decoration: none;
