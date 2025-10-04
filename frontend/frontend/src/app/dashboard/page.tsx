@@ -297,17 +297,25 @@ export default function DashboardPage() {
     }
 
     if (currentView === 'videos') {
+      // Filter to show videos that are pending review or completed
+      const reviewableVideos = videoSessions.filter(session => 
+        session.status === 'PENDING_REVIEW' || 
+        session.status === 'APPROVED' || 
+        session.status === 'REJECTED' ||
+        session.status === 'PROCESSING'
+      );
+      
       return (
         <div className="space-y-6">
           <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
             <h2 className="text-xl font-semibold text-[#111111] mb-4">All Video Sessions</h2>
             {loading ? (
               <p className="text-[#666]">Loading video sessions...</p>
-            ) : videoSessions.length === 0 ? (
+            ) : reviewableVideos.length === 0 ? (
               <p className="text-[#666]">No video sessions found in the system.</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {videoSessions.map((session) => (
+                {reviewableVideos.map((session) => (
                   <VideoSessionCard key={session.session_id} session={session} />
                 ))}
               </div>
@@ -345,7 +353,12 @@ export default function DashboardPage() {
           <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
             <h3 className="text-sm font-medium text-[#666] mb-2">Total Videos</h3>
             <p className="text-2xl font-bold text-[#111111]">
-              {loading ? '...' : videoSessions.length}
+              {loading ? '...' : videoSessions.filter(s => 
+                s.status === 'PENDING_REVIEW' || 
+                s.status === 'APPROVED' || 
+                s.status === 'REJECTED' ||
+                s.status === 'PROCESSING'
+              ).length}
             </p>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
@@ -393,17 +406,25 @@ export default function DashboardPage() {
     }
 
     if (currentView === 'videos') {
+      // Filter to show videos that are pending review or completed
+      const reviewableVideos = videoSessions.filter(session => 
+        session.status === 'PENDING_REVIEW' || 
+        session.status === 'APPROVED' || 
+        session.status === 'REJECTED' ||
+        session.status === 'PROCESSING'
+      );
+      
       return (
         <div className="space-y-6">
           <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
             <h2 className="text-xl font-semibold text-[#111111] mb-4">My Videos</h2>
             {loading ? (
               <p className="text-[#666]">Loading videos...</p>
-            ) : videoSessions.length === 0 ? (
+            ) : reviewableVideos.length === 0 ? (
               <p className="text-[#666]">You haven&apos;t uploaded any videos yet. Start by uploading your first video!</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {videoSessions.map((session) => (
+                {reviewableVideos.map((session) => (
                   <VideoSessionCard key={session.session_id} session={session} />
                 ))}
               </div>
@@ -446,7 +467,12 @@ export default function DashboardPage() {
           <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
             <h3 className="text-sm font-medium text-[#666] mb-2">Videos Uploaded</h3>
             <p className="text-2xl font-bold text-[#111111]">
-              {loading ? '...' : videoSessions.length}
+              {loading ? '...' : videoSessions.filter(s => 
+                s.status === 'PENDING_REVIEW' || 
+                s.status === 'APPROVED' || 
+                s.status === 'REJECTED' ||
+                s.status === 'PROCESSING'
+              ).length}
             </p>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
@@ -474,17 +500,25 @@ export default function DashboardPage() {
     }
 
     if (currentView === 'videos') {
+      // Filter to show videos that are pending review or completed
+      const reviewableVideos = videoSessions.filter(session => 
+        session.status === 'PENDING_REVIEW' || 
+        session.status === 'APPROVED' || 
+        session.status === 'REJECTED' ||
+        session.status === 'PROCESSING'
+      );
+      
       return (
         <div className="space-y-6">
           <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
             <h2 className="text-xl font-semibold text-[#111111] mb-4">My Videos</h2>
             {loading ? (
               <p className="text-[#666]">Loading videos...</p>
-            ) : videoSessions.length === 0 ? (
+            ) : reviewableVideos.length === 0 ? (
               <p className="text-[#666]">You haven&apos;t uploaded any videos yet. Start by uploading your first video!</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {videoSessions.map((session) => (
+                {reviewableVideos.map((session) => (
                   <VideoSessionCard key={session.session_id} session={session} />
                 ))}
               </div>
@@ -521,7 +555,12 @@ export default function DashboardPage() {
           <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
             <h3 className="text-sm font-medium text-[#666] mb-2">Videos Uploaded</h3>
             <p className="text-2xl font-bold text-[#111111]">
-              {loading ? '...' : videoSessions.length}
+              {loading ? '...' : videoSessions.filter(s => 
+                s.status === 'PENDING_REVIEW' || 
+                s.status === 'APPROVED' || 
+                s.status === 'REJECTED' ||
+                s.status === 'PROCESSING'
+              ).length}
             </p>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
@@ -554,17 +593,25 @@ export default function DashboardPage() {
     }
 
     if (currentView === 'gallery') {
+      // Filter to show videos that are pending review or completed
+      const reviewableVideos = videoSessions.filter(session => 
+        session.status === 'PENDING_REVIEW' || 
+        session.status === 'APPROVED' || 
+        session.status === 'REJECTED' ||
+        session.status === 'PROCESSING'
+      );
+      
       return (
         <div className="space-y-6">
           <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
             <h2 className="text-xl font-semibold text-[#111111] mb-4">My Videos</h2>
             {loading ? (
               <p className="text-[#666]">Loading videos...</p>
-            ) : videoSessions.length === 0 ? (
+            ) : reviewableVideos.length === 0 ? (
               <p className="text-[#666]">You haven&apos;t uploaded any videos yet. Start by uploading your first video!</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {videoSessions.map((session) => (
+                {reviewableVideos.map((session) => (
                   <VideoSessionCard key={session.session_id} session={session} />
                 ))}
               </div>
@@ -580,7 +627,12 @@ export default function DashboardPage() {
           <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
             <h3 className="text-sm font-medium text-[#666] mb-2">Videos Uploaded</h3>
             <p className="text-2xl font-bold text-[#111111]">
-              {loading ? '...' : videoSessions.length}
+              {loading ? '...' : videoSessions.filter(s => 
+                s.status === 'PENDING_REVIEW' || 
+                s.status === 'APPROVED' || 
+                s.status === 'REJECTED' ||
+                s.status === 'PROCESSING'
+              ).length}
             </p>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
