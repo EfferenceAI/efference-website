@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { backendApi, Task, TaskAssignment } from '@/lib/backend-api';
 
 interface WorkerTasksProps {
@@ -17,12 +17,7 @@ export default function WorkerTasks({ currentUser, onNavigateToUpload }: WorkerT
   const [loading, setLoading] = useState(true);
   const [requestingAssignment, setRequestingAssignment] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadTasks();
-    loadMyAssignments();
-  }, [currentUser.user_id]);
-
-  const loadTasks = async () => {
+  const loadTasks = useCallback(async () => {
     try {
       const tasksData = await backendApi.getTasks();
       const activeTasks = tasksData.filter(task => task.is_active);
@@ -30,9 +25,9 @@ export default function WorkerTasks({ currentUser, onNavigateToUpload }: WorkerT
     } catch (error) {
       console.error('Failed to load tasks:', error);
     }
-  };
+  }, []);
 
-  const loadMyAssignments = async () => {
+  const loadMyAssignments = useCallback(async () => {
     try {
       const assignmentsData = await backendApi.getTaskAssignments(undefined, currentUser.user_id);
       setMyAssignments(assignmentsData);
@@ -41,7 +36,12 @@ export default function WorkerTasks({ currentUser, onNavigateToUpload }: WorkerT
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentUser.user_id]);
+
+  useEffect(() => {
+    loadTasks();
+    loadMyAssignments();
+  }, [loadTasks, loadMyAssignments]);
 
   const isTaskAssigned = (taskId: string) => {
     return myAssignments.some(assignment => assignment.task_id === taskId);

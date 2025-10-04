@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { backendApi, Task } from '@/lib/backend-api';
-import { getMe, User } from '@/lib/auth';
+import { getMe } from '@/lib/auth';
 
 interface UploadFile {
   id: string;
@@ -31,7 +31,6 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
   const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
   const [selectedTask, setSelectedTask] = useState<string>(preSelectedTask || '');
   const [loadingTasks, setLoadingTasks] = useState(false);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
   
   // Signature workflow state
   const [signatureStatus, setSignatureStatus] = useState<'none' | 'pending' | 'signed'>('none');
@@ -47,7 +46,6 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
         
         // Get current user
         const user = await getMe();
-        setCurrentUser(user);
         
         if (user) {
           setUserEmail(user.email);
