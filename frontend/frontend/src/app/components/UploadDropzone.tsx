@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { backendApi, Task } from '@/lib/backend-api';
-import { getMe, User } from '@/lib/auth';
+import { getMe } from '@/lib/auth';
 
 interface UploadFile {
   id: string;
@@ -31,7 +31,6 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
   const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
   const [selectedTask, setSelectedTask] = useState<string>(preSelectedTask || '');
   const [loadingTasks, setLoadingTasks] = useState(false);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
   
   // Signature workflow state
   const [signatureStatus, setSignatureStatus] = useState<'none' | 'pending' | 'signed'>('none');
@@ -47,7 +46,6 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
         
         // Get current user
         const user = await getMe();
-        setCurrentUser(user);
         
         if (user) {
           setUserEmail(user.email);
@@ -190,7 +188,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
             // Update video session status in backend database
             try {
               const token = localStorage.getItem('token');
-              await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://gm6cgy8uoa.execute-api.us-east-1.amazonaws.com/prod'}/sessions/${videoId}`, {
+              const updateResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://gm6cgy8uoa.execute-api.us-east-1.amazonaws.com/prod'}/sessions/${videoId}`, {
                 method: 'PUT',
                 headers: { 
                   'Content-Type': 'application/json',
@@ -198,11 +196,22 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
                 },
                 body: JSON.stringify({
                   status: 'PENDING_REVIEW',
-                  uploadStatus: 'completed',
+                  upload_status: 'completed',
                   uploaded_at: new Date().toISOString()
                 }),
               });
-              console.log('✅ Video session status updated to PENDING_REVIEW');
+              
+              if (!updateResponse.ok) {
+                const errorText = await updateResponse.text();
+                console.error('❌ Failed to update session status:', {
+                  status: updateResponse.status,
+                  statusText: updateResponse.statusText,
+                  body: errorText
+                });
+              } else {
+                const updateResult = await updateResponse.json();
+                console.log('✅ Video session status updated to PENDING_REVIEW:', updateResult);
+              }
             } catch (error) {
               console.error('Failed to update video session status:', error);
             }
@@ -241,9 +250,13 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
       
       // Update video record as failed
       try {
+        const token = localStorage.getItem('token');
         await fetch(`/api/sessions/${videoId}`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
           body: JSON.stringify({
             uploadStatus: 'failed'
           }),
@@ -356,11 +369,14 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
       };
 
       // Upload parts in parallel batches
-  // Upload in batches without storing unused promises array
+      // Upload in batches without storing unused promises array
       let completedParts = 0;
+      console.log(`Starting upload of ${totalParts} parts in batches of ${maxConcurrentUploads}...`);
 
       for (let i = 0; i < partUrls.length; i += maxConcurrentUploads) {
         const batch = partUrls.slice(i, i + maxConcurrentUploads);
+        console.log(`Uploading batch ${Math.floor(i / maxConcurrentUploads) + 1} (parts ${i + 1}-${i + batch.length})...`);
+        
         const batchPromises = batch.map(async (partInfo: {partNumber: number, presignedUrl: string}) => {
           const result = await uploadPart(partInfo);
           completedParts++;
@@ -376,9 +392,13 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
 
         const batchResults = await Promise.all(batchPromises);
         uploadedParts.push(...batchResults);
+        console.log(`Batch completed. Total parts uploaded: ${uploadedParts.length}/${totalParts}`);
       }
 
+      console.log(`All parts uploaded successfully. Total: ${uploadedParts.length} parts`);
+
       // Step 4: Complete multipart upload
+      console.log(`Completing multipart upload with ${uploadedParts.length} parts...`);
       const completeResponse = await fetch('/api/upload/multipart', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -393,8 +413,17 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
       });
 
       if (!completeResponse.ok) {
-        throw new Error('Failed to complete multipart upload');
+        const errorText = await completeResponse.text();
+        console.error('Failed to complete multipart upload:', {
+          status: completeResponse.status,
+          statusText: completeResponse.statusText,
+          error: errorText
+        });
+        throw new Error(`Failed to complete multipart upload: ${completeResponse.status} ${errorText}`);
       }
+
+      const completeResult = await completeResponse.json();
+      console.log('✅ Multipart upload completed successfully:', completeResult);
 
       // Mark as completed
       setFiles(prev => prev.map(f => 
@@ -404,7 +433,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
       // Update video session status in backend database
       try {
         const token = localStorage.getItem('token');
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://gm6cgy8uoa.execute-api.us-east-1.amazonaws.com/prod'}/sessions/${videoId}`, {
+        const updateResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://gm6cgy8uoa.execute-api.us-east-1.amazonaws.com/prod'}/sessions/${videoId}`, {
           method: 'PUT',
           headers: { 
             'Content-Type': 'application/json',
@@ -412,31 +441,53 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
           },
           body: JSON.stringify({
             status: 'PENDING_REVIEW',
-            uploadStatus: 'completed',
+            upload_status: 'completed',
             uploaded_at: new Date().toISOString()
           }),
         });
-        console.log('✅ Video session status updated to PENDING_REVIEW');
+        
+        if (!updateResponse.ok) {
+          const errorText = await updateResponse.text();
+          console.error('❌ Failed to update session status:', {
+            status: updateResponse.status,
+            statusText: updateResponse.statusText,
+            body: errorText
+          });
+          throw new Error(`Failed to update session: ${updateResponse.status} ${errorText}`);
+        }
+        
+        const updateResult = await updateResponse.json();
+        console.log('✅ Video session status updated to PENDING_REVIEW:', updateResult);
       } catch (error) {
         console.error('Failed to update video session status:', error);
+        throw error; // Re-throw to trigger the outer catch block
       }
 
     } catch (error) {
-      console.error('Multipart upload failed for file:', uploadFile.name);
+      console.error('❌ Multipart upload failed for file:', uploadFile.name);
       console.error('Error details:', {
         error,
         message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error instanceof Error ? error.name : undefined
       });
+      
+      // Show user-friendly error
+      onStatusUpdate?.(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      
       setFiles(prev => prev.map(f => 
         f.id === uploadFile.id ? { ...f, status: 'error', progress: 0 } : f
       ));
       
       // Update video record as failed
       try {
+        const token = localStorage.getItem('token');
         await fetch(`/api/sessions/${videoId}`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
           body: JSON.stringify({
             uploadStatus: 'failed'
           }),
@@ -457,7 +508,13 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
     }
 
     try {
-      onStatusUpdate?.('Creating session in both frontend and backend databases...');
+      onStatusUpdate?.('Creating session in backend database...');
+      
+      // Get authentication token
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication required. Please log in.');
+      }
       
       // Create session with file metadata using the bridge API
       const sessionResponse = await fetch('/api/sessions-bridge', {
@@ -465,8 +522,8 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userEmail,
-          userName: userName || 'User',
           taskId: selectedTask || undefined, // Include task ID
+          token, // Pass authentication token
           files: files.map(f => ({
             name: f.name,
             size: f.size,
@@ -476,11 +533,12 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
       });
 
       if (!sessionResponse.ok) {
-        throw new Error('Failed to create session');
+        const errorData = await sessionResponse.json();
+        throw new Error(errorData.error || 'Failed to create session');
       }
 
-      const { videos } = await sessionResponse.json();
-      const newSessionId = videos[0]?.videoId; // Use first video ID as session identifier
+      const { sessions } = await sessionResponse.json();
+      const newSessionId = sessions[0]?.session_id; // Use backend session ID
       setSessionId(newSessionId);
 
       onStatusUpdate?.('Sending release form...');
@@ -492,7 +550,8 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
         body: JSON.stringify({
           sessionId: newSessionId,
           userEmail,
-          userName: userName || 'User'
+          userName: userName || 'User',
+          token // Pass authentication token
         })
       });
 
@@ -525,7 +584,12 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
     if (!sessionId) return;
 
     try {
-      const response = await fetch(`/api/signatures/create?sessionId=${sessionId}`);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      const response = await fetch(`/api/signatures/create?sessionId=${sessionId}&token=${encodeURIComponent(token)}`);
       if (!response.ok) throw new Error('Failed to check status');
 
       const result = await response.json();

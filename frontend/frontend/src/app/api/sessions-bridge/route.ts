@@ -1,14 +1,76 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { backendApi, CreateVideoSessionFromUpload } from '@/lib/backend-api'
-import { createVideoRecord, VideoRecord, initializeDatabase } from '@/lib/postgres'
-import { v4 as uuidv4 } from 'uuid'
+import { CreateVideoSessionFromUpload } from '@/lib/backend-api'
+
+interface BackendVideoSession {
+  session_id: string;
+  creator_id: string;
+  task_id: string;
+  reviewer_id?: string;
+  status: string;
+  video_name?: string;
+  user_email?: string;
+  s3_bucket?: string;
+  file_size?: number;
+  content_type?: string;
+  upload_status?: string;
+  signature_status?: string;
+  documenso_document_id?: string;
+  video_summary?: string;
+  summary_added_at?: string;
+  release_form_signed_at?: string;
+  uploaded_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Backend API client with token support
+class AuthenticatedBackendApiClient {
+  private baseUrl: string;
+  private token: string | null;
+
+  constructor(baseUrl: string, token: string | null = null) {
+    this.baseUrl = baseUrl;
+    this.token = token;
+  }
+
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const url = `${this.baseUrl}${endpoint}`;
+    
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    };
+    
+    // Add authorization header if token exists
+    if (this.token) {
+      (headers as Record<string, string>)['Authorization'] = `Bearer ${this.token}`;
+    }
+    
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Backend API error: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+
+    return response.json();
+  }
+
+  async createVideoSessionFromUpload(sessionData: CreateVideoSessionFromUpload): Promise<BackendVideoSession> {
+    return this.request<BackendVideoSession>('/sessions/upload', {
+      method: 'POST',
+      body: JSON.stringify(sessionData),
+    });
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
-    await initializeDatabase()
-
     const body = await request.json()
-    const { files, userEmail, userName, taskId } = body
+    const { files, userEmail, taskId, token } = body
 
     if (!files || !Array.isArray(files)) {
       return NextResponse.json(
@@ -17,37 +79,19 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const now = new Date().toISOString()
-    const videoRecords: VideoRecord[] = []
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Authentication token required' },
+        { status: 401 }
+      )
+    }
+
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://gm6cgy8uoa.execute-api.us-east-1.amazonaws.com/prod'
+    const backendApi = new AuthenticatedBackendApiClient(backendUrl, token)
     const backendSessions = []
 
-    // Create sessions in both frontend and backend databases
+    // Create sessions ONLY in backend database
     for (const file of files) {
-      const sessionId = uuidv4()
-      
-      // Create frontend video record (for compatibility)
-      const videoRecord: VideoRecord = {
-        sessionId,
-        videoId: sessionId,
-        videoName: file.name,
-        userName: userName || 'Demo User',
-        userEmail: userEmail || 'demo@efference.ai',
-        s3Key: '',
-        s3Bucket: process.env.S3_BUCKET_NAME || 'uploadz-videos',
-        fileSize: file.size,
-        contentType: file.type,
-        uploadStatus: 'pending',
-        uploadedAt: now,
-        createdAt: now,
-        updatedAt: now,
-        signatureStatus: 'none',
-        files: files 
-      }
-      
-      await createVideoRecord(videoRecord)
-      videoRecords.push(videoRecord)
-
-      // Create backend session
       try {
         const backendSessionData: CreateVideoSessionFromUpload = {
           video_name: file.name,
@@ -64,17 +108,14 @@ export async function POST(request: NextRequest) {
         console.log(`Created backend session: ${backendSession.session_id} for ${file.name}`)
       } catch (backendError) {
         console.error('Failed to create backend session:', backendError)
-        // Continue with frontend-only session for now
+        throw backendError // Don't silently fail - we need backend sessions
       }
-      
-      console.log(`Created session: ${sessionId} for ${file.name}`)
     }
 
     return NextResponse.json({
       status: 'created',
-      videos: videoRecords,
-      backendSessions: backendSessions,
-      message: `Created ${videoRecords.length} frontend sessions and ${backendSessions.length} backend sessions`
+      sessions: backendSessions,
+      message: `Created ${backendSessions.length} video sessions in backend database`
     })
 
   } catch (error) {
@@ -88,36 +129,24 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    // Test both frontend and backend database connections
-    console.log('🔄 API GET: Testing database connections...')
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://gm6cgy8uoa.execute-api.us-east-1.amazonaws.com/prod'
     
-    // Frontend database test
-    const { testConnection } = await import('@/lib/postgres')
-    const frontendConnected = await testConnection()
-    
-    // Backend API test
-    const backendHealth = await backendApi.healthCheck()
-    const backendStatus = typeof backendHealth === 'object' && backendHealth !== null && 'status' in backendHealth 
-      ? (backendHealth as { status: string }).status 
-      : 'unknown'
+    // Test backend API connection
+    const response = await fetch(`${backendUrl}/health`)
+    const backendStatus = response.ok ? 'connected' : 'disconnected'
     
     return NextResponse.json({
-      message: 'Video upload API ready - Frontend + Backend integration',
-      frontend_database: frontendConnected ? 'connected' : 'disconnected',
+      message: 'Video session bridge ready - Backend-only mode',
       backend_api: backendStatus,
       timestamp: new Date().toISOString(),
-      hasDbUrl: !!process.env.DATABASE_URL,
-      dbUrlMasked: process.env.DATABASE_URL?.replace(/\/\/.*@/, '//***:***@'),
-      backendUrl: process.env.NEXT_PUBLIC_BACKEND_URL || 'https://gm6cgy8uoa.execute-api.us-east-1.amazonaws.com/prod'
+      backendUrl
     })
   } catch (error) {
     console.error('API GET Error:', error)
     return NextResponse.json({
-      message: 'Video upload API ready - with errors',
-      frontend_database: 'error',
+      message: 'Video session bridge - with errors',
       backend_api: 'error',
-      error: error instanceof Error ? error.message : String(error),
-      hasDbUrl: !!process.env.DATABASE_URL
+      error: error instanceof Error ? error.message : String(error)
     })
   }
 }

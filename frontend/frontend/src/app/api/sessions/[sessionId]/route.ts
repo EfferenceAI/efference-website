@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getVideoRecord, updateVideoRecord } from '@/lib/postgres'
+
+// Backend API configuration
+const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://gm6cgy8uoa.execute-api.us-east-1.amazonaws.com/prod'
 
 export async function GET(
   request: NextRequest,
@@ -7,15 +9,37 @@ export async function GET(
 ) {
   try {
     const { sessionId } = await params
-    const video = await getVideoRecord(sessionId)
-
-    if (!video) {
+    
+    // Get token from request headers
+    const authHeader = request.headers.get('authorization')
+    const token = authHeader?.replace('Bearer ', '')
+    
+    if (!token) {
       return NextResponse.json(
-        { error: 'Session not found' },
-        { status: 404 }
+        { error: 'Authentication token required' },
+        { status: 401 }
       )
     }
 
+    // Fetch from backend API
+    const response = await fetch(`${BACKEND_BASE_URL}/sessions/${sessionId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return NextResponse.json(
+          { error: 'Session not found' },
+          { status: 404 }
+        )
+      }
+      throw new Error(`Backend API error: ${response.status}`)
+    }
+
+    const video = await response.json()
     console.log(`Retrieved session: ${sessionId}`)
     return NextResponse.json(video)
   } catch (error) {
@@ -37,15 +61,39 @@ export async function PATCH(
 
     console.log(`🔄 Updating session: ${sessionId}`, Object.keys(updates))
 
-    // Update the video record using Postgres
-    await updateVideoRecord(sessionId, updates)
+    // Get token from request headers
+    const authHeader = request.headers.get('authorization')
+    const token = authHeader?.replace('Bearer ', '')
+    
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Authentication token required' },
+        { status: 401 }
+      )
+    }
 
+    // Update via backend API
+    const response = await fetch(`${BACKEND_BASE_URL}/sessions/${sessionId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(updates)
+    })
+
+    if (!response.ok) {
+      throw new Error(`Backend API error: ${response.status}`)
+    }
+
+    const updatedSession = await response.json()
     console.log(`Session updated successfully: ${sessionId}`)
 
     return NextResponse.json({ 
       success: true,
       sessionId,
-      updatedFields: Object.keys(updates)
+      updatedFields: Object.keys(updates),
+      session: updatedSession
     })
   } catch (error) {
     console.error('Error updating session:', error)
