@@ -16,7 +16,6 @@ export default function LoginPage() {
     setError(null)
     setLoading(true)
     try {
-      // Hit our Next API to set httpOnly cookie for middleware
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -26,7 +25,6 @@ export default function LoginPage() {
         const data = await res.json().catch(() => ({}))
         throw new Error(data.error || 'Login failed')
       }
-      // Also keep localStorage token flow for client-side API usage
       await login({ email, password })
       router.push('/dashboard')
     } catch (err) {
@@ -38,72 +36,83 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF9EE] flex items-center justify-center p-8">
-      <div className="max-w-md w-full">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-[#111111] mb-2">Efference</h1>
-          <p className="text-[#666] text-lg">Robotic Ability Broker</p>
-        </div>
-        
-        <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-8">
-          <h2 className="text-xl font-semibold text-[#111111] mb-6 text-center">
-            Access Dashboard
-          </h2>
-          
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-[#111111] mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 border border-[#DCCFC0] rounded-md focus:outline-none focus:ring-2 focus:ring-[#A2AF9B] focus:border-transparent"
-                placeholder="Enter your email"
-                required
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-[#111111] mb-1">
-                Password
-              </label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-[#DCCFC0] rounded-md focus:outline-none focus:ring-2 focus:ring-[#A2AF9B] focus:border-transparent"
-                placeholder="Enter your password"
-                required
-              />
-            </div>
-            
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-[#A2AF9B] text-white py-2 px-4 rounded-md hover:bg-[#8fa085] transition-colors font-medium disabled:opacity-60"
+    <div className="min-h-screen bg-black flex items-center justify-center p-8">
+      <div className="max-w-md w-full border-2 border-white bg-white p-10">
+        <h1
+          className="text-center text-4xl font-black uppercase tracking-tight"
+          style={{
+            WebkitTextStrokeWidth: '1.2px',
+            WebkitTextStrokeColor: '#000000ff',
+            color: 'transparent',
+            fontFamily: "'Space Grotesk','Montserrat','Poppins',ui-sans-serif,system-ui'",
+            transform: 'scaleY(0.85) scaleX(1.1)',
+            letterSpacing: '-0.02em',
+          }}
+        >
+          EFFERENCE
+        </h1>
+        <form onSubmit={handleLogin} className="space-y-6">
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-semibold text-black uppercase mb-1"
             >
-              {loading ? 'Logging in...' : 'Login'}
-            </button>
-          </form>
-          {error && (
-            <p className="text-sm text-red-600 text-center mt-4">{error}</p>
-          )}
-          
-          <div className="mt-6 text-center">
-            <p className="text-sm text-[#666]">
-              Don&apos;t have an account?{' '}
-              <button
-                onClick={() => router.push('/signup')}
-                className="text-[#A2AF9B] hover:text-[#8fa085] font-medium underline"
-              >
-                Sign up here
-              </button>
-            </p>
+              Email
+            </label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full border-2 border-black px-3 py-2 bg-transparent text-black focus:outline-none focus:bg-black focus:text-white transition-all"
+              placeholder="user@example.com"
+              required
+            />
           </div>
+
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-sm font-semibold text-black uppercase mb-1"
+            >
+              Password
+            </label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full border-2 border-black px-3 py-2 bg-transparent text-black focus:outline-none focus:bg-black focus:text-white transition-all"
+              placeholder="••••••••"
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full border-2 border-black bg-black text-white py-3 font-bold uppercase tracking-wide hover:bg-white hover:text-black transition-all duration-200 disabled:opacity-60"
+          >
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+
+          {error && (
+            <p className="text-sm text-red-600 text-center font-mono mt-2">
+              {error}
+            </p>
+          )}
+        </form>
+
+        <div className="border-t-2 border-black mt-8 pt-6 text-center">
+          <p className="text-xs uppercase text-black">
+            Don’t have an account?{' '}
+            <button
+              onClick={() => router.push('/signup')}
+              className="underline font-bold hover:bg-black hover:text-white px-1"
+            >
+              Sign up here
+            </button>
+          </p>
         </div>
       </div>
     </div>

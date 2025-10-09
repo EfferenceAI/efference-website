@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { backendApi, Task, TaskAssignment } from '@/lib/backend-api';
 
@@ -51,11 +53,7 @@ export default function WorkerTasks({ currentUser, onNavigateToUpload }: WorkerT
     setRequestingAssignment(taskId);
     try {
       await backendApi.createTaskAssignment(taskId);
-      
-      // Reload assignments to show the new assignment
       await loadMyAssignments();
-      
-      // Show success message
       alert('Assignment request submitted successfully!');
     } catch (error) {
       console.error('Failed to request assignment:', error);
@@ -68,14 +66,9 @@ export default function WorkerTasks({ currentUser, onNavigateToUpload }: WorkerT
   const handleUnassignTask = async (taskId: string) => {
     const assignment = myAssignments.find(a => a.task_id === taskId);
     if (!assignment) return;
-    
     try {
       await backendApi.deleteTaskAssignment(assignment.assignment_id);
-      
-      // Reload assignments to reflect the change
       await loadMyAssignments();
-      
-      // Show success message
       alert('Successfully unassigned from task!');
     } catch (error) {
       console.error('Failed to unassign task:', error);
@@ -85,28 +78,21 @@ export default function WorkerTasks({ currentUser, onNavigateToUpload }: WorkerT
 
   const handleUploadForTask = (taskId: string, taskTitle: string) => {
     if (onNavigateToUpload) {
-      // Use callback to navigate properly
       onNavigateToUpload(taskId, taskTitle);
     } else {
-      // Fallback to localStorage method
       localStorage.setItem('selectedTaskId', taskId);
       localStorage.setItem('selectedTaskTitle', taskTitle);
       window.location.hash = '#upload';
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="text-[#666]">Loading tasks...</div>
+        <div className="text-white">Loading tasks...</div>
       </div>
     );
   }
@@ -114,103 +100,119 @@ export default function WorkerTasks({ currentUser, onNavigateToUpload }: WorkerT
   const assignedTasks = availableTasks.filter(task => isTaskAssigned(task.task_id));
   const unassignedTasks = availableTasks.filter(task => !isTaskAssigned(task.task_id));
 
+  const Card = ({ children }: { children: React.ReactNode }) => (
+    <div className="bg-black border-2 border-white p-6">{children}</div>
+  );
+
+  const Chip = ({ children }: { children: React.ReactNode }) => (
+    <span className="px-2 py-1 text-xs font-black uppercase border-2 border-white bg-black text-white">
+      {children}
+    </span>
+  );
+
+  const Btn = ({
+    children,
+    onClick,
+    disabled,
+  }: {
+    children: React.ReactNode;
+    onClick?: () => void;
+    disabled?: boolean;
+  }) => (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`w-full border-2 border-white bg-black text-white py-3 font-bold uppercase transition-colors
+                  hover:bg-white hover:text-black disabled:opacity-50 disabled:cursor-not-allowed`}
+    >
+      {children}
+    </button>
+  );
+
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-[#111111]">Available Tasks</h2>
+    <div className="space-y-8 text-white">
+      <h2 className="text-xl font-black uppercase">Available Tasks</h2>
 
       {/* My Assigned Tasks */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium text-[#111111]">My Assigned Tasks</h3>
+      <section className="space-y-4">
+        <h3 className="text-lg font-black uppercase">My Assigned Tasks</h3>
         {assignedTasks.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <p className="text-[#666]">You don&apos;t have any assigned tasks yet.</p>
-          </div>
+          <Card>
+            <p className="text-sm opacity-80">You don&apos;t have any assigned tasks yet.</p>
+          </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {assignedTasks.map((task) => {
+            {assignedTasks.map(task => {
               const assignment = myAssignments.find(a => a.task_id === task.task_id);
               return (
-                <div key={task.task_id} className="bg-white rounded-lg shadow-sm border border-[#A2AF9B] p-6">
+                <Card key={task.task_id}>
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h4 className="text-lg font-medium text-[#111111]">{task.title}</h4>
-                      <p className="text-sm text-[#666] mt-1">{task.description}</p>
+                      <h4 className="text-lg font-black uppercase">{task.title}</h4>
+                      <p className="text-xs opacity-80 mt-1">{task.description}</p>
                     </div>
-                    <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
-                      Assigned
-                    </span>
+                    <Chip>Assigned</Chip>
                   </div>
-                  
-                  <div className="text-xs text-[#666] space-y-1">
+
+                  <div className="text-xs opacity-80 space-y-1">
                     <div>Assigned: {assignment && formatDate(assignment.assigned_at)}</div>
                     <div>Created: {formatDate(task.created_at)}</div>
                   </div>
 
                   <div className="mt-4 space-y-2">
-                    <button 
-                      onClick={() => handleUploadForTask(task.task_id, task.title)}
-                      className="w-full bg-[#A2AF9B] text-white py-2 px-4 rounded-lg hover:bg-[#8a9784] transition-colors text-sm"
-                    >
+                    <Btn onClick={() => handleUploadForTask(task.task_id, task.title)}>
                       Upload Video for This Task
-                    </button>
-                    <button 
-                      onClick={() => handleUnassignTask(task.task_id)}
-                      className="w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors text-sm"
-                    >
-                      Unassign from Task
-                    </button>
+                    </Btn>
+                    <Btn onClick={() => handleUnassignTask(task.task_id)}>Unassign from Task</Btn>
                   </div>
-                </div>
+                </Card>
               );
             })}
           </div>
         )}
-      </div>
+      </section>
 
-      {/* Available Tasks (Not Assigned) */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium text-[#111111]">Other Available Tasks</h3>
+      {/* Other Available Tasks */}
+      <section className="space-y-4">
+        <h3 className="text-lg font-black uppercase">Other Available Tasks</h3>
         {unassignedTasks.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <p className="text-[#666]">No additional tasks are available at this time.</p>
-          </div>
+          <Card>
+            <p className="text-sm opacity-80">No additional tasks are available at this time.</p>
+          </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {unassignedTasks.map((task) => (
-              <div key={task.task_id} className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
+            {unassignedTasks.map(task => (
+              <Card key={task.task_id}>
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h4 className="text-lg font-medium text-[#111111]">{task.title}</h4>
-                    <p className="text-sm text-[#666] mt-1">{task.description}</p>
+                    <h4 className="text-lg font-black uppercase">{task.title}</h4>
+                    <p className="text-xs opacity-80 mt-1">{task.description}</p>
                   </div>
-                  <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
-                    Available
-                  </span>
+                  <Chip>Available</Chip>
                 </div>
-                
-                <div className="text-xs text-[#666] space-y-1">
+
+                <div className="text-xs opacity-80 space-y-1">
                   <div>Created: {formatDate(task.created_at)}</div>
                 </div>
 
                 <div className="mt-4">
-                  <button 
+                  <Btn
                     onClick={() => handleRequestAssignment(task.task_id)}
                     disabled={requestingAssignment === task.task_id}
-                    className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-sm"
                   >
-                    {requestingAssignment === task.task_id ? 'Requesting...' : 'Request Assignment'}
-                  </button>
+                    {requestingAssignment === task.task_id ? 'Requesting…' : 'Request Assignment'}
+                  </Btn>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         )}
-      </div>
+      </section>
 
       {availableTasks.length === 0 && (
         <div className="text-center py-12">
-          <div className="text-[#666] mb-4">No tasks are available at this time</div>
-          <p className="text-sm text-[#666]">Check back later for new tasks or contact your administrator.</p>
+          <div className="mb-2">No tasks are available at this time</div>
+          <p className="text-sm opacity-80">Check back later for new tasks or contact your administrator.</p>
         </div>
       )}
     </div>

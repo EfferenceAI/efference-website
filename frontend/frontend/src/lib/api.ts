@@ -1,5 +1,5 @@
 // Simple API client for calling the FastAPI backend
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://gm6cgy8uoa.execute-api.us-east-1.amazonaws.com/prod'
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://gm6cgy8uoa.execute-api.us-east-1.amazonaws.com/prod'
 
 type FetchOptions = RequestInit & { skipAuth?: boolean }
 

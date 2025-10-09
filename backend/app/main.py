@@ -22,6 +22,8 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
         "https://app.efference.ai",
         "https://efference-website.vercel.app",
         "https://efference-website-git-master-efference.vercel.app", 

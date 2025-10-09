@@ -22,48 +22,49 @@ interface UploadDropzoneProps {
   requireTaskSelection?: boolean; // Whether task selection is required
 }
 
-export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSelectedTask, requireTaskSelection = true }: UploadDropzoneProps) {
+export default function UploadDropzone({
+  onUploadComplete,
+  onStatusUpdate,
+  preSelectedTask,
+  requireTaskSelection = true,
+}: UploadDropzoneProps) {
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  
+
   // Task selection state
   const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
   const [selectedTask, setSelectedTask] = useState<string>(preSelectedTask || '');
   const [loadingTasks, setLoadingTasks] = useState(false);
-  
+
   // Signature workflow state
   const [signatureStatus, setSignatureStatus] = useState<'none' | 'pending' | 'signed'>('none');
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState('');
   const [userName, setUserName] = useState('');
-  
+
   // Load tasks and user data on component mount
   useEffect(() => {
     const loadData = async () => {
       try {
         setLoadingTasks(true);
-        
+
         // Get current user
         const user = await getMe();
-        
+
         if (user) {
           setUserEmail(user.email);
           setUserName(user.name);
-          
+
           // Load available tasks based on user role
           if (user.role === 'ADMIN') {
-            // Admins can see all tasks
             const tasks = await backendApi.getTasks();
-            setAvailableTasks(tasks.filter(task => task.is_active));
+            setAvailableTasks(tasks.filter((task) => task.is_active));
           } else if (user.role === 'WORKER') {
-            // Workers can see their assigned tasks
             const assignments = await backendApi.getTaskAssignments(undefined, user.user_id);
-            const taskIds = assignments.map(a => a.task_id);
+            const taskIds = assignments.map((a) => a.task_id);
             const allTasks = await backendApi.getTasks();
-            const assignedTasks = allTasks.filter(task => 
-              task.is_active && taskIds.includes(task.task_id)
-            );
+            const assignedTasks = allTasks.filter((task) => task.is_active && taskIds.includes(task.task_id));
             setAvailableTasks(assignedTasks);
           }
         }
@@ -73,14 +74,14 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
         setLoadingTasks(false);
       }
     };
-    
+
     loadData();
   }, []);
 
   const generateId = () => Math.random().toString(36).substring(2, 15);
 
   const addFiles = useCallback((newFiles: File[]) => {
-    const uploadFiles: UploadFile[] = newFiles.map(file => ({
+    const uploadFiles: UploadFile[] = newFiles.map((file) => ({
       id: generateId(),
       file,
       name: file.name,
@@ -90,7 +91,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
       progress: 0,
     }));
 
-    setFiles(prev => [...prev, ...uploadFiles]);
+    setFiles((prev) => [...prev, ...uploadFiles]);
   }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -103,24 +104,29 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
     setIsDragOver(false);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    
-    const droppedFiles = Array.from(e.dataTransfer.files);
-    addFiles(droppedFiles);
-  }, [addFiles]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragOver(false);
 
-  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const selectedFiles = Array.from(e.target.files);
-      addFiles(selectedFiles);
-    }
-  }, [addFiles]);
+      const droppedFiles = Array.from(e.dataTransfer.files);
+      addFiles(droppedFiles);
+    },
+    [addFiles]
+  );
+
+  const handleFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files) {
+        const selectedFiles = Array.from(e.target.files);
+        addFiles(selectedFiles);
+      }
+    },
+    [addFiles]
+  );
 
   const uploadFile = async (uploadFile: UploadFile, videoId: string) => {
     const MULTIPART_THRESHOLD = 100 * 1024 * 1024; // 100MB
-
     if (uploadFile.size >= MULTIPART_THRESHOLD) {
       return await uploadMultipartFile(uploadFile, videoId);
     } else {
@@ -139,7 +145,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
           fileName: uploadFile.name,
           fileType: uploadFile.type,
           fileSize: uploadFile.size,
-          userId: 'demo-user'
+          userId: 'demo-user',
         }),
       });
 
@@ -148,17 +154,11 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
       }
 
       const { presignedUrl, fileKey } = await presignedResponse.json();
-      
-      console.log('Presigned URL generated:', {
-        fileKey,
-        urlDomain: presignedUrl.split('/')[2],
-        urlLength: presignedUrl.length
-      });
 
       // Update status to uploading
-      setFiles(prev => prev.map(f => 
-        f.id === uploadFile.id ? { ...f, status: 'uploading', progress: 0 } : f
-      ));
+      setFiles((prev) =>
+        prev.map((f) => (f.id === uploadFile.id ? { ...f, status: 'uploading', progress: 0 } : f))
+      );
 
       // Upload to S3
       await new Promise<void>((resolve, reject) => {
@@ -167,61 +167,61 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
         xhr.upload.addEventListener('progress', (event) => {
           if (event.lengthComputable) {
             const progress = Math.round((event.loaded / event.total) * 100);
-            setFiles(prev => prev.map(f => 
-              f.id === uploadFile.id ? { ...f, progress } : f
-            ));
+            setFiles((prev) => prev.map((f) => (f.id === uploadFile.id ? { ...f, progress } : f)));
           }
         });
 
         xhr.addEventListener('load', async () => {
-          console.log('XHR Load event:', {
-            status: xhr.status,
-            statusText: xhr.statusText,
-            responseText: xhr.responseText
-          });
-          
           if (xhr.status >= 200 && xhr.status < 300) {
-            setFiles(prev => prev.map(f => 
-              f.id === uploadFile.id ? { ...f, status: 'completed', progress: 100, s3Key: fileKey } : f
-            ));
-            
+            setFiles((prev) =>
+              prev.map((f) =>
+                f.id === uploadFile.id ? { ...f, status: 'completed', progress: 100, s3Key: fileKey } : f
+              )
+            );
+
             // Update video session status in backend database
             try {
               const token = localStorage.getItem('token');
-              const updateResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://gm6cgy8uoa.execute-api.us-east-1.amazonaws.com/prod'}/sessions/${videoId}`, {
-                method: 'PUT',
-                headers: { 
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                  status: 'PENDING_REVIEW',
-                  upload_status: 'completed',
-                  uploaded_at: new Date().toISOString()
-                }),
-              });
-              
+              const updateResponse = await fetch(
+                `${
+                  process.env.NEXT_PUBLIC_API_URL ||
+                  'https://gm6cgy8uoa.execute-api.us-east-1.amazonaws.com/prod'
+                }/sessions/${videoId}`,
+                {
+                  method: 'PUT',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                  },
+                  body: JSON.stringify({
+                    status: 'PENDING_REVIEW',
+                    upload_status: 'completed',
+                    uploaded_at: new Date().toISOString(),
+                  }),
+                }
+              );
+
               if (!updateResponse.ok) {
                 const errorText = await updateResponse.text();
-                console.error('❌ Failed to update session status:', {
+                console.error('Failed to update session status:', {
                   status: updateResponse.status,
                   statusText: updateResponse.statusText,
-                  body: errorText
+                  body: errorText,
                 });
               } else {
                 const updateResult = await updateResponse.json();
-                console.log('✅ Video session status updated to PENDING_REVIEW:', updateResult);
+                console.log('Video session status updated to PENDING_REVIEW:', updateResult);
               }
             } catch (error) {
               console.error('Failed to update video session status:', error);
             }
-            
+
             resolve();
           } else {
             console.error('Upload failed with status:', {
               status: xhr.status,
               statusText: xhr.statusText,
-              responseText: xhr.responseText
+              responseText: xhr.responseText,
             });
             reject(new Error(`Upload failed with status: ${xhr.status}`));
           }
@@ -232,7 +232,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
             status: xhr.status,
             statusText: xhr.statusText,
             readyState: xhr.readyState,
-            responseText: xhr.responseText
+            responseText: xhr.responseText,
           });
           reject(new Error('Upload failed'));
         });
@@ -241,24 +241,23 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
         xhr.setRequestHeader('Content-Type', uploadFile.type);
         xhr.send(uploadFile.file);
       });
-
     } catch (error) {
       console.error('Upload failed for file:', uploadFile.name, error);
-      setFiles(prev => prev.map(f => 
-        f.id === uploadFile.id ? { ...f, status: 'error', progress: 0 } : f
-      ));
-      
+      setFiles((prev) =>
+        prev.map((f) => (f.id === uploadFile.id ? { ...f, status: 'error', progress: 0 } : f))
+      );
+
       // Update video record as failed
       try {
         const token = localStorage.getItem('token');
         await fetch(`/api/sessions/${videoId}`, {
           method: 'PATCH',
-          headers: { 
+          headers: {
             'Content-Type': 'application/json',
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
           body: JSON.stringify({
-            uploadStatus: 'failed'
+            uploadStatus: 'failed',
           }),
         });
       } catch (updateError) {
@@ -279,7 +278,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
           fileType: uploadFile.type,
           fileSize: uploadFile.size,
           userId: 'demo-user',
-          fileId: videoId
+          fileId: videoId,
         }),
       });
 
@@ -290,9 +289,9 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
       const { uploadId, fileKey, fileId, partSize, totalParts } = await initiateResponse.json();
 
       // Update status to uploading
-      setFiles(prev => prev.map(f => 
-        f.id === uploadFile.id ? { ...f, status: 'uploading', progress: 0 } : f
-      ));
+      setFiles((prev) =>
+        prev.map((f) => (f.id === uploadFile.id ? { ...f, status: 'uploading', progress: 0 } : f))
+      );
 
       // Step 2: Get presigned URLs for all parts
       const partUrlsResponse = await fetch('/api/upload/multipart', {
@@ -304,7 +303,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
           fileName: uploadFile.name,
           fileSize: uploadFile.size,
           fileId,
-          userId: 'demo-user'
+          userId: 'demo-user',
         }),
       });
 
@@ -315,16 +314,13 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
       const { partUrls } = await partUrlsResponse.json();
 
       // Step 3: Upload parts in parallel with multithreading
-      const uploadedParts: Array<{PartNumber: number, ETag: string}> = [];
-      const maxConcurrentUploads = Math.min(10, totalParts); // Max 10 concurrent uploads
-      
-      const uploadPart = async (partInfo: {partNumber: number, presignedUrl: string}) => {
+      const uploadedParts: Array<{ PartNumber: number; ETag: string }> = [];
+      const maxConcurrentUploads = Math.min(10, totalParts);
+
+      const uploadPart = async (partInfo: { partNumber: number; presignedUrl: string }) => {
         const startByte = (partInfo.partNumber - 1) * partSize;
         const endByte = Math.min(startByte + partSize, uploadFile.size);
         const partData = uploadFile.file.slice(startByte, endByte);
-
-        console.log(`Uploading part ${partInfo.partNumber}: ${startByte}-${endByte} (${partData.size} bytes)`);
-        console.log(`Presigned URL: ${partInfo.presignedUrl.substring(0, 100)}...`);
 
         try {
           const response = await fetch(partInfo.presignedUrl, {
@@ -341,7 +337,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
               status: response.status,
               statusText: response.statusText,
               errorBody: errorText,
-              url: partInfo.presignedUrl.substring(0, 100) + '...'
+              url: partInfo.presignedUrl.substring(0, 100) + '...',
             });
             throw new Error(`Failed to upload part ${partInfo.partNumber}: ${response.status} ${response.statusText}`);
           }
@@ -352,8 +348,6 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
             throw new Error(`No ETag received for part ${partInfo.partNumber}`);
           }
 
-          console.log(`Part ${partInfo.partNumber} uploaded successfully, ETag: ${etag}`);
-          
           return {
             PartNumber: partInfo.partNumber,
             ETag: etag,
@@ -362,43 +356,29 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
           console.error(`Fetch error for part ${partInfo.partNumber}:`, {
             error: fetchError,
             message: fetchError instanceof Error ? fetchError.message : 'Unknown error',
-            url: partInfo.presignedUrl.substring(0, 100) + '...'
+            url: partInfo.presignedUrl.substring(0, 100) + '...',
           });
           throw fetchError;
         }
       };
 
-      // Upload parts in parallel batches
-      // Upload in batches without storing unused promises array
       let completedParts = 0;
-      console.log(`Starting upload of ${totalParts} parts in batches of ${maxConcurrentUploads}...`);
 
       for (let i = 0; i < partUrls.length; i += maxConcurrentUploads) {
         const batch = partUrls.slice(i, i + maxConcurrentUploads);
-        console.log(`Uploading batch ${Math.floor(i / maxConcurrentUploads) + 1} (parts ${i + 1}-${i + batch.length})...`);
-        
-        const batchPromises = batch.map(async (partInfo: {partNumber: number, presignedUrl: string}) => {
+        const batchPromises = batch.map(async (partInfo: { partNumber: number; presignedUrl: string }) => {
           const result = await uploadPart(partInfo);
           completedParts++;
-          
-          // Update progress
           const progress = Math.round((completedParts / totalParts) * 100);
-          setFiles(prev => prev.map(f => 
-            f.id === uploadFile.id ? { ...f, progress } : f
-          ));
-          
+          setFiles((prev) => prev.map((f) => (f.id === uploadFile.id ? { ...f, progress } : f)));
           return result;
         });
 
         const batchResults = await Promise.all(batchPromises);
         uploadedParts.push(...batchResults);
-        console.log(`Batch completed. Total parts uploaded: ${uploadedParts.length}/${totalParts}`);
       }
 
-      console.log(`All parts uploaded successfully. Total: ${uploadedParts.length} parts`);
-
       // Step 4: Complete multipart upload
-      console.log(`Completing multipart upload with ${uploadedParts.length} parts...`);
       const completeResponse = await fetch('/api/upload/multipart', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -408,7 +388,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
           fileName: uploadFile.name,
           parts: uploadedParts,
           fileId,
-          userId: 'demo-user'
+          userId: 'demo-user',
         }),
       });
 
@@ -417,79 +397,83 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
         console.error('Failed to complete multipart upload:', {
           status: completeResponse.status,
           statusText: completeResponse.statusText,
-          error: errorText
+          error: errorText,
         });
         throw new Error(`Failed to complete multipart upload: ${completeResponse.status} ${errorText}`);
       }
 
       const completeResult = await completeResponse.json();
-      console.log('✅ Multipart upload completed successfully:', completeResult);
+      console.log('Multipart upload completed successfully:', completeResult);
 
-      // Mark as completed
-      setFiles(prev => prev.map(f => 
-        f.id === uploadFile.id ? { ...f, status: 'completed', progress: 100, s3Key: fileKey } : f
-      ));
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.id === uploadFile.id ? { ...f, status: 'completed', progress: 100, s3Key: fileKey } : f
+        )
+      );
 
       // Update video session status in backend database
       try {
         const token = localStorage.getItem('token');
-        const updateResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://gm6cgy8uoa.execute-api.us-east-1.amazonaws.com/prod'}/sessions/${videoId}`, {
-          method: 'PUT',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            status: 'PENDING_REVIEW',
-            upload_status: 'completed',
-            uploaded_at: new Date().toISOString()
-          }),
-        });
-        
+        const updateResponse = await fetch(
+          `${
+            process.env.NEXT_PUBLIC_API_URL || 'https://gm6cgy8uoa.execute-api.us-east-1.amazonaws.com/prod'
+          }/sessions/${videoId}`,
+          {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              status: 'PENDING_REVIEW',
+              upload_status: 'completed',
+              uploaded_at: new Date().toISOString(),
+            }),
+          }
+        );
+
         if (!updateResponse.ok) {
           const errorText = await updateResponse.text();
-          console.error('❌ Failed to update session status:', {
+          console.error('Failed to update session status:', {
             status: updateResponse.status,
             statusText: updateResponse.statusText,
-            body: errorText
+            body: errorText,
           });
           throw new Error(`Failed to update session: ${updateResponse.status} ${errorText}`);
         }
-        
+
         const updateResult = await updateResponse.json();
-        console.log('✅ Video session status updated to PENDING_REVIEW:', updateResult);
+        console.log('Video session status updated to PENDING_REVIEW:', updateResult);
       } catch (error) {
         console.error('Failed to update video session status:', error);
-        throw error; // Re-throw to trigger the outer catch block
+        throw error;
       }
-
     } catch (error) {
-      console.error('❌ Multipart upload failed for file:', uploadFile.name);
+      console.error('Multipart upload failed for file:', uploadFile.name);
       console.error('Error details:', {
         error,
         message: error instanceof Error ? error.message : 'Unknown error',
         stack: error instanceof Error ? error.stack : undefined,
-        name: error instanceof Error ? error.name : undefined
+        name: error instanceof Error ? error.name : undefined,
       });
-      
-      // Show user-friendly error
+
       onStatusUpdate?.(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      
-      setFiles(prev => prev.map(f => 
-        f.id === uploadFile.id ? { ...f, status: 'error', progress: 0 } : f
-      ));
-      
+
+      setFiles((prev) =>
+        prev.map((f) => (f.id === uploadFile.id ? { ...f, status: 'error', progress: 0 } : f))
+      );
+
       // Update video record as failed
       try {
         const token = localStorage.getItem('token');
         await fetch(`/api/sessions/${videoId}`, {
           method: 'PATCH',
-          headers: { 
+          headers: {
             'Content-Type': 'application/json',
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
           body: JSON.stringify({
-            uploadStatus: 'failed'
+            uploadStatus: 'failed',
           }),
         });
       } catch (updateError) {
@@ -500,8 +484,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
 
   const requestSignature = async () => {
     if (files.length === 0 || !userEmail.trim()) return;
-    
-    // Validate task selection if required
+
     if (requireTaskSelection && !selectedTask) {
       onStatusUpdate?.('Please select a task before proceeding.');
       return;
@@ -509,22 +492,19 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
 
     try {
       onStatusUpdate?.('Creating session in backend database...');
-      
-      // Get authentication token
+
       const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Authentication required. Please log in.');
-      }
-      
-      // Create session with file metadata using the bridge API
+      if (!token) throw new Error('Authentication required. Please log in.');
+
       const sessionResponse = await fetch('/api/sessions-bridge', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userEmail,
-          taskId: selectedTask || undefined, // Include task ID
-          token, // Pass authentication token
-          files: files.map(f => ({
+          userName,
+          taskId: selectedTask || undefined,
+          token,
+          files: files.map((f) => ({
             name: f.name,
             size: f.size,
             type: f.type,
@@ -538,12 +518,11 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
       }
 
       const { sessions } = await sessionResponse.json();
-      const newSessionId = sessions[0]?.session_id; // Use backend session ID
+      const newSessionId = sessions[0]?.session_id;
       setSessionId(newSessionId);
 
       onStatusUpdate?.('Sending release form...');
 
-      // Request signature via Documenso
       const signatureResponse = await fetch('/api/signatures/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -551,8 +530,8 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
           sessionId: newSessionId,
           userEmail,
           userName: userName || 'User',
-          token // Pass authentication token
-        })
+          token,
+        }),
       });
 
       if (!signatureResponse.ok) {
@@ -561,8 +540,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
       }
 
       const signatureResult = await signatureResponse.json();
-      
-      // Handle different response states
+
       if (signatureResult.alreadySigned) {
         setSignatureStatus('signed');
         onStatusUpdate?.('Release form has already been signed! You can now upload your files.');
@@ -573,7 +551,6 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
         setSignatureStatus('pending');
         onStatusUpdate?.(`Release form sent to ${userEmail}! Check your email and sign the document.`);
       }
-
     } catch (error) {
       console.error('Signature request failed:', error);
       onStatusUpdate?.('Failed to send release form: ' + (error instanceof Error ? error.message : 'Unknown error'));
@@ -585,11 +562,11 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
 
     try {
       const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Authentication required');
-      }
+      if (!token) throw new Error('Authentication required');
 
-      const response = await fetch(`/api/signatures/create?sessionId=${sessionId}&token=${encodeURIComponent(token)}`);
+      const response = await fetch(
+        `/api/signatures/create?sessionId=${sessionId}&token=${encodeURIComponent(token)}`
+      );
       if (!response.ok) throw new Error('Failed to check status');
 
       const result = await response.json();
@@ -605,7 +582,6 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
     }
   };
 
-
   const startUpload = async () => {
     if (files.length === 0) return;
 
@@ -613,8 +589,6 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
     onStatusUpdate?.('Uploading files...');
 
     try {
-      // Files should already be created in session during signature request
-      // Upload each file
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         await uploadFile(file, sessionId || 'upload-session');
@@ -622,7 +596,6 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
 
       onStatusUpdate?.('Upload completed!');
       onUploadComplete?.(files);
-
     } catch (error) {
       console.error('Upload process failed:', error);
       onStatusUpdate?.('Upload failed. Please try again.');
@@ -632,7 +605,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
   };
 
   const removeFile = (id: string) => {
-    setFiles(prev => prev.filter(f => f.id !== id));
+    setFiles((prev) => prev.filter((f) => f.id !== id));
   };
 
   const formatFileSize = (bytes: number) => {
@@ -644,19 +617,17 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-white">
       {/* Drop Zone */}
       <div
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors cursor-pointer ${
-          isDragOver 
-            ? 'border-[#A2AF9B] bg-[#A2AF9B]/5' 
-            : 'border-[#DCCFC0] hover:border-[#A2AF9B] hover:bg-[#A2AF9B]/5'
+        className={`border-2 border-white p-12 text-center cursor-pointer bg-black ${
+          isDragOver ? 'ring-2 ring-white' : ''
         }`}
       >
-        <h5 className="text-lg font-semibold text-[#111111] mb-2">Drag and drop your files or click to browse your computer</h5>
+        <h5 className="text-lg font-black uppercase mb-4">Drag & Drop files or click to browse</h5>
         <input
           type="file"
           multiple
@@ -667,7 +638,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
         />
         <label
           htmlFor="file-upload"
-          className="bg-[#A2AF9B] text-white px-6 py-3 rounded-md font-medium hover:bg-[#8fa085] transition-colors cursor-pointer"
+          className="inline-block border-2 border-white bg-black text-white px-6 py-3 font-bold uppercase hover:bg-white hover:text-black cursor-pointer transition-colors"
         >
           Select Files
         </label>
@@ -675,92 +646,92 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
 
       {/* File List */}
       {files.length > 0 && (
-        <div className="bg-white rounded-lg border border-[#DCCFC0]">
-          <div className="p-6 border-b border-[#EEEEEE]">
-            <h4 className="text-lg font-semibold text-[#111111]">Selected Files</h4>
-            <p className="text-sm text-[#666] mt-1">{files.length} files selected</p>
+        <div className="bg-black border-2 border-white">
+          <div className="p-6 border-b-2 border-white">
+            <h4 className="text-lg font-black uppercase">Selected Files</h4>
+            <p className="text-xs mt-1 opacity-80">{files.length} files selected</p>
           </div>
-          
-          <div className="p-6">
+
+          <div className="p-6 space-y-6">
             {/* Signature Workflow */}
             {signatureStatus === 'none' && (
-              <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <h4 className="font-semibold text-blue-900 mb-3">Step 1: Sign Release Form</h4>
-                <p className="text-sm text-blue-800 mb-4">
-                  Before uploading, you must sign a release form. This will be sent to your email.
+              <div className="p-4 border-2 border-white">
+                <h4 className="font-black uppercase mb-3 text-sm">Step 1: Sign Release Form</h4>
+                <p className="text-xs mb-4 opacity-90">
+                  Before uploading, a release form will be sent to your email.
                 </p>
-                
+
                 {/* Task Selection */}
                 {requireTaskSelection && availableTasks.length > 0 && (
                   <div className="mb-4">
-                    <label className="block text-sm font-medium text-blue-900 mb-1">Select Task *</label>
+                    <label className="block text-xs font-bold uppercase mb-1">Select Task *</label>
                     <select
                       value={selectedTask}
                       onChange={(e) => setSelectedTask(e.target.value)}
-                      className="w-full px-3 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border-2 border-white bg-black text-white focus:outline-none"
                       required
                     >
                       <option value="">Choose a task...</option>
                       {availableTasks.map((task) => (
-                        <option key={task.task_id} value={task.task_id}>
+                        <option key={task.task_id} value={task.task_id} className="bg-black">
                           {task.title}
                         </option>
                       ))}
                     </select>
                     {selectedTask && (
-                      <p className="text-xs text-blue-700 mt-1">
-                        {availableTasks.find(t => t.task_id === selectedTask)?.description}
+                      <p className="text-[11px] mt-1 opacity-80">
+                        {availableTasks.find((t) => t.task_id === selectedTask)?.description}
                       </p>
                     )}
                   </div>
                 )}
-                
+
                 {requireTaskSelection && availableTasks.length === 0 && !loadingTasks && (
-                  <div className="mb-4 p-3 bg-yellow-50 rounded-md border border-yellow-200">
-                    <p className="text-sm text-yellow-800">
-                      No tasks are available for upload. Please contact your administrator or check if you have assigned tasks.
+                  <div className="mb-4 p-3 border-2 border-white">
+                    <p className="text-xs">
+                      No tasks are available for upload. Contact your administrator.
                     </p>
                   </div>
                 )}
-                
+
                 {loadingTasks && (
-                  <div className="mb-4 p-3 bg-gray-50 rounded-md">
-                    <p className="text-sm text-gray-600">Loading available tasks...</p>
+                  <div className="mb-4 p-3 border-2 border-white">
+                    <p className="text-xs">Loading available tasks...</p>
                   </div>
                 )}
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
                   <div>
-                    <label className="block text-sm font-medium text-blue-900 mb-1">Email Address *</label>
+                    <label className="block text-xs font-bold uppercase mb-1">Email Address *</label>
                     <input
                       type="email"
                       value={userEmail}
                       onChange={(e) => setUserEmail(e.target.value)}
                       placeholder="your.email@example.com"
-                      className="w-full px-3 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border-2 border-white bg-black text-white focus:outline-none"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-blue-900 mb-1">Full Name</label>
+                    <label className="block text-xs font-bold uppercase mb-1">Full Name</label>
                     <input
                       type="text"
                       value={userName}
                       onChange={(e) => setUserName(e.target.value)}
                       placeholder="Your Full Name"
-                      className="w-full px-3 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border-2 border-white bg-black text-white focus:outline-none"
                     />
                   </div>
                 </div>
                 <button
                   onClick={requestSignature}
                   disabled={
-                    !userEmail.trim() || 
-                    files.length === 0 || 
+                    !userEmail.trim() ||
+                    files.length === 0 ||
                     (requireTaskSelection && !selectedTask) ||
                     loadingTasks
                   }
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md font-medium hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="border-2 border-white bg-black text-white px-4 py-2 font-bold uppercase hover:bg-white hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Send Release Form to Email
                 </button>
@@ -768,14 +739,14 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
             )}
 
             {signatureStatus === 'pending' && (
-              <div className="mb-6 p-4 bg-orange-50 rounded-lg border border-orange-200">
-                <h4 className="font-semibold text-orange-900 mb-2">Step 1: Signature Pending</h4>
-                <p className="text-sm text-orange-800 mb-3">
-                  Release form sent to <strong>{userEmail}</strong>. Check your email and sign the document.
+              <div className="p-4 border-2 border-white">
+                <h4 className="font-black uppercase mb-2 text-sm">Step 1: Signature Pending</h4>
+                <p className="text-xs mb-3">
+                  Release form sent to <strong>{userEmail}</strong>. Check your email and sign.
                 </p>
                 <button
                   onClick={checkSignatureStatus}
-                  className="bg-orange-600 text-white px-4 py-2 rounded-md font-medium hover:bg-orange-700 transition-colors"
+                  className="border-2 border-white bg-black text-white px-4 py-2 font-bold uppercase hover:bg-white hover:text-black transition-colors"
                 >
                   Check Signature Status
                 </button>
@@ -783,51 +754,58 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
             )}
 
             {signatureStatus === 'signed' && (
-              <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
-                <h4 className="font-semibold text-green-900 mb-2">Release Form Signed</h4>
-                <p className="text-sm text-green-800 mb-3">
-                  Great! You can now proceed with uploading your files.
-                </p>
+              <div className="p-4 border-2 border-white">
+                <h4 className="font-black uppercase mb-2 text-sm">Release Form Signed</h4>
+                <p className="text-xs mb-1">You can now upload your files.</p>
               </div>
             )}
+
+            {/* Files */}
             <div className="space-y-4">
               {files.map((file) => (
-                <div key={file.id} className="flex items-center justify-between p-4 border border-[#EEEEEE] rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-[#EEEEEE] rounded flex items-center justify-center">
-                      [VIDEO]
+                <div
+                  key={file.id}
+                  className="flex items-center justify-between p-4 border-2 border-white"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 border-2 border-white flex items-center justify-center text-[10px] uppercase font-bold">
+                      Video
                     </div>
                     <div>
-                      <h5 className="font-medium text-[#111111]">{file.name}</h5>
-                      <p className="text-sm text-[#666]">{formatFileSize(file.size)}</p>
+                      <h5 className="font-bold">{file.name}</h5>
+                      <p className="text-xs opacity-80">{formatFileSize(file.size)}</p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3">
+
+                  <div className="flex items-center gap-3">
                     {file.status === 'uploading' && (
-                      <div className="flex items-center space-x-2">
-                        <div className="w-32 bg-[#EEEEEE] rounded-full h-2">
-                          <div 
-                            className="bg-[#A2AF9B] h-2 rounded-full transition-all duration-300" 
-                            style={{width: `${file.progress}%`}}
+                      <div className="flex items-center gap-2">
+                        <div className="w-40 h-2 border-2 border-white">
+                          <div
+                            className="h-[6px] bg-white"
+                            style={{ width: `${file.progress}%` }}
                           />
                         </div>
-                        <span className="text-sm text-[#666]">{file.progress}%</span>
+                        <span className="text-xs">{file.progress}%</span>
                       </div>
                     )}
+
                     {file.status === 'completed' && (
-                      <span className="px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                      <span className="px-2 py-1 border-2 border-white text-xs font-bold uppercase">
                         Completed
                       </span>
                     )}
+
                     {file.status === 'error' && (
-                      <span className="px-3 py-1 bg-red-100 text-red-800 text-xs rounded-full">
+                      <span className="px-2 py-1 border-2 border-white text-xs font-bold uppercase">
                         Error
                       </span>
                     )}
+
                     {file.status === 'pending' && signatureStatus === 'none' && (
-                      <button 
+                      <button
                         onClick={() => removeFile(file.id)}
-                        className="text-[#666] hover:text-red-500 text-sm"
+                        className="text-white/80 hover:text-white text-xs uppercase"
                       >
                         Remove
                       </button>
@@ -841,7 +819,7 @@ export default function UploadDropzone({ onUploadComplete, onStatusUpdate, preSe
               <div className="mt-6 flex justify-end">
                 <button
                   onClick={startUpload}
-                  className="bg-[#A2AF9B] text-white px-6 py-3 rounded-md font-medium hover:bg-[#8fa085] transition-colors"
+                  className="border-2 border-white bg-black text-white px-6 py-3 font-bold uppercase hover:bg-white hover:text-black transition-colors"
                 >
                   Upload All Files
                 </button>

@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { backendApi, Task } from '@/lib/backend-api';
 import { apiFetch } from '@/lib/api';
@@ -49,15 +51,10 @@ export default function ReviewerVideoQueue({ currentUser }: ReviewerVideoQueuePr
   const loadData = async () => {
     try {
       setLoading(true);
-      
-      // Load video sessions that need review
       const sessions = await apiFetch<VideoSession[]>('/sessions/?status=PENDING_REVIEW,PROCESSING');
       setVideoSessions(sessions);
-      
-      // Load tasks for filtering
       const tasksData = await backendApi.getTasks();
       setTasks(tasksData);
-      
     } catch (error) {
       console.error('Failed to load review data:', error);
     } finally {
@@ -65,11 +62,10 @@ export default function ReviewerVideoQueue({ currentUser }: ReviewerVideoQueuePr
     }
   };
 
+  // Handlers (unchanged functionality)
   const handleClaimVideo = async (sessionId: string) => {
     try {
-      // TODO: Implement claim video for review
       console.log('Claiming video for review:', sessionId);
-      // This would update the reviewer_id field to current user
     } catch (error) {
       console.error('Failed to claim video:', error);
     }
@@ -77,9 +73,7 @@ export default function ReviewerVideoQueue({ currentUser }: ReviewerVideoQueuePr
 
   const handleApproveVideo = async (sessionId: string) => {
     try {
-      // TODO: Implement approve video
       console.log('Approving video:', sessionId);
-      // This would update the status to APPROVED
     } catch (error) {
       console.error('Failed to approve video:', error);
     }
@@ -87,9 +81,7 @@ export default function ReviewerVideoQueue({ currentUser }: ReviewerVideoQueuePr
 
   const handleRejectVideo = async (sessionId: string, reason: string) => {
     try {
-      // TODO: Implement reject video with reason
       console.log('Rejecting video:', sessionId, 'Reason:', reason);
-      // This would update the status to REJECTED
     } catch (error) {
       console.error('Failed to reject video:', error);
     }
@@ -101,64 +93,56 @@ export default function ReviewerVideoQueue({ currentUser }: ReviewerVideoQueuePr
     return true;
   });
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
-  };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'PENDING_REVIEW':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'PROCESSING':
-        return 'bg-blue-100 text-blue-800';
-      case 'APPROVED':
-        return 'bg-green-100 text-green-800';
-      case 'REJECTED':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
+  // Brutalist chip (square, thick border, uppercase)
+  const chipBase =
+    'px-2 py-1 text-xs font-black uppercase border-2 border-white bg-black text-white';
 
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="text-[#666]">Loading review queue...</div>
+        <div className="text-white">Loading review queue...</div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-[#111111]">Video Review Queue</h2>
-        <div className="flex gap-4">
+    <div className="space-y-6 text-white">
+      {/* Header / Filters */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <h2 className="text-xl font-black uppercase">Video Review Queue</h2>
+
+        <div className="flex gap-3">
+          {/* Status select — brutalist */}
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-3 py-2 border border-[#DCCFC0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A2AF9B]"
+            className="px-3 py-2 border-2 border-white bg-black text-white font-bold uppercase focus:outline-none hover:bg-white hover:text-black"
           >
-            <option value="all">All Statuses</option>
-            <option value="PENDING_REVIEW">Pending Review</option>
-            <option value="PROCESSING">Processing</option>
-            <option value="APPROVED">Approved</option>
-            <option value="REJECTED">Rejected</option>
+            <option value="all" className="bg-black">All Statuses</option>
+            <option value="PENDING_REVIEW" className="bg-black">Pending Review</option>
+            <option value="PROCESSING" className="bg-black">Processing</option>
+            <option value="APPROVED" className="bg-black">Approved</option>
+            <option value="REJECTED" className="bg-black">Rejected</option>
           </select>
-          
+
+          {/* Task select — brutalist */}
           <select
             value={selectedTask}
             onChange={(e) => setSelectedTask(e.target.value)}
-            className="px-3 py-2 border border-[#DCCFC0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A2AF9B]"
+            className="px-3 py-2 border-2 border-white bg-black text-white font-bold uppercase focus:outline-none hover:bg-white hover:text-black"
           >
-            <option value="all">All Tasks</option>
+            <option value="all" className="bg-black">All Tasks</option>
             {tasks.map((task) => (
-              <option key={task.task_id} value={task.task_id}>
+              <option key={task.task_id} value={task.task_id} className="bg-black">
                 {task.title}
               </option>
             ))}
@@ -166,55 +150,61 @@ export default function ReviewerVideoQueue({ currentUser }: ReviewerVideoQueuePr
         </div>
       </div>
 
+      {/* Empty state */}
       {filteredSessions.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="text-[#666] mb-4">No videos found matching the selected filters</div>
-          <p className="text-sm text-[#666]">Videos will appear here when they are uploaded and ready for review.</p>
+        <div className="text-center py-12 border-2 border-white bg-black">
+          <div className="mb-2 font-black uppercase">No videos match the filters</div>
+          <p className="text-sm opacity-80">
+            Videos will appear here when they are uploaded and ready for review.
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           {filteredSessions.map((session) => (
-            <div key={session.session_id} className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
+            <div key={session.session_id} className="bg-black border-2 border-white p-6">
+              {/* Header */}
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h3 className="text-lg font-medium text-[#111111]">
+                  <h3 className="text-lg font-black uppercase">
                     {session.video_name || 'Untitled Video'}
                   </h3>
-                  <p className="text-sm text-[#666] mt-1">
+                  <p className="text-xs opacity-80 mt-1">
                     Task: {session.task?.title || `Task ${session.task_id.slice(0, 8)}`}
                   </p>
                 </div>
-                <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(session.status)}`}>
-                  {session.status}
-                </span>
+                <span className={chipBase}>{session.status.replaceAll('_', ' ')}</span>
               </div>
 
-              <div className="space-y-2 mb-4">
-                <div className="text-xs text-[#666]">
-                  <strong>Creator:</strong> {session.creator?.name || 'Unknown'}
+              {/* Meta */}
+              <div className="space-y-2 mb-4 text-xs opacity-90">
+                <div>
+                  <span className="font-bold">Creator:</span>{' '}
+                  {session.creator?.name || 'Unknown'}
                 </div>
-                <div className="text-xs text-[#666]">
-                  <strong>Email:</strong> {session.user_email || session.creator?.email}
+                <div>
+                  <span className="font-bold">Email:</span>{' '}
+                  {session.user_email || session.creator?.email}
                 </div>
-                <div className="text-xs text-[#666]">
-                  <strong>Uploaded:</strong> {formatDate(session.created_at)}
+                <div>
+                  <span className="font-bold">Uploaded:</span> {formatDate(session.created_at)}
                 </div>
                 {session.task?.description && (
-                  <div className="text-xs text-[#666]">
-                    <strong>Task Description:</strong> {session.task.description}
+                  <div>
+                    <span className="font-bold">Task Description:</span>{' '}
+                    {session.task.description}
                   </div>
                 )}
               </div>
 
-              {/* Review Actions */}
-              <div className="border-t border-[#DCCFC0] pt-4">
+              {/* Actions */}
+              <div className="border-t-2 border-white pt-4">
                 {session.status === 'PENDING_REVIEW' && (
                   <div className="space-y-2">
                     {!session.reviewer_id || session.reviewer_id === currentUser.user_id ? (
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleApproveVideo(session.session_id)}
-                          className="flex-1 bg-green-600 text-white py-2 px-3 rounded-lg hover:bg-green-700 transition-colors text-sm"
+                          className="flex-1 border-2 border-white bg-black text-white py-2 font-bold uppercase hover:bg-white hover:text-black transition-colors"
                         >
                           Approve
                         </button>
@@ -223,7 +213,7 @@ export default function ReviewerVideoQueue({ currentUser }: ReviewerVideoQueuePr
                             const reason = prompt('Reason for rejection:');
                             if (reason) handleRejectVideo(session.session_id, reason);
                           }}
-                          className="flex-1 bg-red-600 text-white py-2 px-3 rounded-lg hover:bg-red-700 transition-colors text-sm"
+                          className="flex-1 border-2 border-white bg-black text-white py-2 font-bold uppercase hover:bg-white hover:text-black transition-colors"
                         >
                           Reject
                         </button>
@@ -231,7 +221,7 @@ export default function ReviewerVideoQueue({ currentUser }: ReviewerVideoQueuePr
                     ) : (
                       <button
                         onClick={() => handleClaimVideo(session.session_id)}
-                        className="w-full bg-[#A2AF9B] text-white py-2 px-3 rounded-lg hover:bg-[#8a9784] transition-colors text-sm"
+                        className="w-full border-2 border-white bg-black text-white py-2 font-bold uppercase hover:bg-white hover:text-black transition-colors"
                       >
                         Claim for Review
                       </button>
@@ -240,26 +230,24 @@ export default function ReviewerVideoQueue({ currentUser }: ReviewerVideoQueuePr
                 )}
 
                 {session.status === 'PROCESSING' && (
-                  <div className="text-sm text-blue-600 text-center py-2">
-                    Processing video...
+                  <div className="text-sm text-white text-center py-2 font-bold uppercase">
+                    Processing video…
                   </div>
                 )}
 
                 {(session.status === 'APPROVED' || session.status === 'REJECTED') && (
-                  <div className="text-xs text-[#666] text-center">
+                  <div className="text-xs text-white text-center font-bold uppercase">
                     Review completed
                   </div>
                 )}
               </div>
 
-              {/* Video Preview */}
+              {/* Video processed flag */}
               {session.processed_1080p_s3_key && (
-                <div className="mt-4 pt-4 border-t border-[#DCCFC0]">
-                  <div className="flex items-center gap-2 text-sm text-[#A2AF9B]">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M2 6a2 2 0 012-2h6l2 2h6a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
-                    </svg>
-                    Video processed and ready for review
+                <div className="mt-4 pt-4 border-t-2 border-white">
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="inline-block w-2 h-2 bg-white" />
+                    <span className="font-semibold">Video processed and ready for review</span>
                   </div>
                 </div>
               )}

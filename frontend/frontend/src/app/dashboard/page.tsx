@@ -62,8 +62,6 @@ export default function DashboardPage() {
       }
       setMe(user);
       setAuthChecked(true);
-      
-      // Load dashboard data
       await loadDashboardData(user);
     })();
   }, [router]);
@@ -71,17 +69,12 @@ export default function DashboardPage() {
   const loadDashboardData = async (user: User) => {
     try {
       setLoading(true);
-      console.log('Loading dashboard data for user:', user.role, user.user_id);
-      
-      // Load appropriate stats based on user role
+
       if (user.role === 'ADMIN') {
-        console.log('Fetching admin dashboard statistics...');
         try {
           const stats = await apiFetch<DashboardStats>('/dashboard/statistics');
-          console.log('Dashboard stats received:', stats);
           setDashboardStats(stats);
-        } catch (adminError) {
-          console.error('Failed to load admin dashboard stats:', adminError);
+        } catch {
           setDashboardStats({
             total_videos: 0,
             pending_reviews: 0,
@@ -90,15 +83,11 @@ export default function DashboardPage() {
           });
         }
       }
-      
-      // Load user-specific stats for all roles
-      console.log('Fetching user statistics...');
+
       try {
-        const userStats = await apiFetch<UserStats>(`/users/${user.user_id}/statistics`);
-        console.log('User stats received:', userStats);
-        setUserStats(userStats);
-      } catch (userError) {
-        console.error('Failed to load user stats:', userError);
+        const u = await apiFetch<UserStats>(`/users/${user.user_id}/statistics`);
+        setUserStats(u);
+      } catch {
         setUserStats({
           videos_uploaded: 0,
           videos_reviewed: 0,
@@ -107,39 +96,17 @@ export default function DashboardPage() {
         });
       }
 
-      // Load user's video sessions
-      console.log('Fetching user video sessions...');
       try {
         let sessions: VideoSession[] = [];
         if (user.role === 'ADMIN') {
-          // Admins can see all video sessions
           sessions = await apiFetch<VideoSession[]>('/sessions/');
         } else {
-          // Other users see only their own sessions
           sessions = await apiFetch<VideoSession[]>(`/sessions/?creator_id=${user.user_id}`);
         }
-        console.log('Video sessions received:', sessions);
         setVideoSessions(sessions);
-      } catch (videoError) {
-        console.error('Failed to load video sessions:', videoError);
+      } catch {
         setVideoSessions([]);
       }
-    } catch (error) {
-      console.error('Failed to load dashboard data:', error);
-      // Set fallback data
-      setDashboardStats({
-        total_videos: 0,
-        pending_reviews: 0,
-        completed_tasks: 0,
-        active_workers: 0
-      });
-      setUserStats({
-        videos_uploaded: 0,
-        videos_reviewed: 0,
-        tasks_completed: 0,
-        earnings: 0
-      });
-      setVideoSessions([]);
     } finally {
       setLoading(false);
     }
@@ -166,40 +133,46 @@ export default function DashboardPage() {
       });
     };
 
-    const getStatusColor = (status: string) => {
+    // Brutalist status chip: square edges, bordered, uppercase
+    const statusClasses = "px-2 py-1 text-xs font-bold uppercase border-2 border-black";
+
+    const getStatusStyle = (status: string) => {
       switch (status) {
         case 'PENDING':
-          return 'bg-yellow-100 text-yellow-800';
+        case 'PENDING_REVIEW':
+          return "bg-white text-black";
         case 'PROCESSING':
-          return 'bg-blue-100 text-blue-800';
+          return "bg-white text-black";
         case 'READY_FOR_REVIEW':
-          return 'bg-purple-100 text-purple-800';
+          return "bg-white text-black";
         case 'COMPLETED':
-          return 'bg-green-100 text-green-800';
+          return "bg-white text-black";
+        case 'APPROVED':
+          return "bg-white text-black";
         case 'REJECTED':
-          return 'bg-red-100 text-red-800';
+          return "bg-white text-black";
         default:
-          return 'bg-gray-100 text-gray-800';
+          return "bg-white text-black";
       }
     };
 
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-4">
+      <div className="bg-black border-2 border-white p-4">
         <div className="flex justify-between items-start mb-3">
           <div>
-            <h3 className="font-medium text-[#111111]">
+            <h3 className="font-black uppercase tracking-tight text-white">
               {session.task?.title || `Task ${session.task_id.slice(0, 8)}`}
             </h3>
-            <p className="text-sm text-[#666] mt-1">
+            <p className="text-xs text-white/80 mt-1">
               {session.task?.description || 'No description available'}
             </p>
           </div>
-          <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(session.status)}`}>
-            {session.status}
+          <span className={`${statusClasses} ${getStatusStyle(session.status)}`}>
+            {session.status.replaceAll('_', ' ')}
           </span>
         </div>
-        
-        <div className="text-xs text-[#666] space-y-1">
+
+        <div className="text-xs text-white/80 space-y-1">
           <div>Created: {formatDate(session.created_at)}</div>
           <div>Updated: {formatDate(session.updated_at)}</div>
           {session.reviewer && (
@@ -209,11 +182,9 @@ export default function DashboardPage() {
 
         {session.processed_1080p_s3_key && (
           <div className="mt-3">
-            <div className="flex items-center gap-2 text-sm text-[#A2AF9B]">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M2 6a2 2 0 012-2h6l2 2h6a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
-              </svg>
-              Video processed and ready
+            <div className="flex items-center gap-2 text-sm text-white">
+              <span className="inline-block w-2 h-2 bg-white" />
+              <span className="font-semibold">Video processed and ready</span>
             </div>
           </div>
         )}
@@ -274,13 +245,22 @@ export default function DashboardPage() {
     }
   };
 
+  const Panel: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, className = '' }) => (
+    <div className={`bg-black border-2 border-white p-6 ${className}`}>{children}</div>
+  );
+
+  const StatBox = ({ title, value }: { title: string; value: React.ReactNode }) => (
+    <div className="bg-black border-2 border-white p-6">
+      <h3 className="text-xs font-bold uppercase tracking-wide mb-2">{title}</h3>
+      <p className="text-3xl font-black">{value}</p>
+    </div>
+  );
+
   const renderAdminContent = () => {
     if (currentView === 'tasks') {
       return (
         <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            {me && <TaskManagement currentUser={me} />}
-          </div>
+          <Panel>{me && <TaskManagement currentUser={me} />}</Panel>
         </div>
       );
     }
@@ -288,31 +268,27 @@ export default function DashboardPage() {
     if (currentView === 'upload') {
       return (
         <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <h2 className="text-xl font-semibold text-[#111111] mb-4">Upload Videos</h2>
+          <Panel>
+            <h2 className="text-lg font-black uppercase mb-4">Upload Videos</h2>
             <UploadDropzone requireTaskSelection={false} />
-          </div>
+          </Panel>
         </div>
       );
     }
 
     if (currentView === 'videos') {
-      // Filter to show videos that are pending review or completed
-      const reviewableVideos = videoSessions.filter(session => 
-        session.status === 'PENDING_REVIEW' || 
-        session.status === 'APPROVED' || 
-        session.status === 'REJECTED' ||
-        session.status === 'PROCESSING'
+      const reviewableVideos = videoSessions.filter(session =>
+        ['PENDING_REVIEW','APPROVED','REJECTED','PROCESSING'].includes(session.status)
       );
-      
+
       return (
         <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <h2 className="text-xl font-semibold text-[#111111] mb-4">All Video Sessions</h2>
+          <Panel>
+            <h2 className="text-lg font-black uppercase mb-4">All Video Sessions</h2>
             {loading ? (
-              <p className="text-[#666]">Loading video sessions...</p>
+              <p className="text-black/70">Loading video sessions...</p>
             ) : reviewableVideos.length === 0 ? (
-              <p className="text-[#666]">No video sessions found in the system.</p>
+              <p className="text-black/70">No video sessions found in the system.</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {reviewableVideos.map((session) => (
@@ -320,7 +296,7 @@ export default function DashboardPage() {
                 ))}
               </div>
             )}
-          </div>
+          </Panel>
         </div>
       );
     }
@@ -328,10 +304,10 @@ export default function DashboardPage() {
     if (currentView === 'users') {
       return (
         <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <h2 className="text-xl font-semibold text-[#111111] mb-4">User Management</h2>
-            <p className="text-[#666]">User management features coming soon.</p>
-          </div>
+          <Panel>
+            <h2 className="text-lg font-black uppercase mb-4">User Management</h2>
+            <p className="text-white/70">User management features coming soon.</p>
+          </Panel>
         </div>
       );
     }
@@ -339,46 +315,26 @@ export default function DashboardPage() {
     if (currentView === 'settings') {
       return (
         <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <h2 className="text-xl font-semibold text-[#111111] mb-4">System Settings</h2>
-            <p className="text-[#666]">System configuration options coming soon.</p>
-          </div>
+          <Panel>
+            <h2 className="text-lg font-black uppercase mb-4">System Settings</h2>
+            <p className="text-white/70">System configuration options coming soon.</p>
+          </Panel>
         </div>
       );
     }
 
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <h3 className="text-sm font-medium text-[#666] mb-2">Total Videos</h3>
-            <p className="text-2xl font-bold text-[#111111]">
-              {loading ? '...' : videoSessions.filter(s => 
-                s.status === 'PENDING_REVIEW' || 
-                s.status === 'APPROVED' || 
-                s.status === 'REJECTED' ||
-                s.status === 'PROCESSING'
-              ).length}
-            </p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <h3 className="text-sm font-medium text-[#666] mb-2">Pending Reviews</h3>
-            <p className="text-2xl font-bold text-[#111111]">
-              {loading ? '...' : dashboardStats?.pending_reviews || 0}
-            </p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <h3 className="text-sm font-medium text-[#666] mb-2">Completed Tasks</h3>
-            <p className="text-2xl font-bold text-[#111111]">
-              {loading ? '...' : dashboardStats?.completed_tasks || 0}
-            </p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <h3 className="text-sm font-medium text-[#666] mb-2">Active Workers</h3>
-            <p className="text-2xl font-bold text-[#111111]">
-              {loading ? '...' : dashboardStats?.active_workers || 0}
-            </p>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <StatBox
+            title="Total Videos"
+            value={loading ? '...' : videoSessions.filter(s =>
+              ['PENDING_REVIEW','APPROVED','REJECTED','PROCESSING'].includes(s.status)
+            ).length}
+          />
+          <StatBox title="Pending Reviews" value={loading ? '...' : (dashboardStats?.pending_reviews || 0)} />
+          <StatBox title="Completed Tasks" value={loading ? '...' : (dashboardStats?.completed_tasks || 0)} />
+          <StatBox title="Active Workers" value={loading ? '...' : (dashboardStats?.active_workers || 0)} />
         </div>
       </div>
     );
@@ -388,40 +344,37 @@ export default function DashboardPage() {
     if (currentView === 'upload') {
       return (
         <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <h2 className="text-xl font-semibold text-[#111111] mb-4">Upload Videos</h2>
-            <p className="text-[#666] mb-4">
-              {preSelectedTask 
-                ? `Upload video for task: ${preSelectedTask.title}` 
-                : 'Upload videos for your assigned tasks'
-              }
+          <Panel>
+            <h2 className="text-lg font-black uppercase mb-4">Upload Videos</h2>
+            <p className="mb-4">
+              {preSelectedTask
+                ? `Upload video for task: ${preSelectedTask.title}`
+                : 'Upload videos for your assigned tasks'}
             </p>
-            <UploadDropzone 
-              requireTaskSelection={true} 
+            <UploadDropzone
+              requireTaskSelection={true}
               preSelectedTask={preSelectedTask?.id}
             />
-          </div>
+          </Panel>
         </div>
       );
     }
 
     if (currentView === 'videos') {
-      // Filter to show videos that are pending review or completed
-      const reviewableVideos = videoSessions.filter(session => 
-        session.status === 'PENDING_REVIEW' || 
-        session.status === 'APPROVED' || 
-        session.status === 'REJECTED' ||
-        session.status === 'PROCESSING'
+      const reviewableVideos = videoSessions.filter(session =>
+        ['PENDING_REVIEW','APPROVED','REJECTED','PROCESSING'].includes(session.status)
       );
-      
+
       return (
         <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <h2 className="text-xl font-semibold text-[#111111] mb-4">My Videos</h2>
+          <Panel>
+            <h2 className="text-lg font-black uppercase mb-4">My Videos</h2>
             {loading ? (
-              <p className="text-[#666]">Loading videos...</p>
+              <p className="text-black/70">Loading videos...</p>
             ) : reviewableVideos.length === 0 ? (
-              <p className="text-[#666]">You haven&apos;t uploaded any videos yet. Start by uploading your first video!</p>
+              <p className="text-white/70">
+                You haven&apos;t uploaded any videos yet. Start by uploading your first video!
+              </p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {reviewableVideos.map((session) => (
@@ -429,7 +382,7 @@ export default function DashboardPage() {
                 ))}
               </div>
             )}
-          </div>
+          </Panel>
         </div>
       );
     }
@@ -437,9 +390,7 @@ export default function DashboardPage() {
     if (currentView === 'tasks') {
       return (
         <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            {me && <WorkerTasks currentUser={me} onNavigateToUpload={handleNavigateToUpload} />}
-          </div>
+          <Panel>{me && <WorkerTasks currentUser={me} onNavigateToUpload={handleNavigateToUpload} />}</Panel>
         </div>
       );
     }
@@ -447,10 +398,10 @@ export default function DashboardPage() {
     if (currentView === 'progress') {
       return (
         <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <h2 className="text-xl font-semibold text-[#111111] mb-4">My Progress</h2>
-            <p className="text-[#666]">Your work history and progress tracking coming soon.</p>
-          </div>
+          <Panel>
+            <h2 className="text-lg font-black uppercase mb-4">My Progress</h2>
+            <p className="text-white/70">Your work history and progress tracking coming soon.</p>
+          </Panel>
         </div>
       );
     }
@@ -458,29 +409,14 @@ export default function DashboardPage() {
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <h3 className="text-sm font-medium text-[#666] mb-2">Tasks Completed</h3>
-            <p className="text-2xl font-bold text-[#111111]">
-              {loading ? '...' : userStats?.tasks_completed || 0}
-            </p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <h3 className="text-sm font-medium text-[#666] mb-2">Videos Uploaded</h3>
-            <p className="text-2xl font-bold text-[#111111]">
-              {loading ? '...' : videoSessions.filter(s => 
-                s.status === 'PENDING_REVIEW' || 
-                s.status === 'APPROVED' || 
-                s.status === 'REJECTED' ||
-                s.status === 'PROCESSING'
-              ).length}
-            </p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <h3 className="text-sm font-medium text-[#666] mb-2">Earnings</h3>
-            <p className="text-2xl font-bold text-[#111111]">
-              ${loading ? '...' : userStats?.earnings || 0}
-            </p>
-          </div>
+          <StatBox title="Tasks Completed" value={loading ? '...' : (userStats?.tasks_completed || 0)} />
+          <StatBox
+            title="Videos Uploaded"
+            value={loading ? '...' : videoSessions.filter(s =>
+              ['PENDING_REVIEW','APPROVED','REJECTED','PROCESSING'].includes(s.status)
+            ).length}
+          />
+          <StatBox title="Earnings" value={`$${loading ? '...' : (userStats?.earnings || 0)}`} />
         </div>
       </div>
     );
@@ -490,32 +426,28 @@ export default function DashboardPage() {
     if (currentView === 'upload') {
       return (
         <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <h2 className="text-xl font-semibold text-[#111111] mb-4">Upload Videos</h2>
-            <p className="text-[#666] mb-4">Upload videos for review and evaluation</p>
+          <Panel>
+            <h2 className="text-lg font-black uppercase mb-4">Upload Videos</h2>
+            <p className="mb-4">Upload videos for review and evaluation</p>
             <UploadDropzone requireTaskSelection={false} />
-          </div>
+          </Panel>
         </div>
       );
     }
 
     if (currentView === 'videos') {
-      // Filter to show videos that are pending review or completed
-      const reviewableVideos = videoSessions.filter(session => 
-        session.status === 'PENDING_REVIEW' || 
-        session.status === 'APPROVED' || 
-        session.status === 'REJECTED' ||
-        session.status === 'PROCESSING'
+      const reviewableVideos = videoSessions.filter(session =>
+        ['PENDING_REVIEW','APPROVED','REJECTED','PROCESSING'].includes(session.status)
       );
-      
+
       return (
         <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <h2 className="text-xl font-semibold text-[#111111] mb-4">My Videos</h2>
+          <Panel>
+            <h2 className="text-lg font-black uppercase mb-4">My Videos</h2>
             {loading ? (
-              <p className="text-[#666]">Loading videos...</p>
+              <p className="text-black/70">Loading videos...</p>
             ) : reviewableVideos.length === 0 ? (
-              <p className="text-[#666]">You haven&apos;t uploaded any videos yet. Start by uploading your first video!</p>
+              <p className="text-white/70">You haven&apos;t uploaded any videos yet. Start by uploading your first video!</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {reviewableVideos.map((session) => (
@@ -523,7 +455,7 @@ export default function DashboardPage() {
                 ))}
               </div>
             )}
-          </div>
+          </Panel>
         </div>
       );
     }
@@ -531,9 +463,7 @@ export default function DashboardPage() {
     if (currentView === 'review') {
       return (
         <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            {me && <ReviewerVideoQueue currentUser={me} />}
-          </div>
+          <Panel>{me && <ReviewerVideoQueue currentUser={me} />}</Panel>
         </div>
       );
     }
@@ -541,10 +471,10 @@ export default function DashboardPage() {
     if (currentView === 'history') {
       return (
         <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <h2 className="text-xl font-semibold text-[#111111] mb-4">Review History</h2>
-            <p className="text-[#666]">Your review history will appear here.</p>
-          </div>
+          <Panel>
+            <h2 className="text-lg font-black uppercase mb-4">Review History</h2>
+            <p className="text-white/70">Your review history will appear here.</p>
+          </Panel>
         </div>
       );
     }
@@ -552,29 +482,14 @@ export default function DashboardPage() {
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <h3 className="text-sm font-medium text-[#666] mb-2">Videos Uploaded</h3>
-            <p className="text-2xl font-bold text-[#111111]">
-              {loading ? '...' : videoSessions.filter(s => 
-                s.status === 'PENDING_REVIEW' || 
-                s.status === 'APPROVED' || 
-                s.status === 'REJECTED' ||
-                s.status === 'PROCESSING'
-              ).length}
-            </p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <h3 className="text-sm font-medium text-[#666] mb-2">Videos Reviewed</h3>
-            <p className="text-2xl font-bold text-[#111111]">
-              {loading ? '...' : userStats?.videos_reviewed || 0}
-            </p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <h3 className="text-sm font-medium text-[#666] mb-2">Earnings</h3>
-            <p className="text-2xl font-bold text-[#111111]">
-              ${loading ? '...' : userStats?.earnings || 0}
-            </p>
-          </div>
+          <StatBox
+            title="Videos Uploaded"
+            value={loading ? '...' : videoSessions.filter(s =>
+              ['PENDING_REVIEW','APPROVED','REJECTED','PROCESSING'].includes(s.status)
+            ).length}
+          />
+          <StatBox title="Videos Reviewed" value={loading ? '...' : (userStats?.videos_reviewed || 0)} />
+          <StatBox title="Earnings" value={`$${loading ? '...' : (userStats?.earnings || 0)}`} />
         </div>
       </div>
     );
@@ -584,31 +499,27 @@ export default function DashboardPage() {
     if (currentView === 'upload') {
       return (
         <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <h2 className="text-xl font-semibold text-[#111111] mb-4">Upload Videos</h2>
+          <Panel>
+            <h2 className="text-lg font-black uppercase mb-4">Upload Videos</h2>
             <UploadDropzone />
-          </div>
+          </Panel>
         </div>
       );
     }
 
     if (currentView === 'gallery') {
-      // Filter to show videos that are pending review or completed
-      const reviewableVideos = videoSessions.filter(session => 
-        session.status === 'PENDING_REVIEW' || 
-        session.status === 'APPROVED' || 
-        session.status === 'REJECTED' ||
-        session.status === 'PROCESSING'
+      const reviewableVideos = videoSessions.filter(session =>
+        ['PENDING_REVIEW','APPROVED','REJECTED','PROCESSING'].includes(session.status)
       );
-      
+
       return (
         <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <h2 className="text-xl font-semibold text-[#111111] mb-4">My Videos</h2>
+          <Panel>
+            <h2 className="text-lg font-black uppercase mb-4">My Videos</h2>
             {loading ? (
-              <p className="text-[#666]">Loading videos...</p>
+              <p className="text-black/70">Loading videos...</p>
             ) : reviewableVideos.length === 0 ? (
-              <p className="text-[#666]">You haven&apos;t uploaded any videos yet. Start by uploading your first video!</p>
+              <p className="text-white/70">You haven&apos;t uploaded any videos yet. Start by uploading your first video!</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {reviewableVideos.map((session) => (
@@ -616,7 +527,7 @@ export default function DashboardPage() {
                 ))}
               </div>
             )}
-          </div>
+          </Panel>
         </div>
       );
     }
@@ -624,23 +535,13 @@ export default function DashboardPage() {
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <h3 className="text-sm font-medium text-[#666] mb-2">Videos Uploaded</h3>
-            <p className="text-2xl font-bold text-[#111111]">
-              {loading ? '...' : videoSessions.filter(s => 
-                s.status === 'PENDING_REVIEW' || 
-                s.status === 'APPROVED' || 
-                s.status === 'REJECTED' ||
-                s.status === 'PROCESSING'
-              ).length}
-            </p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-[#DCCFC0] p-6">
-            <h3 className="text-sm font-medium text-[#666] mb-2">Tasks Completed</h3>
-            <p className="text-2xl font-bold text-[#111111]">
-              {loading ? '...' : userStats?.tasks_completed || 0}
-            </p>
-          </div>
+          <StatBox
+            title="Videos Uploaded"
+            value={loading ? '...' : videoSessions.filter(s =>
+              ['PENDING_REVIEW','APPROVED','REJECTED','PROCESSING'].includes(s.status)
+            ).length}
+          />
+          <StatBox title="Tasks Completed" value={loading ? '...' : (userStats?.tasks_completed || 0)} />
         </div>
       </div>
     );
@@ -648,8 +549,8 @@ export default function DashboardPage() {
 
   if (!authChecked) {
     return (
-      <div className="min-h-screen bg-[#FAF9EE] flex items-center justify-center">
-        <p className="text-[#666]">Loading...</p>
+      <div className="min-h-screen bg-[#f2f2f2] flex items-center justify-center">
+        <p className="font-mono text-black">Loading...</p>
       </div>
     );
   }
@@ -661,67 +562,90 @@ export default function DashboardPage() {
   const navigation = getNavigation(me.role);
 
   return (
-    <div className="min-h-screen bg-[#FAF9EE] flex">
+    <div className="min-h-screen bg-black text-white flex">
       {/* Left Sidebar Navigation */}
-      <div className="w-64 bg-white border-r border-[#DCCFC0] flex flex-col">
+      <div className="w-80 bg-black border-r-2 border-white flex flex-col">
         {/* Sidebar Header */}
-        <div className="p-6 border-b border-[#DCCFC0]">
-          <h1 className="text-xl font-bold text-[#111111]">Efference</h1>
-          <p className="text-sm text-[#666] mt-1">
-            {me.role} Dashboard
-          </p>
+        <div className="p-6 pl-10 border-b-2 border-white"> 
+          <h1
+              className="text-4xl font-black uppercase tracking-tight"
+              style={{
+                WebkitTextStrokeWidth: '1.2px',
+                WebkitTextStrokeColor: '#fff',
+                color: 'transparent',
+                fontFamily:
+                  "'Space Grotesk','Montserrat','Poppins',ui-sans-serif,system-ui",
+                transform: 'scaleY(0.8) scaleX(1.15)',   // 👈 makes it shorter & wider
+                transformOrigin: 'center',
+                letterSpacing: '-0.02em'
+              }}
+          >
+            EFFERENCE
+          </h1>
+          <p className="text-xs mt-2 uppercase ml-5">{me.role} Dashboard</p>
         </div>
-        
+
         {/* Navigation Menu */}
-        <nav className="flex-1 p-4">
-          <ul className="space-y-2">
-            {navigation.map((item) => (
-              <li key={item.id}>
-                <button
-                  onClick={() => setCurrentView(item.id)}
-                  className={`w-full text-left p-3 rounded-lg transition-all hover:bg-[#A2AF9B]/10 ${
-                    currentView === item.id
-                      ? 'bg-[#A2AF9B]/20 border-l-4 border-[#A2AF9B]' 
-                      : 'hover:border-l-4 hover:border-[#A2AF9B]/30'
-                  }`}
-                >
-                  <div className="font-medium text-[#111111]">{item.label}</div>
-                  <div className="text-xs text-[#666] mt-1">{item.description}</div>
-                </button>
-              </li>
-            ))}
+        <nav className="flex-1 px-6 py-4">
+          <ul className="divide-y divide-white/50 border-t border-b border-white/50">
+            {navigation.map((item) => {
+              const active = currentView === item.id;
+              return (
+                <li key={item.id}>
+                  <button
+                    onClick={() => setCurrentView(item.id)}
+                    className={`w-full text-left py-4 text-sm uppercase tracking-wide font-bold ${
+                      active
+                        ? 'text-white'
+                        : 'text-white/70 hover:text-white'
+                    } transition-colors`}
+                  >
+                    <div>{item.label}</div>
+                    <div className="text-[10px] mt-1 normal-case opacity-60">
+                      {item.description}</div>
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </nav>
 
+
         {/* User Profile & Logout */}
-        <div className="p-4 border-t border-[#DCCFC0]">
-          <div className="mb-4">
-            <div className="text-sm font-medium text-[#111111]">{me.name}</div>
-            <div className="text-xs text-[#666]">{me.email}</div>
-            <div className="text-xs text-[#A2AF9B] font-medium">{me.role}</div>
+        {/*<div className="p-4 border-t-2 border-black">
+          <div className="mb-3">
+            <div className="text-sm font-bold">{me.name}</div>
+            <div className="text-xs">{me.email}</div>
+            <div className="text-xs font-bold uppercase mt-1">{me.role}</div>
           </div>
           <button
             onClick={handleLogout}
-            className="w-full bg-[#111111] text-white px-4 py-2 rounded-lg hover:bg-[#333] transition-colors"
+            className="w-full border-2 border-black bg-white text-black px-4 py-2 font-bold uppercase hover:bg-black hover:text-white transition-colors"
           >
             Logout
           </button>
-        </div>
+        </div>*/}
       </div>
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
         {/* Top Header */}
-        <header className="bg-white border-b border-[#DCCFC0] px-8 py-6">
+        <header className="bg-black border-b-2 border-white px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-[#111111]">
+              <h1 className="text-xl font-black uppercase">
                 {navigation.find(nav => nav.id === currentView)?.label || 'Dashboard'}
               </h1>
-              <p className="text-[#666] mt-1">
+              <p className="text-xs mt-1">
                 {navigation.find(nav => nav.id === currentView)?.description}
               </p>
             </div>
+            <button
+              onClick={handleLogout}
+              className="border-2 border-white text-white bg-black px-5 py-2 font-bold uppercase hover:bg-white hover:text-black transition-colors"
+            >
+              Logout
+            </button>
           </div>
         </header>
 
