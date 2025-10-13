@@ -153,13 +153,13 @@ hr {
 .company-description p {
   color: white;
   font-size: 1.3em;
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Neue Helvetica Condensed BQ Regular", sans-serif;
 }
 
 .company-description h2 {
   font-weight: 200;
   font-size: 1.3em;
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Neue Helvetica Condensed BQ Regular", sans-serif;
 }
 
 .indented-list, .process-steps {
@@ -172,7 +172,7 @@ hr {
 .team h2, .team-description a {
   color: white;
   font-size: 1.3em;
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Neue Helvetica Condensed BQ Regular", sans-serif;
 }
 
 .team-description a {
@@ -180,7 +180,7 @@ hr {
   font-weight: 200;
   transition: all 0.2s ease;
   font-size: 1em;
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Neue Helvetica Condensed BQ Regular", sans-serif;
 }
 
 .team-description a:hover {
@@ -216,17 +216,16 @@ footer p {
   opacity: 0.7;
 }
 
-
+/* bottom-left tagline */
 .video-overlay {
   position: absolute;
   bottom: 0.8em;          
   left:1em;
   color: white;
-  font-family: "Helvetica Neue Condensed Bold", sans-serif;
-  font-size: 2.2em;
-  font-weight: 700;
-  line-height: 1.4;
-  letter-spacing: 0.03em;
+  font-family: "Monospace test", sans-serif;  font-size: 2.2em;
+  font-weight: 100;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
   z-index: 2;           
 }
 
@@ -238,6 +237,7 @@ footer p {
   gap: 1em;
   z-index: 2;
 }
+
 
 .social-icons a {
   width: 48px;
@@ -260,4 +260,32 @@ footer p {
   color: white;
   box-shadow: none;
   transform: translate(5px, 5px);
+}
+
+@media (max-width: 768px) {
+  .social-icons {
+    top: 1.5em;
+    bottom: auto;
+    right: 1em;
+  }
+  
+  .social-icons a {
+    width: 36px;
+    height: 36px;
+    font-size: 1.1em;
+  }
+  
+  .company, .team {
+    grid-template-columns: 1fr;
+    text-align: left;
+  }
+  
+  .company h2, .team h2 {
+    margin-bottom: 0.5em;
+  }
+  
+  .video-overlay {
+    font-size: 1.4em;
+    font-weight: 400;
+  }
 }
