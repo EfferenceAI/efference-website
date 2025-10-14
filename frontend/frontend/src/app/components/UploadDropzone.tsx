@@ -617,17 +617,17 @@ export default function UploadDropzone({
   };
 
   return (
-    <div className="space-y-6 text-white">
+    <div className="space-y-6 text-black">
       {/* Drop Zone */}
       <div
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className={`border-2 border-white p-12 text-center cursor-pointer bg-black ${
-          isDragOver ? 'ring-2 ring-white' : ''
+        className={`border-2 border-gray-400 p-12 text-center cursor-pointer bg-white ${
+          isDragOver ? 'ring-2 ring-gray-400' : ''
         }`}
       >
-        <h5 className="text-lg font-black uppercase mb-4">Drag & Drop files or click to browse</h5>
+        <h5 className="text-lg font-black uppercase mb-4 text-black">Drag & Drop files or click to browse</h5>
         <input
           type="file"
           multiple
@@ -638,7 +638,7 @@ export default function UploadDropzone({
         />
         <label
           htmlFor="file-upload"
-          className="inline-block border-2 border-white bg-black text-white px-6 py-3 font-bold uppercase hover:bg-white hover:text-black cursor-pointer transition-colors"
+          className="inline-block border-2 border-gray-400 bg-black text-white px-6 py-3 font-bold uppercase hover:bg-white hover:text-black cursor-pointer transition-colors"
         >
           Select Files
         </label>
@@ -646,10 +646,10 @@ export default function UploadDropzone({
 
       {/* File List */}
       {files.length > 0 && (
-        <div className="bg-black border-2 border-white">
-          <div className="p-6 border-b-2 border-white">
-            <h4 className="text-lg font-black uppercase">Selected Files</h4>
-            <p className="text-xs mt-1 opacity-80">{files.length} files selected</p>
+        <div className="bg-white border-2 border-gray-400">
+          <div className="p-6 border-b-2 border-gray-400">
+            <h4 className="text-lg font-black uppercase text-black">Selected Files</h4>
+            <p className="text-xs mt-1 opacity-80 text-black">{files.length} files selected</p>
           </div>
 
           <div className="p-6 space-y-6">

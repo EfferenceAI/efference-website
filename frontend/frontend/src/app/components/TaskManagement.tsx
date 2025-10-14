@@ -184,16 +184,16 @@ export default function TaskManagement({ currentUser }: TaskManagementProps) {
         {tasks.map((task) => {
           const taskAssignments = getTaskAssignments(task.task_id);
           return (
-            <div key={task.task_id} className="bg-black border-2 border-white p-6">
+            <div key={task.task_id} className="bg-white border-2 border-gray-400 p-6">
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h3 className="text-lg font-black uppercase">{task.title}</h3>
-                  <p className="text-xs opacity-80 mt-1">{task.description}</p>
+                  <h3 className="text-lg font-black uppercase text-black">{task.title}</h3>
+                  <p className="text-xs opacity-80 mt-1 text-black">{task.description}</p>
                 </div>
                 <div className="flex gap-2 items-center">
                   <span
                     className={`px-2 py-1 text-xs font-bold uppercase border-2 ${
-                      task.is_active ? 'border-white text-white' : 'border-white text-white/60'
+                      task.is_active ? 'border-black bg-black text-white' : 'border-gray-400 bg-gray-400 text-white'
                     }`}
                   >
                     {task.is_active ? 'Active' : 'Inactive'}
@@ -202,13 +202,13 @@ export default function TaskManagement({ currentUser }: TaskManagementProps) {
                     <>
                       <button
                         onClick={() => openAssignModal(task)}
-                        className="text-white underline text-sm hover:no-underline"
+                        className="text-black underline text-sm hover:text-gray-600 hover:no-underline"
                       >
                         Assign
                       </button>
                       <button
                         onClick={() => handleDeleteTask(task.task_id)}
-                        className="text-white underline text-sm hover:no-underline"
+                        className="text-black underline text-sm hover:text-gray-600 hover:no-underline"
                       >
                         Delete
                       </button>
@@ -217,27 +217,27 @@ export default function TaskManagement({ currentUser }: TaskManagementProps) {
                 </div>
               </div>
 
-              <div className="border-t-2 border-white pt-4">
-                <h4 className="text-xs font-bold uppercase mb-2">
+              <div className="border-t-2 border-gray-400 pt-4">
+                <h4 className="text-xs font-bold uppercase mb-2 text-black">
                   Assigned Workers ({taskAssignments.length})
                 </h4>
                 {taskAssignments.length === 0 ? (
-                  <p className="text-xs opacity-80">No workers assigned</p>
+                  <p className="text-xs opacity-80 text-black">No workers assigned</p>
                 ) : (
                   <div className="space-y-1">
                     {taskAssignments.map((assignment) => (
                       <div key={assignment.assignment_id} className="flex items-center justify-between">
-                        <span className="text-sm">
+                        <span className="text-sm text-black">
                           {assignment.user?.name || 'Unknown User'}
                         </span>
                         <div className="flex items-center gap-2">
-                          <span className="text-[11px] opacity-70">
+                          <span className="text-[11px] opacity-70 text-black">
                             {new Date(assignment.assigned_at).toLocaleDateString()}
                           </span>
                           {currentUser.role === 'ADMIN' && (
                             <button
                               onClick={() => handleUnassignWorker(assignment.assignment_id)}
-                              className="text-white underline text-[11px] hover:no-underline"
+                              className="text-black underline text-[11px] hover:text-gray-600 hover:no-underline"
                               title="Remove assignment"
                             >
                               Remove
@@ -250,7 +250,7 @@ export default function TaskManagement({ currentUser }: TaskManagementProps) {
                 )}
               </div>
 
-              <div className="mt-4 text-[11px] opacity-70">
+              <div className="mt-4 text-[11px] opacity-70 text-black">
                 Created: {new Date(task.created_at).toLocaleDateString()}
               </div>
             </div>

@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Efference | Robotic Ability Broker",
+  title: "Efference",
   description: "Dashboard for video categorization and task management - Efference sells robotic skills through high-quality, first-person video data from human experts.",
 };
 
