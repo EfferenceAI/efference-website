@@ -134,36 +134,36 @@ export default function DashboardPage() {
     };
 
     // Brutalist status chip: square edges, bordered, uppercase
-    const statusClasses = "px-2 py-1 text-xs font-bold uppercase border-2 border-black";
+    const statusClasses = "px-2 py-1 text-xs font-bold uppercase border-2";
 
     const getStatusStyle = (status: string) => {
       switch (status) {
         case 'PENDING':
         case 'PENDING_REVIEW':
-          return "bg-white text-black";
+          return "border-black bg-black text-white";
         case 'PROCESSING':
-          return "bg-white text-black";
+          return "border-black bg-black text-white";
         case 'READY_FOR_REVIEW':
-          return "bg-white text-black";
+          return "border-black bg-white text-black";
         case 'COMPLETED':
-          return "bg-white text-black";
+          return "border-black bg-white text-black";
         case 'APPROVED':
-          return "bg-white text-black";
+          return "border-black bg-white text-black";
         case 'REJECTED':
-          return "bg-white text-black";
+          return "border-black bg-white text-black";
         default:
-          return "bg-white text-black";
+          return "border-black bg-white text-black";
       }
     };
 
     return (
-      <div className="bg-black border-2 border-white p-4">
+      <div className="bg-white border-2 border-gray-400 p-4">
         <div className="flex justify-between items-start mb-3">
           <div>
-            <h3 className="font-black uppercase tracking-tight text-white">
+            <h3 className="font-black uppercase tracking-tight text-black">
               {session.task?.title || `Task ${session.task_id.slice(0, 8)}`}
             </h3>
-            <p className="text-xs text-white/80 mt-1">
+            <p className="text-xs text-black/80 mt-1">
               {session.task?.description || 'No description available'}
             </p>
           </div>
@@ -172,7 +172,7 @@ export default function DashboardPage() {
           </span>
         </div>
 
-        <div className="text-xs text-white/80 space-y-1">
+        <div className="text-xs text-black/80 space-y-1">
           <div>Created: {formatDate(session.created_at)}</div>
           <div>Updated: {formatDate(session.updated_at)}</div>
           {session.reviewer && (
@@ -182,8 +182,8 @@ export default function DashboardPage() {
 
         {session.processed_1080p_s3_key && (
           <div className="mt-3">
-            <div className="flex items-center gap-2 text-sm text-white">
-              <span className="inline-block w-2 h-2 bg-white" />
+            <div className="flex items-center gap-2 text-sm text-black">
+              <span className="inline-block w-2 h-2 bg-black" />
               <span className="font-semibold">Video processed and ready</span>
             </div>
           </div>
@@ -250,9 +250,9 @@ export default function DashboardPage() {
   );
 
   const StatBox = ({ title, value }: { title: string; value: React.ReactNode }) => (
-    <div className="bg-black border-2 border-white p-6">
-      <h3 className="text-xs font-bold uppercase tracking-wide mb-2">{title}</h3>
-      <p className="text-3xl font-black">{value}</p>
+    <div className="bg-white border-2 border-gray-400 p-6">
+      <h3 className="text-xs font-bold uppercase tracking-wide mb-2 text-black">{title}</h3>
+      <p className="text-3xl font-black text-black">{value}</p>
     </div>
   );
 
@@ -304,10 +304,10 @@ export default function DashboardPage() {
     if (currentView === 'users') {
       return (
         <div className="space-y-6">
-          <Panel>
-            <h2 className="text-lg font-black uppercase mb-4">User Management</h2>
-            <p className="text-white/70">User management features coming soon.</p>
-          </Panel>
+          <div className="bg-white border-2 border-gray-400 p-6">
+            <h2 className="text-lg font-black uppercase mb-4 text-black">User Management</h2>
+            <p className="text-black/70">User management features coming soon.</p>
+          </div>
         </div>
       );
     }
@@ -315,10 +315,10 @@ export default function DashboardPage() {
     if (currentView === 'settings') {
       return (
         <div className="space-y-6">
-          <Panel>
-            <h2 className="text-lg font-black uppercase mb-4">System Settings</h2>
-            <p className="text-white/70">System configuration options coming soon.</p>
-          </Panel>
+          <div className="bg-white border-2 border-gray-400 p-6">
+            <h2 className="text-lg font-black uppercase mb-4 text-black">System Settings</h2>
+            <p className="text-black/70">System configuration options coming soon.</p>
+          </div>
         </div>
       );
     }
@@ -582,7 +582,7 @@ export default function DashboardPage() {
           >
             EFFERENCE
           </h1>
-          <p className="text-xs mt-2 uppercase ml-5">{me.role} Dashboard</p>
+          <p className="text-xs mt-2 uppercase">{me.role} Dashboard</p>
         </div>
 
         {/* Navigation Menu */}
@@ -642,7 +642,7 @@ export default function DashboardPage() {
             </div>
             <button
               onClick={handleLogout}
-              className="border-2 border-white text-white bg-black px-5 py-2 font-bold uppercase hover:bg-white hover:text-black transition-colors"
+              className="border-2 border-gray-400 text-black bg-white px-5 py-2 font-bold uppercase hover:bg-black hover:text-white transition-colors"
             >
               Logout
             </button>
