@@ -152,13 +152,13 @@ hr {
 .company-description h2,
 .company-description p {
   color: white;
-  font-size: 1.3em;
+  font-size: 1.6em;
   font-family: "Neue Helvetica Condensed BQ Regular", sans-serif;
 }
 
 .company-description h2 {
   font-weight: 200;
-  font-size: 1.3em;
+  font-size: 1.6em;
   font-family: "Neue Helvetica Condensed BQ Regular", sans-serif;
 }
 
@@ -171,7 +171,7 @@ hr {
 
 .team h2, .team-description a {
   color: white;
-  font-size: 1.3em;
+  font-size: 1.6em;
   font-family: "Neue Helvetica Condensed BQ Regular", sans-serif;
 }
 
@@ -179,7 +179,7 @@ hr {
   text-decoration: none;
   font-weight: 200;
   transition: all 0.2s ease;
-  font-size: 1em;
+  font-size: 1.0em;
   font-family: "Neue Helvetica Condensed BQ Regular", sans-serif;
 }
 
@@ -206,6 +206,10 @@ footer p {
   color: white;
   text-decoration: none;
   transition: all 0.2s ease;
+}
+
+.footer-links {
+  color: white;
 }
 
 .footer-links a:hover {
@@ -240,8 +244,8 @@ footer p {
 
 
 .social-icons a {
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -251,7 +255,7 @@ footer p {
   text-decoration: none;
   transition: all 0.2s ease;
   box-shadow: 5px 5px 0 black;
-  font-size: 1.5em;
+  font-size: 1.1em;
   border-radius: 0;
 }
 
@@ -262,6 +266,16 @@ footer p {
   transform: translate(5px, 5px);
 }
 
+.mobile-break {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .mobile-break {
+    display: inline;
+  }
+}
+
 @media (max-width: 768px) {
   .social-icons {
     top: 1.5em;
@@ -269,11 +283,6 @@ footer p {
     right: 1em;
   }
   
-  .social-icons a {
-    width: 36px;
-    height: 36px;
-    font-size: 1.1em;
-  }
   
   .company, .team {
     grid-template-columns: 1fr;
@@ -285,7 +294,11 @@ footer p {
   }
   
   .video-overlay {
-    font-size: 1.4em;
-    font-weight: 400;
+    font-size: 2.2em;
+    font-weight: 100;
+  }
+  
+  .mobile-break {
+    display: inline;
   }
 }
