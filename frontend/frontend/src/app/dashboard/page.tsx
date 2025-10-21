@@ -171,7 +171,7 @@ export default function DashboardPage() {
 
     try {
       // Create invitation
-      const invitation = await apiFetch('/invitations/', {
+      const invitation = await apiFetch<{ invitation_code: string }>('/invitations/', {
         method: 'POST',
         body: JSON.stringify({
           email: newUserEmail.trim(),
