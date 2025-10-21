@@ -23,23 +23,18 @@ export default function SignupPage() {
     setError(null)
 
     try {
-      const hasInvitationCode = invitationCode && invitationCode.trim()
-      let registrationEndpoint = '/auth/register'
+      // Always use invitation code endpoint (mandatory)
+      const registrationEndpoint = '/auth/register_invite_code'
       const registrationData: {
         name: string
         email: string
         password: string
-        invitation_code?: string
+        invitation_code: string
         phone_number?: string
         age?: number
         sex?: string
         profession?: string
-      } = { name, email, password }
-
-      if (hasInvitationCode) {
-        registrationEndpoint = '/auth/register_invite_code'
-        registrationData.invitation_code = invitationCode.trim()
-      }
+      } = { name, email, password, invitation_code: invitationCode.trim() }
       if (phoneNumber.trim()) registrationData.phone_number = phoneNumber.trim()
       if (age.trim()) registrationData.age = parseInt(age, 10)
       if (sex.trim()) registrationData.sex = sex
@@ -110,10 +105,10 @@ export default function SignupPage() {
               { label: 'Full name', type: 'text', value: name, set: setName, req: true, ph: 'Jane Doe' },
               { label: 'Email', type: 'email', value: email, set: setEmail, req: true, ph: 'you@example.com' },
               { label: 'Password', type: 'password', value: password, set: setPassword, req: true, ph: '••••••••' },
+              { label: 'Invitation code', type: 'text', value: invitationCode, set: setInvitationCode, req: true, ph: 'Enter invitation code' },
               { label: 'Phone Number (optional)', type: 'tel', value: phoneNumber, set: setPhoneNumber, req: false, ph: '+1 (555) 123-4567' },
               { label: 'Age (optional)', type: 'number', value: age, set: setAge, req: false, ph: 'Enter your age' },
               { label: 'Profession (optional)', type: 'text', value: profession, set: setProfession, req: false, ph: 'e.g., Software Engineer, Student' },
-              { label: 'Invitation code (optional)', type: 'text', value: invitationCode, set: setInvitationCode, req: false, ph: 'Enter invitation code' },
             ].map(({ label, type, value, set, req, ph }) => (
               <div key={label}>
                 <label className="block text-xs font-bold uppercase mb-1 text-black">{label}</label>

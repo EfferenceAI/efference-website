@@ -34,6 +34,16 @@ export async function apiFetch<T>(path: string, options: FetchOptions = {}): Pro
 
   if (!res.ok) {
     const err = (data ?? {}) as Record<string, unknown>
+    
+    // Handle FastAPI validation errors (422)
+    if (res.status === 422 && Array.isArray(err.detail)) {
+      const validationErrors = err.detail.map((error: any) => {
+        const field = Array.isArray(error.loc) ? error.loc.join('.') : 'field'
+        return `${field}: ${error.msg}`
+      }).join('; ')
+      throw new Error(`Validation error: ${validationErrors}`)
+    }
+    
     const message = (typeof err.detail === 'string' && err.detail)
       || (typeof err.message === 'string' && err.message)
       || (typeof err.error === 'string' && err.error)

@@ -52,6 +52,12 @@ export default function DashboardPage() {
   const [videoSessions, setVideoSessions] = useState<VideoSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [preSelectedTask, setPreSelectedTask] = useState<{id: string, title: string} | null>(null);
+  const [newUserEmail, setNewUserEmail] = useState('');
+  const [addingUser, setAddingUser] = useState(false);
+  const [addUserMessage, setAddUserMessage] = useState<string | null>(null);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [updatingUserRole, setUpdatingUserRole] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -120,6 +126,79 @@ export default function DashboardPage() {
   const handleLogout = async () => {
     await logout();
     router.push('/');
+  };
+
+  const loadAllUsers = async () => {
+    setLoadingUsers(true);
+    try {
+      const users = await apiFetch<User[]>('/users/');
+      setAllUsers(users);
+    } catch (error) {
+      console.error('Failed to load users:', error);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  const handleUpdateUserRole = async (userId: string, newRole: string) => {
+    setUpdatingUserRole(userId);
+    try {
+      await apiFetch(`/users/${userId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ role: newRole })
+      });
+      
+      // Update the user in the local state
+      setAllUsers(users => users.map(user => 
+        user.user_id === userId ? { ...user, role: newRole as any } : user
+      ));
+    } catch (error) {
+      console.error('Failed to update user role:', error);
+      // Optionally show error message to user
+    } finally {
+      setUpdatingUserRole(null);
+    }
+  };
+
+  const handleAddUser = async () => {
+    if (!newUserEmail.trim()) {
+      setAddUserMessage('Please enter a valid email address');
+      return;
+    }
+
+    setAddingUser(true);
+    setAddUserMessage(null);
+
+    try {
+      // Create invitation
+      const invitation = await apiFetch('/invitations/', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: newUserEmail.trim(),
+          role: 'WORKER' // Default role, can be made configurable later
+        })
+      });
+
+      // Send invitation email
+      await apiFetch(`/invitations/${invitation.invitation_code}/send`, {
+        method: 'POST'
+      });
+
+      setAddUserMessage(`Invitation sent successfully to ${newUserEmail}`);
+      setNewUserEmail('');
+      
+      // Refresh user list after adding
+      await loadAllUsers();
+    } catch (error) {
+      console.error('Failed to add user:', error);
+      if (error instanceof Error) {
+        setAddUserMessage(`Error: ${error.message}`);
+      } else {
+        setAddUserMessage('Failed to send invitation. Please try again.');
+      }
+    } finally {
+      setAddingUser(false);
+    }
   };
 
   const VideoSessionCard = ({ session }: { session: VideoSession }) => {
@@ -302,11 +381,101 @@ export default function DashboardPage() {
     }
 
     if (currentView === 'users') {
+      // Load users when switching to users view
+      if (allUsers.length === 0 && !loadingUsers) {
+        loadAllUsers();
+      }
+
       return (
         <div className="space-y-6">
           <div className="bg-white border-2 border-gray-400 p-6">
             <h2 className="text-lg font-black uppercase mb-4 text-black">User Management</h2>
-            <p className="text-black/70">User management features coming soon.</p>
+            
+            {/* Add User Form */}
+            <div className="mb-6">
+              <h3 className="text-md font-bold uppercase mb-3 text-black">Add New User</h3>
+              <div className="flex gap-3 mb-3">
+                <input
+                  type="email"
+                  value={newUserEmail}
+                  onChange={(e) => setNewUserEmail(e.target.value)}
+                  placeholder="Enter user email"
+                  disabled={addingUser}
+                  className="flex-1 px-3 py-2 border-2 border-black bg-white text-black focus:bg-black focus:text-white outline-none transition-colors disabled:opacity-50"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddUser}
+                  disabled={addingUser}
+                  className="px-6 py-2 border-2 border-black bg-black text-white font-bold uppercase hover:bg-white hover:text-black transition-colors disabled:opacity-50"
+                >
+                  {addingUser ? 'Sending...' : 'Add User'}
+                </button>
+              </div>
+              {addUserMessage && (
+                <p className={`text-sm ${addUserMessage.includes('Error') ? 'text-red-600' : 'text-green-600'}`}>
+                  {addUserMessage}
+                </p>
+              )}
+            </div>
+
+            {/* Current Users List */}
+            <div className="mb-6">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-md font-bold uppercase text-black">Current Users</h3>
+                <button
+                  onClick={loadAllUsers}
+                  disabled={loadingUsers}
+                  className="px-4 py-1 border-2 border-black bg-white text-black font-bold uppercase text-xs hover:bg-black hover:text-white transition-colors disabled:opacity-50"
+                >
+                  {loadingUsers ? 'Loading...' : 'Refresh'}
+                </button>
+              </div>
+              
+              {loadingUsers ? (
+                <p className="text-black/70">Loading users...</p>
+              ) : allUsers.length === 0 ? (
+                <p className="text-black/70">No users found.</p>
+              ) : (
+                <div className="border-2 border-black">
+                  {/* Table Header */}
+                  <div className="bg-black text-white grid grid-cols-3 gap-4 p-3 font-bold uppercase text-xs">
+                    <div>Name</div>
+                    <div>Email</div>
+                    <div>Role</div>
+                  </div>
+                  
+                  {/* Table Rows */}
+                  {allUsers.map((user, index) => (
+                    <div 
+                      key={user.user_id} 
+                      className={`grid grid-cols-3 gap-4 p-3 text-sm border-b border-black/20 ${
+                        index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                      }`}
+                    >
+                      <div className="text-black font-medium">{user.name}</div>
+                      <div className="text-black/80">{user.email}</div>
+                      <div className="relative">
+                        <select
+                          value={user.role}
+                          onChange={(e) => handleUpdateUserRole(user.user_id, e.target.value)}
+                          disabled={updatingUserRole === user.user_id}
+                          className="w-full px-2 py-1 border-2 border-black bg-white text-black font-bold uppercase text-xs hover:bg-black hover:text-white focus:bg-black focus:text-white outline-none appearance-none transition-colors disabled:opacity-50"
+                        >
+                          <option value="ADMIN">ADMIN</option>
+                          <option value="WORKER">WORKER</option>
+                          <option value="REVIEWER">REVIEWER</option>
+                          <option value="CLIENT">CLIENT</option>
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-black">
+                          {updatingUserRole === user.user_id ? '...' : '▼'}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       );
