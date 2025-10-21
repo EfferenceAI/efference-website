@@ -19,6 +19,26 @@ Parameters:
     Description: JWT secret key
     Default: "rULk7P7ixYzLIcihHLM01F4mFebm2mRobLZy2L6Rye8"
     NoEcho: true
+  AwsAccessKeyId:
+    Type: String
+    Description: AWS Access Key ID
+    NoEcho: true
+  AwsSecretAccessKey:
+    Type: String
+    Description: AWS Secret Access Key
+    NoEcho: true
+  SesFromEmail:
+    Type: String
+    Description: SES verified from email address
+    Default: "sia.sheguri24@gmail.com"
+  AwsRegion:
+    Type: String
+    Description: AWS Region
+    Default: "us-east-1"
+  S3BucketName:
+    Type: String
+    Description: S3 bucket name for file uploads
+    Default: "efference-egocentric"
   Environment:
     Type: String
     Default: production
@@ -35,6 +55,11 @@ Resources:
         Variables:
           DATABASE_URL: !Ref DatabaseUrl
           JWT_SECRET_KEY: !Ref JwtSecret
+          AWS_ACCESS_KEY_ID: !Ref AwsAccessKeyId
+          AWS_SECRET_ACCESS_KEY: !Ref AwsSecretAccessKey
+          SES_FROM_EMAIL: !Ref SesFromEmail
+          AWS_REGION: !Ref AwsRegion
+          S3_BUCKET_NAME: !Ref S3BucketName
           ENVIRONMENT: !Ref Environment
       Events:
         Api:

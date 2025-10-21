@@ -196,7 +196,7 @@ def send_invitation_email(
     </p>
     <p>
       To register, visit:<br>
-      <a href="https://efference.com/register" style="color:#2a4d8f;">https://efference.com/register</a><br>
+      <a href="https://app.efference.ai/signup" style="color:#2a4d8f;">https://app.efference.ai/signup</a><br>
       and enter your invitation code.
     </p>
     <hr>
@@ -235,13 +235,15 @@ def validate_invitation_code(
     if db_invitation is None:
         raise HTTPException(status_code=404, detail="Invalid invitation code")
     
-    if db_invitation.status != InvitationStatus.PENDING:
+    if db_invitation.status not in [InvitationStatus.PENDING, InvitationStatus.SENT]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invitation code has expired or been used"
         )
     
-    if datetime.now(timezone.utc) > db_invitation.expires_at:
+    # Convert expires_at to timezone-aware datetime for comparison
+    expires_at_utc = db_invitation.expires_at.replace(tzinfo=timezone.utc) if db_invitation.expires_at.tzinfo is None else db_invitation.expires_at
+    if datetime.now(timezone.utc) > expires_at_utc:
         # Auto-expire the invitation
         crud.update_invitation_status(db, db_invitation.invitation_id, InvitationStatus.EXPIRED)
         raise HTTPException(

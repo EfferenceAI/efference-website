@@ -21,7 +21,12 @@ def send_email(to_address: str, subject: str, body: str) -> bool:
         return False
     
 
-    s_client = boto3.client("ses", region_name=settings.AWS_REGION)
+    s_client = boto3.client(
+        "ses", 
+        region_name=settings.aws_region,
+        aws_access_key_id=settings.aws_access_key_id,
+        aws_secret_access_key=settings.aws_secret_access_key
+    )
     try:
         response = s_client.send_email(
             Source=settings.SES_FROM_EMAIL,

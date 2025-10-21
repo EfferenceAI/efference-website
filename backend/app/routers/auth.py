@@ -112,7 +112,7 @@ def register(
             detail="Invalid invitation code"
         )
 
-    if invitation.status != schemas.InvitationStatus.PENDING:
+    if invitation.status not in [schemas.InvitationStatus.PENDING, schemas.InvitationStatus.SENT]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invitation code has already been used or expired"
@@ -124,7 +124,9 @@ def register(
             detail="Invitation code is not valid for this email address"
         )
 
-    if datetime.now(timezone.utc) > invitation.expires_at:
+    # Convert expires_at to timezone-aware datetime for comparison
+    expires_at_utc = invitation.expires_at.replace(tzinfo=timezone.utc) if invitation.expires_at.tzinfo is None else invitation.expires_at
+    if datetime.now(timezone.utc) > expires_at_utc:
         # Auto-expire the invitation
         crud.update_invitation_status(db, invitation.invitation_id, schemas.InvitationStatus.EXPIRED)
         raise HTTPException(
@@ -143,20 +145,25 @@ def register(
         sex=user_data.sex,
         profession=user_data.profession,
     )
-    new_user = crud.create_user(db=db, user=user_create_data)
     
-    # Mark user as invited and update invitation status
-    new_user.is_invited = True
-    new_user.invitation_used_at = datetime.now(timezone.utc)
-    crud.update_invitation_status(
-        db=db,
-        invitation_id=invitation.invitation_id,
-        status=schemas.InvitationStatus.USED,
-        used_at=new_user.invitation_used_at
-    )
-    
-    db.commit()
-    db.refresh(new_user)
+    try:
+        new_user = crud.create_user(db=db, user=user_create_data)
+        
+        # Only mark invitation as used if user creation succeeds
+        new_user.is_invited = True
+        new_user.invitation_used_at = datetime.now(timezone.utc)
+        crud.update_invitation_status(
+            db=db,
+            invitation_id=invitation.invitation_id,
+            status=schemas.InvitationStatus.USED,
+            used_at=new_user.invitation_used_at
+        )
+        
+        db.commit()
+        db.refresh(new_user)
+    except Exception as e:
+        db.rollback()
+        raise e
     
     return new_user
 
