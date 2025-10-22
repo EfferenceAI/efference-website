@@ -6,9 +6,17 @@ set -e
 
 echo "Deploying Efference Backend API to AWS Lambda..."
 
+# Load .env file if it exists
+if [ -f .env ]; then
+    echo "Loading .env file..."
+    set -a
+    source .env
+    set +a
+fi
+
 # Check if AWS credentials are available
 if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
-    echo "AWS credentials not found. Make sure to source .env file first."
+    echo "AWS credentials not found. Make sure AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are set."
     exit 1
 fi
 
