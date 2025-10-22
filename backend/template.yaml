@@ -19,14 +19,6 @@ Parameters:
     Description: JWT secret key
     Default: "rULk7P7ixYzLIcihHLM01F4mFebm2mRobLZy2L6Rye8"
     NoEcho: true
-  AwsAccessKeyId:
-    Type: String
-    Description: AWS Access Key ID
-    NoEcho: true
-  AwsSecretAccessKey:
-    Type: String
-    Description: AWS Secret Access Key
-    NoEcho: true
   SesFromEmail:
     Type: String
     Description: SES verified from email address
@@ -55,12 +47,14 @@ Resources:
         Variables:
           DATABASE_URL: !Ref DatabaseUrl
           JWT_SECRET_KEY: !Ref JwtSecret
-          AWS_ACCESS_KEY_ID: !Ref AwsAccessKeyId
-          AWS_SECRET_ACCESS_KEY: !Ref AwsSecretAccessKey
           SES_FROM_EMAIL: !Ref SesFromEmail
-          AWS_REGION: !Ref AwsRegion
           S3_BUCKET_NAME: !Ref S3BucketName
-          ENVIRONMENT: !Ref Environment
+          ENV: !Ref Environment
+      Policies:
+        - SESCrudPolicy:
+            IdentityName: !Ref SesFromEmail
+        - S3CrudPolicy:
+            BucketName: !Ref S3BucketName
       Events:
         Api:
           Type: Api
@@ -82,8 +76,8 @@ Resources:
       Cors:
         AllowMethods: "'*'"
         AllowHeaders: "'*'"
-        AllowOrigin: "'https://efference-website.vercel.app'"
-        AllowCredentials: true
+        AllowOrigin: "'*'"
+        AllowCredentials: false
 
 Outputs:
   ApiUrl:
