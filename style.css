@@ -316,6 +316,16 @@ hr {
   margin-bottom: 1.2em;
 }
 
+.team-right a {
+  color: white;
+  text-decoration: underline;
+  transition: all 0.2s ease;
+}
+
+.team-right a:hover {
+  color: #ccc;
+}
+
 .camera-section {
   margin: 3em 1em;
   padding: 0 3em;
@@ -377,16 +387,19 @@ footer {
 footer p {
   color: gray;
   padding-bottom: 0.5em;
+  font-family: "FK Grotesk Neue", "Inter", "Helvetica Neue", sans-serif;
 }
 
 .footer-links a {
   color: white;
   text-decoration: none;
   transition: all 0.2s ease;
+  font-family: "FK Grotesk Neue", "Inter", "Helvetica Neue", sans-serif;
 }
 
 .footer-links {
   color: white;
+  font-family: "FK Grotesk Neue", "Inter", "Helvetica Neue", sans-serif;
 }
 
 .footer-links a:hover {
