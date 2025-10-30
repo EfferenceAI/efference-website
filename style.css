@@ -166,9 +166,10 @@ header {
   display: inline-block;
   color: white;
   text-decoration: none;
-  padding: 0.6em 1em;
+  padding: 0.8em 1.2em;
   font-weight: 500;
   transition: all 0.2s ease;   /* smooth hover */
+  min-height: 1.2em;
 }
 
 .standard-button:hover {
@@ -213,55 +214,70 @@ hr {
   background: gray; 
 }
 
-.company, .team {
+.mission-section {
+  margin: 3em 1em;
+  padding: 0 3em;
+}
+
+.mission-container {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* always single column */
-  row-gap: 1em;               /* spacing between h4 and text */
-  margin: 1em;
-  margin-bottom: 2em;
+  grid-template-columns: 1fr 1fr;
+  gap: 2em;
+  align-items: start;
 }
 
-.company h2,
-.company-description h2,
-.company-description p {
+.mission-left {
   color: white;
-  font-size: 1.6em;
-  font-family: "Neue Helvetica Condensed BQ Regular", sans-serif;
 }
 
-.company-description h2 {
-  font-weight: 200;
+.mission-heading {
+  font-family: "FK Grotesk Neue", "Inter", "Helvetica Neue", sans-serif;
   font-size: 1.6em;
-  font-family: "Neue Helvetica Condensed BQ Regular", sans-serif;
+  font-weight: 400;
+  margin-top: 3.2em;
+  margin-bottom: 0.5em;
+  color: #ccc;
 }
 
-.indented-list, .process-steps {
+.mission-title {
+  font-family: "FK Grotesk Neue", "Inter", "Helvetica Neue", sans-serif;
+  font-size: 2.6em;
+  font-weight: 400;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.mission-left p {
+  font-family: "FK Grotesk Neue", "Inter", "Helvetica Neue", sans-serif;
+  font-size: 1.1em;
+  font-weight: 400;
+  line-height: 1.6;
+  margin-top: 1.5em;
+}
+
+.mission-right {
   color: white;
-  font-weight: 200;
-  margin-left: max(5em, 10%);
-  font-size: 24px;
 }
 
-.team h2, .team-description a {
+.mission-right p {
+  font-family: "FK Grotesk Neue", "Inter", "Helvetica Neue", sans-serif;
+  font-size: 1.1em;
+  font-weight: 400;
+  line-height: 1.6;
+  margin-bottom: 1.2em;
+}
+
+.mission-link {
   color: white;
-  font-size: 1.6em;
-  font-family: "Neue Helvetica Condensed BQ Regular", sans-serif;
-}
-
-.team-description a {
-  text-decoration: none;
-  font-weight: 200;
+  font-family: "FK Grotesk Neue", "Inter", "Helvetica Neue", sans-serif;
+  font-size: 1em;
+  font-weight: 400;
+  text-decoration: underline;
   transition: all 0.2s ease;
-  font-size: 1.0em;
-  font-family: "Neue Helvetica Condensed BQ Regular", sans-serif;
 }
 
-.team-description a:hover {
-  color: gray;
-}
-
-.team-description a:active {
-  opacity: 0.7;
+.mission-link:hover {
+  color: #ccc;
 }
 
 footer {
@@ -375,13 +391,17 @@ footer p {
   }
   
   
-  .company, .team {
+  .mission-container {
     grid-template-columns: 1fr;
-    text-align: left;
+    gap: 1.5em;
   }
   
-  .company h2, .team h2 {
-    margin-bottom: 0.5em;
+.mission-heading {
+    margin-top: 1em;
+  }
+  
+  .mission-title {
+    font-size: 2.2em;
   }
   
   .video-overlay {
