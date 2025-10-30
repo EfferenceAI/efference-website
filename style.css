@@ -496,8 +496,16 @@ footer p {
     margin-top: 1em;
   }
   
+  .team-right p {
+    font-size: 1.1em;
+  }
+  
   .camera-container {
     gap: 1.5em;
+  }
+  
+  .camera-heading {
+    font-size: 1.6em;
   }
   
   .camera-image {
