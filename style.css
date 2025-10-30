@@ -326,6 +326,111 @@ hr {
   color: #ccc;
 }
 
+.demo-section {
+  margin: 3em 1em;
+  padding: 0 3em;
+}
+
+.demo-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2em;
+}
+
+.demo-heading {
+  font-family: "FK Grotesk Neue", "Inter", "Helvetica Neue", sans-serif;
+  font-size: 1.6em;
+  font-weight: 400;
+  margin: 0;
+  color: #ccc;
+  text-align: center;
+}
+
+.video-comparison {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+
+.video-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  background: #333; /* Fallback background to see if videos are there */
+}
+
+.video-without, .video-with {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+.video-with {
+  clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);
+}
+
+.slider-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  z-index: 3;
+}
+
+.comparison-slider {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  outline: none;
+  opacity: 0;
+  cursor: ew-resize;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.slider-handle {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 4px;
+  height: 100%;
+  background: white;
+  transform: translateX(-50%);
+  pointer-events: none;
+  box-shadow: 0 0 0 2px black;
+  z-index: 2;
+}
+
+.video-labels {
+  display: flex;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 1.5em auto 0 auto;
+  padding: 0 2em;
+  font-family: "FK Grotesk Neue", "Inter", "Helvetica Neue", sans-serif;
+  font-size: 1.1em;
+  font-weight: 500;
+  color: white;
+}
+
+.label-with, .label-without {
+  background: rgba(0, 0, 0, 0.7);
+  padding: 0.8em 1.2em;
+  border-radius: 4px;
+  text-align: center;
+  min-width: 120px;
+}
+
 .camera-section {
   margin: 3em 1em;
   padding: 0 3em;
@@ -523,6 +628,18 @@ footer p {
   
   .camera-image {
     max-width: 400px;
+  }
+  
+  .demo-section {
+    padding: 0 1em;
+  }
+  
+  .video-wrapper {
+    max-width: 100%;
+  }
+  
+  .video-labels {
+    font-size: 0.9em;
   }
   
   .video-overlay {

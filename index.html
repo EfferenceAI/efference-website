@@ -96,12 +96,40 @@
 
       <div class="team-right">
         <p>
-          Efference is built by biologists, neuroscientists, and computer scientists who have worked on the first manned mission to Mars, visual perception decision making in primates, and uploading the first biological creature, a fruit fly, into a computer simulation.
+          Efference is built by biologists, neuroscientists, and computer scientists who have worked on the first manned mission to Mars, visual perception and decision-making in primates, and uploading the first biological creature, a fruit fly, into a computer simulation.
         </p>
         
         <p>
           We are proudly supported by <a href="https://www.ycombinator.com/" target="_blank" rel="noopener">Y Combinator</a> and <a href="https://www.antifund.com/" target="_blank" rel="noopener">Anti Fund</a>.
         </p>
+      </div>
+    </div>
+  </section>
+
+  <hr style="background: gray">
+
+  <section id="demo" class="demo-section">
+    <div class="demo-container">
+      <h3 class="demo-heading">Demo</h3>
+      <div class="video-comparison">
+        <div class="video-wrapper">
+          <video class="video-without" autoplay loop muted playsinline preload="auto">
+            <source src="videos/d435i_orig_web.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <video class="video-with" autoplay loop muted playsinline preload="auto">
+            <source src="videos/d435i_clean_web.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <div class="slider-container">
+            <input type="range" class="comparison-slider" min="0" max="100" value="50">
+            <div class="slider-handle"></div>
+          </div>
+        </div>
+        <div class="video-labels">
+          <div class="label-with">← With Efference</div>
+          <div class="label-without">Without Efference →</div>
+        </div>
       </div>
     </div>
   </section>
@@ -116,5 +144,26 @@
       <a href="mailto:gianluca@efference.ai">Contact</a>
     </div>
   </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const slider = document.querySelector('.comparison-slider');
+      const videoWith = document.querySelector('.video-with');
+      const sliderHandle = document.querySelector('.slider-handle');
+
+      if (slider && videoWith && sliderHandle) {
+        slider.addEventListener('input', function() {
+          const value = this.value;
+          const percentage = value + '%';
+          
+          // Update the clip-path of the "with" video
+          videoWith.style.clipPath = `polygon(0 0, ${percentage} 0, ${percentage} 100%, 0 100%)`;
+          
+          // Update slider handle position
+          sliderHandle.style.left = percentage;
+        });
+      }
+    });
+  </script>
 </body>
 </html>
