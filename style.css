@@ -159,7 +159,6 @@ header {
   font-weight: 500;
   list-style: none;
   font-family: "Space Grotesk", sans-serif;
-  margin-bottom: 20px;
 }
 
 /* buttons */
@@ -171,7 +170,7 @@ header {
   font-weight: 500;
   transition: all 0.2s ease;   /* smooth hover */
   min-height: 1.2em;
-  border: 1px solid white;
+  border: none;
 }
 
 .standard-button:hover {
@@ -636,7 +635,7 @@ hr {
 .demo-tab {
   background: black;
   color: white;
-  border: 1px solid white;
+  border: none;
   padding: 1em;
   font-family: "FK Grotesk Neue", "Inter", "Helvetica Neue", sans-serif;
   font-size: 1em;
