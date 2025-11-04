@@ -6,6 +6,7 @@
   <title>Efference</title>
   <link rel="stylesheet" href="style.css">
   <link rel="icon" type="image/png" href="/images/logo.png">
+  <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
   <header>
@@ -16,7 +17,10 @@
     <nav>
       <ul class="nav-links">
         <li><a href="#mission" class="standard-button">Mission</a></li>
+        <li><a href="#demo" class="standard-button">Model</a></li>
+         <li><a href="#preorder" class="standard-button">Camera</a></li>
         <li><a href="#team" class="standard-button">Team</a></li>
+      <!--  <li><a href="https://docs.efference.ai/" class="standard-button">API</a></li> -->
         <li><a href="https://app.efference.ai/login" class="standard-button">Sign-in</a></li>
       </ul>
     </nav>
@@ -61,7 +65,7 @@
   <section id="mission" class="mission-section">
     <div class="mission-container">
       <div class="mission-left">
-        <h3 class="mission-heading">Our Mission</h3>
+        <h3 class="mission-heading">Mission</h3>
         <h1 class="mission-title">
           Enabling autonomy through robotic vision you can trust.
         </h1>
@@ -88,6 +92,63 @@
 
   <hr style="background: gray">
 
+  <section id="demo" class="models-demo-section" style="border-bottom-width: 50px;margin-bottom: 40px;">
+    <div class="models-demo-container">
+      <div class="models-left">
+        <h3 class="models-brand">Model</h3>
+        <h1 class="models-title">Seeing the world in 3D</h1>
+        <p class="models-description">
+          Any two-dimensional image is consistent with an infinite number of possible 3D worlds. Determining which world is most likely is the fundamental problem of perception.
+        </p>
+        <p class="models-description">
+          Our models solve this the way humans do, by selecting the most probable world using every available cue: shadows, perspective, occlusions, and much more. The result is clear, consistent 3D structure that you can actually train robots on.
+        </p>
+        <a href="https://karger.com/bbe/article-abstract/95/5/272/47302/Illusions-Delusions-and-Your-Backwards-Bayesian?redirectedFrom=fulltext" class="models-link">Learn more about perception →</a>
+      </div>
+      
+      <div class="models-right">
+        <div class="demo-container-new">
+          <div class="demo-tabs">
+            <button id="rgbTab" class="demo-tab active">RGB</button>
+            <button id="intelTab" class="demo-tab">Intel</button>
+            <button id="efferenceTab" class="demo-tab">Efference</button>
+          </div>
+          
+          <div class="demo-video-background">
+            <video id="efferenceVideo" class="demo-video-bg" autoplay loop muted playsinline preload="auto">
+              <source src="videos/d435i_rgb_web.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+   <hr style="background: gray">
+
+  <section id="preorder" class="preorder-section">
+    <div class="preorder-container">
+      <div class="preorder-left">
+        <h3 class="preorder-heading">Camera</h3>
+        <div class="camera-description">
+          <p>H-01 is a stereo camera built to see the world the way humans do. Two global-shutter sensors capture depth at high resolution and high speed — 2560×1440 at 30 fps for dense reconstruction, 1920×1080 at 60 fps for real-time perception, and 1280×720 at 120 fps for fast motion.</p>
+          
+          <p>The lenses are spaced at a 60 mm baseline, mirroring human interpupillary geometry, inside a compact 100 × 30 × 30 mm housing. A 140° diagonal field of view and HDR imaging provide wide, reliable coverage in real-world lighting.</p>
+          
+          <p>Dual 400 Hz IMUs tightly fuse motion with vision, and an automotive-grade GMSL2 connector enables low-latency, long-distance transmission.</p>
+        </div>
+        
+        <button class="preorder-btn" onclick="openStripePopup()" style="margin-bottom: 35px;">Pre-order Now</button>
+      </div>
+      <div class="preorder-right">
+        <img src="images/camera.png" alt="Efference H01" class="camera-image">
+      </div>
+    </div>
+  </section> 
+
+  <hr style="background: gray">
+
   <section id="team" class="team-section">
     <div class="team-container">
       <div class="team-left">
@@ -108,33 +169,7 @@
 
   <hr style="background: gray">
 
-  <section id="demo" class="demo-section">
-    <div class="demo-container">
-      <h3 class="demo-heading">Demo</h3>
-      <div class="video-comparison">
-        <div class="video-wrapper">
-          <video class="video-without" autoplay loop muted playsinline preload="auto">
-            <source src="videos/d435i_orig_web.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>
-          <video class="video-with" autoplay loop muted playsinline preload="auto">
-            <source src="videos/d435i_clean_web.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>
-          <div class="slider-container">
-            <input type="range" class="comparison-slider" min="0" max="100" value="50">
-            <div class="slider-handle"></div>
-          </div>
-        </div>
-        <div class="video-labels">
-          <div class="label-with">← With Efference</div>
-          <div class="label-without">Without Efference →</div>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <hr style="background: gray">
 
   <footer>
     <div class="footer-links">
@@ -145,22 +180,217 @@
     </div>
   </footer>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const slider = document.querySelector('.comparison-slider');
-      const videoWith = document.querySelector('.video-with');
-      const sliderHandle = document.querySelector('.slider-handle');
+  <!-- Stripe Popup Modal -->
+  <div id="stripeModal" class="stripe-modal">
+    <div class="stripe-modal-content">
+      <span class="stripe-close" onclick="closeStripePopup()">&times;</span>
+      <div class="stripe-header">
+        <h2>Efference H01 Pre-order</h2>
+        <p>Complete your purchase</p>
+      </div>
+      <div class="stripe-form">
+        <div class="product-summary">
+          <div class="product-info">
+            <img src="images/camera.png" alt="Efference H01" class="checkout-image">
+            <div class="product-details">
+              <h3>Efference H01</h3>
+              <p>Intelligent robotic vision camera</p>
+            </div>
+          </div>
+          <div class="price-summary">
+            <div class="price-line">
+              <span>Original Price:</span>
+              <span class="original">＄299.99</span>
+            </div>
+            <div class="price-line">
+              <span>Pre-order Discount:</span>
+              <span class="discount">-＄100.00</span>
+            </div>
+            <div class="price-line total">
+              <span>Total:</span>
+              <span class="total-price">＄199.99</span>
+            </div>
+          </div>
+        </div>
+        <div class="payment-form">
+          <button id="checkout-button" class="stripe-pay-btn">Pre-order Now - ＄199.99</button>
+          <p class="shipping-info">Ships in March</p>
+        </div>
+      </div>
+    </div>
+  </div>
 
-      if (slider && videoWith && sliderHandle) {
-        slider.addEventListener('input', function() {
-          const value = this.value;
-          const percentage = value + '%';
+  <!-- Success Popup Modal -->
+  <div id="successModal" class="success-modal">
+    <div class="success-modal-content">
+      <span class="success-close" onclick="closeSuccessPopup()">&times;</span>
+      <h2>Payment Successful!</h2>
+      <p>Thank you for your pre-order</p>
+      <p>Expected shipping: March 2026</p>
+      <button onclick="window.location.href = '/'" class="success-close-btn">Continue</button>
+    </div>
+  </div>
+
+  <script>
+    function openStripePopup() {
+      document.getElementById('stripeModal').style.display = 'block';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeStripePopup() {
+      document.getElementById('stripeModal').style.display = 'none';
+      document.body.style.overflow = 'auto';
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('stripeModal');
+      if (event.target == modal) {
+        closeStripePopup();
+      }
+    }
+    
+    document.getElementById('checkout-button').addEventListener('click', () => {
+      window.location.href = 'https://buy.stripe.com/6oU14ogfW6h1ftMdxX33W00';
+    });
+
+    function closeSuccessPopup() {
+      document.getElementById('successModal').style.display = 'none';
+      document.body.style.overflow = 'auto';
+      // Clean up URL parameter
+      const url = new URL(window.location);
+      url.searchParams.delete('payment_success');
+      window.history.replaceState({}, '', url);
+    }
+
+    // Check for payment success parameter on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('payment_success') === 'true') {
+        document.getElementById('successModal').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const video = document.getElementById('efferenceVideo');
+      const rgbTab = document.getElementById('rgbTab');
+      const intelTab = document.getElementById('intelTab');
+      const efferenceTab = document.getElementById('efferenceTab');
+
+      // Force video autoplay on mobile
+      function forceVideoPlay() {
+        if (video && video.paused) {
+          video.play().catch(function(error) {
+            console.log('Autoplay failed:', error);
+          });
+        }
+      }
+
+      // Try to play video immediately
+      forceVideoPlay();
+
+      // Also try when user interacts with page
+      document.addEventListener('touchstart', forceVideoPlay, { once: true });
+      document.addEventListener('click', forceVideoPlay, { once: true });
+
+      // Use Intersection Observer to play when video comes into view
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver(function(entries) {
+          entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+              forceVideoPlay();
+            }
+          });
+        }, { threshold: 0.5 });
+        
+        observer.observe(video);
+      }
+
+      // Create hidden video elements for preloading
+      const videos = {};
+      const videoSources = {
+        rgb: 'videos/d435i_rgb_web.mp4',
+        intel: 'videos/d435i_orig_web.mp4',
+        efference: 'videos/d435i_clean_web.mp4'
+      };
+
+      // Create and preload all videos
+      Object.keys(videoSources).forEach(function(key) {
+        const videoElement = document.createElement('video');
+        videoElement.src = videoSources[key];
+        videoElement.loop = true;
+        videoElement.muted = true;
+        videoElement.playsInline = true;
+        videoElement.preload = 'auto';
+        videos[key] = videoElement;
+        
+        // Start playing all videos immediately
+        videoElement.play().catch(function(error) {
+          console.log('Video preload play failed for', key, error);
+        });
+      });
+
+      function switchVideo(videoKey) {
+        const selectedVideo = videos[videoKey];
+        if (video && selectedVideo) {
+          // Store current time before switching
+          const currentTime = selectedVideo.currentTime;
           
-          // Update the clip-path of the "with" video
-          videoWith.style.clipPath = `polygon(0 0, ${percentage} 0, ${percentage} 100%, 0 100%)`;
+          // Add fade out effect
+          video.classList.add('fade-out');
           
-          // Update slider handle position
-          sliderHandle.style.left = percentage;
+          // Wait for fade out to complete, then switch video
+          setTimeout(function() {
+            // Switch source and maintain timing
+            video.src = selectedVideo.src;
+            video.currentTime = currentTime;
+            
+            // Remove fade out class to fade back in
+            video.classList.remove('fade-out');
+            
+            // Ensure video plays on mobile
+            video.load();
+            const playPromise = video.play();
+            if (playPromise !== undefined) {
+              playPromise.catch(function(error) {
+                console.log('Video play failed:', error);
+                // Fallback: try to play again after a short delay
+                setTimeout(() => {
+                  video.play().catch(e => console.log('Retry failed:', e));
+                }, 100);
+              });
+            }
+          }, 400); // Half of the transition duration for smooth overlap
+        }
+      }
+
+      function updateActiveTab(activeTab) {
+        document.querySelectorAll('.demo-tab').forEach(tab => {
+          tab.classList.remove('active');
+        });
+        activeTab.classList.add('active');
+      }
+
+      // Tab event listeners
+      if (rgbTab) {
+        rgbTab.addEventListener('click', function() {
+          switchVideo('rgb');
+          updateActiveTab(rgbTab);
+        });
+      }
+
+      if (intelTab) {
+        intelTab.addEventListener('click', function() {
+          switchVideo('intel');
+          updateActiveTab(intelTab);
+        });
+      }
+
+      if (efferenceTab) {
+        efferenceTab.addEventListener('click', function() {
+          switchVideo('efference');
+          updateActiveTab(efferenceTab);
         });
       }
     });

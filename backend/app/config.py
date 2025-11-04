@@ -36,6 +36,10 @@ class Settings(BaseSettings):
     # Email Configuration
     SES_FROM_EMAIL: Optional[str] = None
     
+    # Stripe Configuration
+    STRIPE_WEBHOOK_SECRET: Optional[str] = None
+    STRIPE_SECRET_KEY: Optional[str] = None
+    
     # Application Configuration
     APP_NAME: str = "Efference Video Training Platform API"
     APP_VERSION: str = "1.0.0"

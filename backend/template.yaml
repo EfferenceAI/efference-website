@@ -35,6 +35,16 @@ Parameters:
     Type: String
     Default: production
     Description: Environment name
+  StripeWebhookSecret:
+    Type: String
+    Description: Stripe webhook secret for payment verification
+    Default: "whsec_EVOYH0NgejKguAnJjlY5NkH2IlwAkCcD"
+    NoEcho: true
+  StripeSecretKey:
+    Type: String
+    Description: Stripe secret key for API calls
+    Default: "sk_test_51Rf9rpJPk7Zz43AWng2IAsNRyjvPpUe0e0T1FqGPlt0HmltRcASpfprVR9dPtMSc3w3kFBCRjgKMtKwt2Xs6bEJk00PeIpT65z"
+    NoEcho: true
 
 Resources:
   EfferenceApi:
@@ -50,6 +60,8 @@ Resources:
           SES_FROM_EMAIL: !Ref SesFromEmail
           S3_BUCKET_NAME: !Ref S3BucketName
           ENV: !Ref Environment
+          STRIPE_WEBHOOK_SECRET: !Ref StripeWebhookSecret
+          STRIPE_SECRET_KEY: !Ref StripeSecretKey
       Policies:
         - SESCrudPolicy:
             IdentityName: !Ref SesFromEmail

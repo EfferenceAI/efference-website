@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 
 from app.services import database
-from app.routers import auth, users, tasks, sessions, reviews, dashboard, invitations, upload
+from app.routers import auth, users, tasks, sessions, reviews, dashboard, invitations, upload, payments
 
 # Create FastAPI app
 app = FastAPI(
@@ -27,7 +27,8 @@ app.add_middleware(
         "https://app.efference.ai",
         "https://efference-website.vercel.app",
         "https://efference-website-git-master-efference.vercel.app", 
-        "https://efference-website-o8qf00ifw-efference.vercel.app"
+        "https://efference-website-o8qf00ifw-efference.vercel.app",
+        "https://api.stripe.com"  # Allow Stripe webhooks
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -43,6 +44,7 @@ app.include_router(reviews.router)
 app.include_router(dashboard.router)
 app.include_router(invitations.router)
 app.include_router(upload.router)
+app.include_router(payments.router)
 
 
 @app.get("/")

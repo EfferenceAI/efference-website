@@ -1,15 +1,29 @@
-fastapi
-uvicorn[standard]
-sqlalchemy
-alembic
-psycopg2-binary
-python-jose[cryptography]
-passlib[bcrypt]
-bcrypt==3.2.2
-email-validator
-python-multipart
-boto3
-pydantic-settings
-boto3
-werkzeug
+# Core FastAPI dependencies
+fastapi==0.119.0
+uvicorn==0.35.0
+python-multipart==0.0.20
+
+# Database
+sqlalchemy==2.0.44
+psycopg2-binary==2.9.11
+
+# Authentication & Security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+PyJWT==2.10.1
+
+# AWS Services
+boto3==1.40.43
+botocore==1.40.43
+
+# Configuration
+pydantic==2.11.7
+pydantic-settings==2.10.1
+python-dotenv==1.1.1
+email-validator==2.1.0
+
+# Stripe payments
+stripe==13.1.1
+
+# Lambda deployment
 mangum==0.17.0
