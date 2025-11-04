@@ -679,7 +679,7 @@ hr {
 .preorder-left {
   display: flex;
   flex-direction: column;
-  gap: 1em;
+  gap: 0.5em;
 }
 
 .camera-slideshow {
@@ -705,6 +705,11 @@ hr {
 .camera-image.active {
   opacity: 1;
   position: relative;
+}
+
+/* White color for H-01 heading in camera section */
+.preorder-left .mission-title {
+  color: white;
 }
 
 .preorder-right {
