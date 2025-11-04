@@ -12,3 +12,19 @@ frontend/frontend/.next/
 frontend/frontend/.env
 backend/test.db
 schema.sql
+
+# AWS SAM build artifacts
+.aws-sam/
+backend/.aws-sam/
+
+videos/
+*.mp4
+
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.local
+.env.production
