@@ -108,17 +108,17 @@
       
       <div class="models-right">
         <div class="demo-container-new">
-          <div class="demo-tabs">
-            <button id="rgbTab" class="demo-tab active">RGB</button>
-            <button id="intelTab" class="demo-tab">Intel</button>
-            <button id="efferenceTab" class="demo-tab">Efference</button>
-          </div>
-          
           <div class="demo-video-background">
             <video id="efferenceVideo" class="demo-video-bg" autoplay loop muted playsinline preload="auto">
               <source src="videos/d435i_rgb_web.mp4" type="video/mp4">
               Your browser does not support the video tag.
             </video>
+          </div>
+          
+          <div class="demo-tabs">
+            <button id="rgbTab" class="demo-tab active">RGB</button>
+            <button id="intelTab" class="demo-tab">Intel</button>
+            <button id="efferenceTab" class="demo-tab">Efference</button>
           </div>
         </div>
       </div>
@@ -139,10 +139,13 @@
           <p>Dual 400 Hz IMUs tightly fuse motion with vision, and an automotive-grade GMSL2 connector enables low-latency, long-distance transmission.</p>
         </div>
         
-        <button class="preorder-btn" onclick="openStripePopup()" style="margin-bottom: 35px;">Pre-order Now</button>
+        <button class="preorder-btn" onclick="openStripePopup()" style="margin-bottom: 35px;">Pre-order</button>
       </div>
       <div class="preorder-right">
-        <img src="images/camera.png" alt="Efference H01" class="camera-image">
+        <div class="camera-slideshow">
+          <img src="images/payment-success-email-header.png" alt="Efference H-01" class="camera-image active">
+          <img src="images/cameraback.jpg" alt="Efference H-01 Back" class="camera-image">
+        </div>
       </div>
     </div>
   </section> 
@@ -185,15 +188,15 @@
     <div class="stripe-modal-content">
       <span class="stripe-close" onclick="closeStripePopup()">&times;</span>
       <div class="stripe-header">
-        <h2>Efference H01 Pre-order</h2>
+        <h2>Efference H-01 Pre-order</h2>
         <p>Complete your purchase</p>
       </div>
       <div class="stripe-form">
         <div class="product-summary">
           <div class="product-info">
-            <img src="images/camera.png" alt="Efference H01" class="checkout-image">
+            <img src="images/payment-success-email-header.png" alt="Efference H-01" class="checkout-image">
             <div class="product-details">
-              <h3>Efference H01</h3>
+              <h3>Efference H-01</h3>
               <p>Intelligent robotic vision camera</p>
             </div>
           </div>
@@ -392,6 +395,25 @@
           switchVideo('efference');
           updateActiveTab(efferenceTab);
         });
+      }
+    });
+
+    // Camera slideshow functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const cameraImages = document.querySelectorAll('.camera-slideshow .camera-image');
+      let currentImageIndex = 0;
+
+      if (cameraImages.length > 1) {
+        setInterval(function() {
+          // Remove active class from current image
+          cameraImages[currentImageIndex].classList.remove('active');
+          
+          // Move to next image
+          currentImageIndex = (currentImageIndex + 1) % cameraImages.length;
+          
+          // Add active class to new image
+          cameraImages[currentImageIndex].classList.add('active');
+        }, 3000); // Switch every 3 seconds
       }
     });
   </script>

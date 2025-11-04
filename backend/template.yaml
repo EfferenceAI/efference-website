@@ -22,7 +22,7 @@ Parameters:
   SesFromEmail:
     Type: String
     Description: SES verified from email address
-    Default: "sia.sheguri24@gmail.com"
+    Default: "noreply@efference.ai"
   AwsRegion:
     Type: String
     Description: AWS Region

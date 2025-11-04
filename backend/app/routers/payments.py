@@ -65,7 +65,7 @@ async def stripe_webhook(request: Request):
         body = f"""
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
             <div style="text-align: center; margin-bottom: 30px;">
-                <img src="https://efference.ai/images/camera.png" alt="Efference H-01" style="max-width: 400px; width: 100%; height: auto;">
+                <img src="https://efference.ai/images/payment-success-email-header.png" alt="Efference H-01" style="max-width: 400px; width: 100%; height: auto;">
             </div>
             <p>Hi {customer_name},</p>
             

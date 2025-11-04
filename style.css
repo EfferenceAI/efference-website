@@ -159,6 +159,7 @@ header {
   font-weight: 500;
   list-style: none;
   font-family: "Space Grotesk", sans-serif;
+  margin-bottom: 20px;
 }
 
 /* buttons */
@@ -629,12 +630,13 @@ hr {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 0;
+  margin-top: 1em;
 }
 
 .demo-tab {
-  background: #333;
+  background: black;
   color: white;
-  border: none;
+  border: 1px solid white;
   padding: 1em;
   font-family: "FK Grotesk Neue", "Inter", "Helvetica Neue", sans-serif;
   font-size: 1em;
@@ -645,11 +647,11 @@ hr {
 }
 
 .demo-tab:hover {
-  background: #555;
+  background: #333;
 }
 
 .demo-tab.active {
-  background: #666;
+  background: #444;
   color: white;
 }
 
@@ -681,11 +683,29 @@ hr {
   gap: 1em;
 }
 
+.camera-slideshow {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+
 .camera-image {
   max-width: 100%;
   height: auto;
   max-height: 400px;
   object-fit: contain;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  opacity: 0;
+  transition: opacity 2s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.camera-image.active {
+  opacity: 1;
+  position: relative;
 }
 
 .preorder-right {
@@ -1493,19 +1513,20 @@ footer p {
     flex-direction: column;
   }
   
-  .preorder-right {
+  .preorder-left {
     order: 1;
   }
   
-  .preorder-left {
-    order: 2;
-  }
-  
   .preorder-btn {
-    order: 3;
+    order: 2;
     margin: 1em auto 0;
     display: block;
     width: fit-content;
+  }
+  
+  .preorder-right {
+    order: 3;
+    margin-top: 2em;
   }
 
   .preorder-title {
