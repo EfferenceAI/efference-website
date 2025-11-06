@@ -340,34 +340,29 @@
       function switchVideo(videoKey) {
         const selectedVideo = videos[videoKey];
         if (video && selectedVideo) {
-          // Store current time before switching
-          const currentTime = selectedVideo.currentTime;
-          
           // Add fade out effect
           video.classList.add('fade-out');
           
           // Wait for fade out to complete, then switch video
           setTimeout(function() {
-            // Switch source and maintain timing
+            // Simply switch the source without resetting time or loading
             video.src = selectedVideo.src;
-            video.currentTime = currentTime;
+            video.currentTime = selectedVideo.currentTime;
             
             // Remove fade out class to fade back in
             video.classList.remove('fade-out');
             
-            // Ensure video plays on mobile
-            video.load();
+            // Play without loading to maintain continuous playback
             const playPromise = video.play();
             if (playPromise !== undefined) {
               playPromise.catch(function(error) {
                 console.log('Video play failed:', error);
-                // Fallback: try to play again after a short delay
                 setTimeout(() => {
                   video.play().catch(e => console.log('Retry failed:', e));
                 }, 100);
               });
             }
-          }, 400); // Half of the transition duration for smooth overlap
+          }, 400);
         }
       }
 
