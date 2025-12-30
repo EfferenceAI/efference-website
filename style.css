@@ -331,6 +331,170 @@ hr {
   color: #ccc;
 }
 
+/* Careers Section */
+.careers-section {
+  margin: 8px;
+  padding-top: 24px;
+  padding-left: 3em;
+  padding-right: 3em;
+  padding-bottom: 2em;
+}
+
+.careers-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2em;
+  align-items: center;
+}
+
+.careers-left {
+  color: white;
+}
+
+.careers-heading {
+  font-family: "FK Grotesk Neue", "Inter", "Helvetica Neue", sans-serif;
+  font-size: 1.6em;
+  font-weight: 400;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  color: #ccc;
+}
+
+.careers-title {
+  font-family: "FK Grotesk Neue", "Inter", "Helvetica Neue", sans-serif;
+  font-size: 2.6em;
+  font-weight: 400;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.careers-subtitle {
+  font-family: "FK Grotesk Neue", "Inter", "Helvetica Neue", sans-serif;
+  font-size: 1.1em;
+  font-weight: 400;
+  line-height: 1.6;
+  margin-top: 1.5em;
+  margin-bottom: 1.2em;
+  color: white;
+}
+
+.careers-right {
+  color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 2em;
+}
+
+.jobs-table {
+  width: 100%;
+  border: 1px solid #333;
+  background: black;
+}
+
+.table-header {
+  padding: 1.5em 2em 1em 2em;
+  border-bottom: 1px solid #333;
+}
+
+.header-title {
+  font-family: "FK Grotesk Neue", "Inter", "Helvetica Neue", sans-serif;
+  font-size: 1.4em;
+  font-weight: 400;
+  color: white;
+}
+
+
+.job-listing {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5em 2em;
+  border-bottom: 1px solid #333;
+}
+
+.job-listing:last-child {
+  border-bottom: none;
+}
+
+.job-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+}
+
+.job-location {
+  font-family: "FK Grotesk Neue", "Inter", "Helvetica Neue", sans-serif;
+  font-size: 0.9em;
+  font-weight: 400;
+  color: #ccc;
+}
+
+.job-title {
+  font-family: "FK Grotesk Neue", "Inter", "Helvetica Neue", sans-serif;
+  font-size: 1.1em;
+  font-weight: 400;
+  color: white;
+}
+
+.apply-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  font-family: "FK Grotesk Neue", "Inter", "Helvetica Neue", sans-serif;
+  font-size: 0.9em;
+  font-weight: 400;
+  color: white;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+  white-space: nowrap;
+}
+
+.apply-button:hover {
+  color: #ccc;
+}
+
+.apply-button svg {
+  transition: transform 0.2s ease;
+}
+
+.apply-button:hover svg {
+  transform: translateX(2px);
+}
+
+.careers-left .careers-contact {
+  margin-top: 1.5em;
+}
+
+.mobile-contact {
+  display: none;
+}
+
+
+.contact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  font-family: "FK Grotesk Neue", "Inter", "Helvetica Neue", sans-serif;
+  font-size: 1.4em;
+  font-weight: 500;
+  color: white;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+  width: fit-content;
+}
+
+.contact-link:hover {
+  color: #ccc;
+}
+
+.contact-link svg {
+  transition: transform 0.2s ease;
+}
+
+.contact-link:hover svg {
+  transform: translateX(2px);
+}
+
 .demo-section {
   margin: 3em 1em;
   padding: 0 3em;
@@ -1642,5 +1806,60 @@ footer p {
     padding: 0.6em 1em;
     white-space: nowrap;
     min-width: fit-content;
+  }
+
+  /* Careers Section Mobile */
+  .careers-section {
+    margin: 1.5em 0.5em !important;
+    padding: 0 0.5em !important;
+  }
+
+  .careers-container {
+    grid-template-columns: 1fr !important;
+    gap: 1.5em !important;
+  }
+
+  .careers-heading {
+    margin-top: 1em !important;
+  }
+
+  .careers-title {
+    font-size: 2.2em;
+  }
+
+  .table-header {
+    padding: 1.2em 1em 0.8em 1em !important;
+  }
+
+  .header-title {
+    font-size: 1.2em;
+  }
+
+  .job-listing {
+    padding: 1.5em 1em !important;
+  }
+
+  .careers-left .careers-contact {
+    display: none !important;
+  }
+
+  .mobile-contact {
+    display: block !important;
+    margin-top: -0.1em;
+    margin-bottom: 2em;
+    padding: 0 1em;
+    text-align: left;
+  }
+
+
+  .jobs-table .job-listing {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1em;
+    padding: 1.5em 1em !important;
+  }
+
+  .apply-button {
+    align-self: flex-end;
   }
 }
